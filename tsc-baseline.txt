@@ -1,0 +1,95 @@
+# tsc --noEmit baseline: errors that existed before the "no new errors" gate.
+# One line per error: file: TSxxxx: message (no line numbers). It may only shrink.
+# Regenerate with: node scripts/check-tsc-baseline.mjs --update
+src/components/AccountModal.tsx: TS2322: Type 'Account[]' is not assignable to type '{ id: string; name: string; color?: string | undefined; }[]'.
+src/components/AllocationModal.tsx: TS2367: This comparison appears to be unintentional because the types 'TransactionType' and '"alocacao"' have no overlap.
+src/components/DashboardWidgetConfig.tsx: TS6133: '_isHovered' is declared but its value is never read.
+src/components/HouseholdMembersModal.tsx: TS2322: Type 'User | null' is not assignable to type '{ id: string; } | null | undefined'.
+src/components/HouseholdMembersModal.tsx: TS2322: Type 'boolean | null' is not assignable to type 'boolean'.
+src/components/HouseholdMembersModal.tsx: TS2322: Type 'boolean | null' is not assignable to type 'boolean'.
+src/components/HouseholdMembersModal.tsx: TS2322: Type 'boolean | null' is not assignable to type 'boolean'.
+src/components/accounts/AccountBalanceCard.tsx: TS2345: Argument of type 'AccountBalance' is not assignable to parameter of type 'number'.
+src/components/accounts/AccountBalanceCard.tsx: TS2365: Operator '>=' cannot be applied to types 'AccountBalance' and 'number'.
+src/components/accounts/AccountBalanceCard.tsx: TS2554: Expected 1 arguments, but got 2.
+src/components/accounts/AccountSelector.tsx: TS2322: Type '{ className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type '(() => void) | undefined' is not assignable to type '() => void'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type '(() => void) | undefined' is not assignable to type '() => void'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type '(() => void) | undefined' is not assignable to type '() => void'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type 'number | undefined' is not assignable to type 'number'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type 'number | undefined' is not assignable to type 'number'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type 'number | undefined' is not assignable to type 'number'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type 'number | undefined' is not assignable to type 'number'.
+src/components/dashboard/DashboardWidgetsRenderer.tsx: TS2322: Type 'number | undefined' is not assignable to type 'number'.
+src/components/households/AccountSharingSection.tsx: TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/components/households/AccountSharingSection.tsx: TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/components/transactions/SplitTransactionForm.tsx: TS2345: Argument of type '(prevSplits: any) => any[]' is not assignable to parameter of type 'Split[]'.
+src/components/transactions/SplitTransactionForm.tsx: TS7006: Parameter 'prevSplits' implicitly has an 'any' type.
+src/components/widgets/FixedVsVariableWidget.tsx: TS2367: This comparison appears to be unintentional because the types 'TransactionType.EXPENSE' and 'TransactionType.ALLOCATION' have no overlap.
+src/components/widgets/FixedVsVariableWidget.tsx: TS2367: This comparison appears to be unintentional because the types 'TransactionType.EXPENSE' and 'TransactionType.TRANSFER' have no overlap.
+src/hooks/api/useTransactions.ts: TS2352: Conversion of type 'ApiResponse<any>' to type 'PaginatedTransactionsResponse' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/hooks/api/useTransactions.ts: TS2352: Conversion of type 'ApiResponse<any>' to type 'PaginatedTransactionsResponse' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/hooks/useDashboardPreferences.ts: TS2322: Type 'DashboardPreferences' is not assignable to type 'Record<string, unknown>'.
+src/hooks/useDashboardPreferences.ts: TS2352: Conversion of type 'Record<string, unknown>' to type 'DashboardPreferences' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/pages/Accounts.tsx: TS18047: 't' is possibly 'null'.
+src/pages/Accounts.tsx: TS18047: 'tr' is possibly 'null'.
+src/pages/Accounts.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Accounts.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Accounts.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Accounts.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Accounts.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Accounts.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Accounts.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Accounts.tsx: TS2322: Type 'HouseholdMember[] | undefined' is not assignable to type '{ userId: string; user?: { displayName?: string | undefined; email?: string | undefined; } | undefined; }[] | undefined'.
+src/pages/Accounts.tsx: TS2322: Type 'Translations' is not assignable to type 'Record<string, string>'.
+src/pages/Accounts.tsx: TS2322: Type 'Translations' is not assignable to type 'Record<string, string>'.
+src/pages/Accounts.tsx: TS2322: Type 'Translations' is not assignable to type 'Record<string, string>'.
+src/pages/Accounts.tsx: TS2345: Argument of type 'import("<root>/src/types/index").CustomCategoryInfo[]' is not assignable to parameter of type 'import("<root>/src/lib/enums").CustomCategoryInfo[]'.
+src/pages/Accounts.tsx: TS2345: Argument of type 'import("<root>/src/types/index").CustomCategoryInfo[]' is not assignable to parameter of type 'import("<root>/src/lib/enums").CustomCategoryInfo[]'.
+src/pages/Accounts.tsx: TS2345: Argument of type '{ id: any; description: any; amount: number; type: TransactionType; category: string; date: Date; paid: any; accountId: any; fromAccountId: any; toAccountId: any; relatedEntityId: any; ... 5 more ...; notes: any; } | null' is not assignable to parameter of type 'Transaction'.
+src/pages/Accounts.tsx: TS2677: A type predicate's type must be assignable to its parameter's type.
+src/pages/Budgets.tsx: TS2322: Type 'Translations' is not assignable to type 'Record<string, string>'.
+src/pages/CreditCards.tsx: TS2322: Type '{ selectedMonth: Date; }' is not assignable to type 'IntrinsicAttributes'.
+src/pages/CreditCards.tsx: TS2352: Conversion of type '{ id: string; description: string; amount: string | number; categoryName?: string | undefined; type?: string | undefined; date: string | Date; paid: boolean; accountId?: string | undefined; ... 4 more ...; totalInstallments?: number | undefined; }' to type 'Record<string, string>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/pages/CreditCards.tsx: TS2367: This comparison appears to be unintentional because the types 'AccountType.CHECKING | AccountType.SAVINGS | AccountType.CASH | AccountType.INVESTMENT' and '"CREDIT"' have no overlap.
+src/pages/CreditCards.tsx: TS2367: This comparison appears to be unintentional because the types 'AccountType.CHECKING | AccountType.SAVINGS | AccountType.CASH | AccountType.INVESTMENT' and '"CREDIT"' have no overlap.
+src/pages/Dashboard.tsx: TS2322: Type 'Translations' is not assignable to type 'Record<string, string>'.
+src/pages/Dashboard.tsx: TS2322: Type 'Translations' is not assignable to type 'Record<string, string>'.
+src/pages/Reports.tsx: TS2345: Argument of type 'import("<root>/src/hooks/api/useTransactions").Transaction[]' is not assignable to parameter of type 'import("<root>/src/types/index").Transaction[]'.
+src/pages/Reports.tsx: TS2345: Argument of type 'import("<root>/src/hooks/api/useTransactions").Transaction[]' is not assignable to parameter of type 'import("<root>/src/types/index").Transaction[]'.
+src/pages/Reports.tsx: TS2345: Argument of type 'import("<root>/src/hooks/api/useTransactions").Transaction[]' is not assignable to parameter of type 'import("<root>/src/types/index").Transaction[]'.
+src/pages/Reports.tsx: TS2345: Argument of type '{ id: string; name: string; type: string; color: string | null | undefined; icon: string | null | undefined; }[]' is not assignable to parameter of type 'CustomCategoryInfo[]'.
+src/pages/Reports.tsx: TS2345: Argument of type '{ id: string; name: string; type: string; color: string | null | undefined; icon: string | null | undefined; }[]' is not assignable to parameter of type 'CustomCategoryInfo[]'.
+src/pages/Reports.tsx: TS2367: This comparison appears to be unintentional because the types 'TransactionType.EXPENSE' and 'TransactionType.ALLOCATION' have no overlap.
+src/pages/Reports.tsx: TS2367: This comparison appears to be unintentional because the types 'TransactionType.EXPENSE' and 'TransactionType.ALLOCATION' have no overlap.
+src/pages/Reports.tsx: TS2367: This comparison appears to be unintentional because the types 'TransactionType.EXPENSE' and 'TransactionType.TRANSFER' have no overlap.
+src/pages/Reports.tsx: TS2367: This comparison appears to be unintentional because the types 'TransactionType.EXPENSE' and 'TransactionType.TRANSFER' have no overlap.
+src/pages/Transactions.tsx: TS18047: 't' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 't' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS18047: 'transaction' is possibly 'null'.
+src/pages/Transactions.tsx: TS2322: Type 'Translations' is not assignable to type 'Record<string, string>'.
+src/pages/Transactions.tsx: TS2322: Type 'Translations' is not assignable to type 'Record<string, string>'.
+src/pages/Transactions.tsx: TS2345: Argument of type 'import("<root>/src/types/index").CustomCategoryInfo[]' is not assignable to parameter of type 'import("<root>/src/lib/enums").CustomCategoryInfo[]'.
+src/pages/Transactions.tsx: TS2345: Argument of type 'import("<root>/src/types/index").CustomCategoryInfo[]' is not assignable to parameter of type 'import("<root>/src/lib/enums").CustomCategoryInfo[]'.
+src/pages/Transactions.tsx: TS2345: Argument of type '{ id: string; description: string; amount: number; type: TransactionType; category: string; categoryName: string; date: Date; paid: boolean; accountId: string | undefined; ... 10 more ...; splits: any; } | null' is not assignable to parameter of type 'Transaction'.
+src/pages/Transactions.tsx: TS2352: Conversion of type '{ id: string; description: string; amount: string | number; categoryName?: string | undefined; type?: string | undefined; date: string | Date; paid: boolean; accountId?: string | undefined; ... 10 more ...; splits?: { ...; }[] | undefined; }' to type 'Record<string, string>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/pages/Transactions.tsx: TS2352: Conversion of type '{ id: string; description: string; amount: string | number; categoryName?: string | undefined; type?: string | undefined; date: string | Date; paid: boolean; accountId?: string | undefined; ... 10 more ...; splits?: { ...; }[] | undefined; }' to type 'Record<string, string>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/pages/Transactions.tsx: TS2677: A type predicate's type must be assignable to its parameter's type.

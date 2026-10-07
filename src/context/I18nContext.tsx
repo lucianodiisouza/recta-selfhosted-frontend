@@ -9,6 +9,7 @@ import ruRU from '../i18n/ru-RU.json';
 import zhCN from '../i18n/zh-CN.json';
 import frFR from '../i18n/fr-FR.json';
 import arSA from '../i18n/ar-SA.json';
+import { withEnglishFallback } from '../i18n/fallback';
 
 export type Locale = 'pt-BR' | 'en-US' | 'es-ES' | 'ja-JP' | 'ru-RU' | 'zh-CN' | 'fr-FR' | 'ar-SA';
 
@@ -1117,17 +1118,18 @@ export interface Translations {
   forecastNote: string;
 }
 
-// Note: Some language files may have missing translations. We cast through `unknown`
-// to allow partial translations. Missing keys will show the key name as fallback.
+// Some language files lack keys that en-US has. We cast through `unknown` to allow partial translations, and a key a locale
+// does not define falls back to the en-US text (otherwise it would render empty and code that formats it would receive
+// undefined). pt-BR is the source of the project's own texts and is complete.
 const translations: Record<Locale, Translations> = {
   'pt-BR': ptBR as unknown as Translations,
   'en-US': enUS as unknown as Translations,
-  'es-ES': esES as unknown as Translations,
-  'ja-JP': jaJP as unknown as Translations,
-  'ru-RU': ruRU as unknown as Translations,
-  'zh-CN': zhCN as unknown as Translations,
-  'fr-FR': frFR as unknown as Translations,
-  'ar-SA': arSA as unknown as Translations,
+  'es-ES': withEnglishFallback(esES) as unknown as Translations,
+  'ja-JP': withEnglishFallback(jaJP) as unknown as Translations,
+  'ru-RU': withEnglishFallback(ruRU) as unknown as Translations,
+  'zh-CN': withEnglishFallback(zhCN) as unknown as Translations,
+  'fr-FR': withEnglishFallback(frFR) as unknown as Translations,
+  'ar-SA': withEnglishFallback(arSA) as unknown as Translations,
 };
 
 interface I18nContextType {
