@@ -1,6 +1,8 @@
 import { Controller } from 'react-hook-form';
 import { useI18n } from '../../context/I18nContext';
 import { parseCurrencyValue } from '../../utils/currency';
+import { closingDayFromDue } from '../../utils/closingDay';
+import { useClosingDayAutoFill } from '../../hooks/useClosingDayAutoFill';
 import SelectCombobox from '../SelectCombobox';
 import type { AccountFormData } from '../../schemas';
 import type { Account } from '../../types';
@@ -25,6 +27,9 @@ export const CreditCardFields = ({
 }: CreditCardFieldsProps) => {
   const { t } = useI18n();
   const { register, control, formState: { errors } } = form;
+  // Creating: the closing day follows the due day (due - 7) until the user types their own
+  const typedSuggestion = useClosingDayAutoFill(form, isCreation);
+  const suggestedClosing = isCreation ? typedSuggestion : closingDayFromDue(account?.dueDay);
 
   // Campos específicos de cartão de crédito - só aparecem na criação
   if (isCreation) {
@@ -81,12 +86,12 @@ export const CreditCardFields = ({
             type="number"
             {...register('closingDay', { valueAsNumber: true })}
             className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-            placeholder="1-31"
+            placeholder={suggestedClosing ? String(suggestedClosing) : '1-31'}
             min="1"
             max="31"
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {t.closingDayHint || 'Dia em que a fatura fecha. Ex: se fecha no dia 7, a fatura inclui compras do dia 7 do mês anterior até o dia 6 do mês atual.'}
+            {t.closingDayFromDueHint}
           </p>
           {errors.closingDay && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.closingDay.message}</p>
@@ -145,12 +150,12 @@ export const CreditCardFields = ({
             type="number"
             {...register('closingDay', { valueAsNumber: true })}
             className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-            placeholder="1-31"
+            placeholder={suggestedClosing ? String(suggestedClosing) : '1-31'}
             min="1"
             max="31"
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {t.closingDayHint || 'Dia em que a fatura fecha. Ex: se fecha no dia 7, a fatura inclui compras do dia 7 do mês anterior até o dia 6 do mês atual.'}
+            {t.closingDayFromDueHint}
           </p>
           {errors.closingDay && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.closingDay.message}</p>

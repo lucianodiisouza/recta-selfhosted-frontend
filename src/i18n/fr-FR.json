@@ -109,7 +109,7 @@
   "invoicePeriod": "Période de Facture",
   "dueDay": "Jour d'Échéance",
   "closingDay": "Jour de Clôture",
-  "closingDayHint": "Jour où la facture se ferme. Ex: si elle se ferme le jour 7, la facture inclut les achats du jour 7 du mois précédent jusqu'au jour 6 du mois actuel.",
+  "closingDayFromDueHint": "Normalement 7 jours avant l'échéance",
   "bestDayToBuy": "Meilleur jour pour acheter",
   "payInvoice": "Payer la Facture",
   "payInvoiceDescription": "Sélectionnez le compte d'où sortira l'argent pour payer cette facture de",

@@ -1,5 +1,6 @@
 import { useI18n } from '../../context/I18nContext';
 import { parseCurrencyValue } from '../../utils/currency';
+import { useClosingDayAutoFill } from '../../hooks/useClosingDayAutoFill';
 import type { UseFormReturn, UseFormSetValue } from 'react-hook-form';
 
 interface CreditCardFormFieldsProps {
@@ -21,6 +22,8 @@ export const CreditCardFormFields = ({
 }: CreditCardFormFieldsProps) => {
   const { t } = useI18n();
   const { register, formState: { errors } } = form;
+  // The closing day follows the due day (due - 7) until the user types their own
+  const suggestedClosing = useClosingDayAutoFill(form);
 
   return (
     <>
@@ -86,23 +89,23 @@ export const CreditCardFormFields = ({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {t.bestDayOffset || 'Dias antes do vencimento (melhor dia)'}
+          {t.closingDay}
         </label>
         <input
           type="number"
-          {...register('bestDayOffset', { valueAsNumber: true })}
+          {...register('closingDay', { valueAsNumber: true })}
           className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-            errors.bestDayOffset ? 'border-red-300 dark:border-red-600' : ''
+            errors.closingDay ? 'border-red-300 dark:border-red-600' : ''
           }`}
-          placeholder="10"
+          placeholder={suggestedClosing ? String(suggestedClosing) : '1-31'}
           min="1"
-          max="30"
+          max="31"
         />
         <p className="mt-1 text-xs font-light text-gray-400 dark:text-gray-500">
-          {t.bestDayOffsetHint || 'Quantos dias antes do vencimento indica o melhor dia para compra. Padrão: 10.'}
+          {t.closingDayFromDueHint}
         </p>
-        {errors.bestDayOffset && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{(errors.bestDayOffset as { message?: string }).message ?? ''}</p>
+        {errors.closingDay && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{(errors.closingDay as { message?: string }).message ?? ''}</p>
         )}
       </div>
 

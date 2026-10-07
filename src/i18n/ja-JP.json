@@ -206,7 +206,7 @@
   "creditLimit": "限度額",
   "dueDay": "支払日",
   "closingDay": "締切日",
-  "closingDayHint": "請求書が締め切られる日。例：7日に締め切られる場合、請求書には前月7日から当月6日までの購入が含まれます。",
+  "closingDayFromDueHint": "通常は支払日の7日前です",
   "noDebt": "債務なし",
   "noAccounts": "登録された口座がありません",
   "totalAvailableBalance": "利用可能残高合計",

@@ -206,7 +206,7 @@
   "creditLimit": "额度",
   "dueDay": "到期日",
   "closingDay": "结算日",
-  "closingDayHint": "账单关闭的日期。例如：如果在7日关闭，账单包括从上个月7日到当月6日的购买。",
+  "closingDayFromDueHint": "通常在到期日前7天",
   "noDebt": "无债务",
   "noAccounts": "未注册账户",
   "totalAvailableBalance": "总可用余额",

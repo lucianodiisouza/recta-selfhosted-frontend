@@ -96,7 +96,6 @@ export interface Account {
   availableLimit?: number; // Limite disponível (totalLimit - dívida atual)
   dueDay?: number; // Dia de vencimento da fatura (1-31)
   closingDay?: number; // Dia de fechamento da fatura (1-31)
-  bestDayOffset?: number; // Dias antes do vencimento para o melhor dia de compra (1-30)
   linkedAccountId?: string; // ID da conta bancária vinculada (para herdar cor)
   // Campos para contas compartilhadas
   isPersonal?: boolean; // true se for conta pessoal compartilhada
