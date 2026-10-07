@@ -9,10 +9,16 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
+import { PiePercentLabel } from './PiePercentLabel';
+import type { PiePercentLabelProps } from './PiePercentLabel';
+import { pieOuterRadius } from '../../utils/pieLabel';
 import { AlertCircle } from 'lucide-react';
 import { getCategoryDisplayName, CustomCategoryInfo } from '../../lib/enums';
 import { useCategories } from '../../hooks/api/useCategories';
 import { useDefaultHousehold } from '../../hooks/useDefaultHousehold';
+
+/** Real height of the chart: the inline height of ResponsiveContainer wins over any responsive class. */
+const PIE_CHART_HEIGHT = 200;
 
 const COLORS = [
   '#0ea5e9',
@@ -95,8 +101,8 @@ export const ExpensesByCategoryWidget = ({
       </h2>
       <ResponsiveContainer
         width="100%"
-        height={200}
-        className={`sm:h-[250px] lg:h-[300px] ${blurNumbers ? 'demo-blur' : ''}`}
+        height={PIE_CHART_HEIGHT}
+        className={blurNumbers ? 'demo-blur' : ''}
       >
         <PieChart>
           <Pie
@@ -104,16 +110,8 @@ export const ExpensesByCategoryWidget = ({
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({
-              percent,
-            }: {
-              percent: number;
-            }) => {
-              // Mostrar label apenas se for > 5% para não poluir
-              if (percent < 0.05) return '';
-              return `${(percent * 100).toFixed(0)}%`;
-            }}
-            outerRadius={80}
+            label={(props: PiePercentLabelProps) => <PiePercentLabel {...props} />}
+            outerRadius={pieOuterRadius(PIE_CHART_HEIGHT)}
             fill="#8884d8"
             dataKey="value"
           >

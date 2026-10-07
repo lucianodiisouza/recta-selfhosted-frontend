@@ -401,3 +401,9 @@ input[type="month"] {
     linear-gradient(to bottom, rgba(75, 85, 99, 0.15) 1px, transparent 1px);
 }
 
+/* React Query devtools (development only): keep the floating button above the page footer area and below dialogs,
+   so it never covers a modal or the Ctrl+K command menu. */
+.tsqd-open-btn-container {
+  bottom: 88px !important;
+  z-index: 40 !important;
+}
