@@ -41,6 +41,7 @@ import {
 import DeleteAccountModal from "../components/DeleteAccountModal";
 import { AccountModal } from "../components/AccountModal";
 import { AllocationModal } from "../components/AllocationModal";
+import AdjustBalanceDialog from "../components/accounts/AdjustBalanceDialog";
 import { TransactionList } from "../components/transactions/TransactionList";
 import { AccountSelector, AccountSidebar } from "../components/accounts";
 import { MonthNavigator } from "../components/shared";
@@ -115,6 +116,8 @@ const Accounts = () => {
     creditCardId: null,
     mode: "allocate",
   });
+  const [adjustAccountId, setAdjustAccountId] = useState<string | null>(null);
+  const adjustAccount = adjustAccountId ? allAccounts?.find((a) => a.id === adjustAccountId) : undefined;
   const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
 
   const currentLocale = useMemo(() => {
@@ -725,6 +728,7 @@ const Accounts = () => {
                 setIsModalOpen(true);
               }}
               onDelete={handleDelete}
+              onAdjustBalance={(account) => setAdjustAccountId(account.id ?? null)}
               onAllocate={() => {
                 setAllocationModal({
                   isOpen: true,
@@ -909,6 +913,14 @@ const Accounts = () => {
           readOnly={!!viewingTransaction}
         />
       )}
+
+      <AdjustBalanceDialog
+        open={adjustAccountId !== null}
+        onClose={() => setAdjustAccountId(null)}
+        accountId={adjustAccountId}
+        accountName={adjustAccount?.name ?? ""}
+        currentBalance={getAccountBalance(adjustAccount).totalBalance}
+      />
 
       {allocationModal.isOpen && (
         <AllocationModal

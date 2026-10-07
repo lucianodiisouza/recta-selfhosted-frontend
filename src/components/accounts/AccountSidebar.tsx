@@ -13,6 +13,7 @@ interface AccountSidebarProps {
   hasCreditCards: boolean;
   onEdit: (account: Account) => void;
   onDelete: (account: Account) => void;
+  onAdjustBalance?: (account: Account) => void;
   onAllocate: () => void;
   onDeallocate: () => void;
   t: Record<string, string>;
@@ -27,6 +28,7 @@ export const AccountSidebar = ({
   hasCreditCards,
   onEdit,
   onDelete,
+  onAdjustBalance,
   onAllocate,
   onDeallocate,
   t,
@@ -48,6 +50,7 @@ export const AccountSidebar = ({
           account={account}
           onEdit={onEdit}
           onDelete={onDelete}
+          onAdjustBalance={account.type === 'CREDIT' ? undefined : onAdjustBalance}
           isAccountOwner={isAccountOwner}
         />
       </div>

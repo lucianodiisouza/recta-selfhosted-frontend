@@ -304,15 +304,21 @@ export function useAdjustAccountBalance() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ accountId, ...data }: { accountId: string; newBalance: number; reason?: string }) => {
-      const response = await apiClient.post<Account>(`/accounts/${accountId}/adjust-balance`, data);
+    // The server answers { account, adjustment }: adjustment is null when the account already had the target balance.
+    // `date` (YYYY-MM-DD, not in the future) dates the entry; an opening balance goes at the end of the previous year.
+    mutationFn: async ({ accountId, ...data }: { accountId: string; newBalance: number; date?: string; reason?: string }) => {
+      const response = await apiClient.post<{ account: Account; adjustment: { id: string; amount: number; date?: string } | null }>(
+        `/accounts/${accountId}/adjust-balance`,
+        data,
+      );
       return response.data!;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
-      queryClient.invalidateQueries({ queryKey: ['accounts', data.id] });
-      queryClient.invalidateQueries({ queryKey: ['accounts', 'summary', data.householdId] });
+      queryClient.invalidateQueries({ queryKey: ['accounts', variables.accountId] });
+      queryClient.invalidateQueries({ queryKey: ['accounts', 'summary', data.account?.householdId] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 }
