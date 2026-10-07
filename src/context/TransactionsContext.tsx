@@ -298,6 +298,9 @@ const convertRecurringTransactionFromBackend = (r: BackendRecurringTransaction, 
     nextDueDate,
     accountId: r.accountId ?? '',
     isActive: r.isActive ?? true,
+    // Left undefined when the server does not send it, so the app can tell "off" from "not supported".
+    followLastAmount: r.followLastAmount,
+    lastOccurrenceDate: r.lastOccurrenceDate === undefined ? undefined : (r.lastOccurrenceDate ?? null),
   };
 };
 
@@ -509,7 +512,7 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
     );
   }, [householdId, currentUser, accounts, createTransaction, t, custom]);
 
-  const updateTransactionFn = useCallback(async (id: string, transaction: Partial<Transaction>): Promise<void> => {
+  const updateTransactionFn = useCallback(async (id: string, transaction: Partial<Transaction>): Promise<{ recurringUpdated?: { id: string; amount: number } }> => {
     const updateData: Record<string, unknown> = {};
     
     if (transaction.description !== undefined) updateData.description = transaction.description;
@@ -533,11 +536,12 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
     if (transaction.totalInstallments !== undefined) updateData.totalInstallments = transaction.totalInstallments || null;
     if (transaction.attachmentUrl !== undefined) updateData.attachmentUrl = transaction.attachmentUrl || null;
 
-    await updateTransaction.mutateAsync({ id, ...updateData });
+    const updated = await updateTransaction.mutateAsync({ id, ...updateData });
 
     if (transaction.type) {
       analyticsHelpers.logTransactionUpdated(transaction.type);
     }
+    return updated?.recurringUpdated ? { recurringUpdated: updated.recurringUpdated } : {};
   }, [updateTransaction, t, custom]);
 
   const deleteTransactionFn = useCallback(async (id: string): Promise<void> => {
@@ -659,6 +663,7 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
       nextRunAt: formatDateForAPI(recurring.nextDueDate),
       endDate: recurring.endDate ? formatDateForAPI(recurring.endDate) : undefined,
       isActive: recurring.isActive,
+      ...(recurring.followLastAmount !== undefined && { followLastAmount: recurring.followLastAmount }),
     });
 
     analyticsHelpers.logRecurringTransactionCreated(recurring.type, recurring.frequency);
@@ -677,6 +682,7 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
       updateData.frequency = recurring.frequency.toUpperCase() as RecurrenceFrequency;
     }
     if (recurring.isActive !== undefined) updateData.isActive = recurring.isActive;
+    if (recurring.followLastAmount !== undefined) updateData.followLastAmount = recurring.followLastAmount;
     if (recurring.startDate) updateData.startDate = formatDateForAPI(recurring.startDate);
     if (recurring.endDate !== undefined) {
       updateData.endDate = recurring.endDate ? formatDateForAPI(recurring.endDate) : null;

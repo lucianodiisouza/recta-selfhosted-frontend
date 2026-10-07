@@ -10,7 +10,8 @@ import { useAsyncOperation } from '../hooks/useAsyncOperation';
 import { useCurrencyMask } from '../hooks/useCurrencyMask';
 import { formatCurrency, formatDate } from '../utils/format';
 import { parseCurrencyValue } from '../utils/currency';
-import { Plus, Info, X } from 'lucide-react';
+import { Plus, Info, X, Repeat } from 'lucide-react';
+import DetectRecurringDialog from '../components/DetectRecurringDialog';
 import ConfirmModal from '../components/ConfirmModal';
 import { RecurringTransactionsActionsMenu } from '../components/RecurringTransactionsActionsMenu';
 import { RecurringTransaction } from '../types';
@@ -26,7 +27,12 @@ import { CategoryType, getCategoriesByType, getCategoryNameFromDisplay, AccountT
 import { DatePicker } from '../components/DatePicker';
 
 const RecurringTransactions = () => {
-  const { householdId } = useDefaultHousehold();
+  const { householdId, household } = useDefaultHousehold();
+  // Creating recurrences needs EDITOR or more; a viewer only reads. A household that is not known yet counts as no.
+  const canWrite = !!household && household.role !== 'VIEWER';
+  const [isDetectOpen, setIsDetectOpen] = useState<boolean>(false);
+  // Set when the server answers that it has no detection route: the entry point then goes away.
+  const [detectUnavailable, setDetectUnavailable] = useState<boolean>(false);
   const { 
     recurringTransactions, 
     accounts,
@@ -49,6 +55,8 @@ const RecurringTransactions = () => {
   const [togglingRecurringId, setTogglingRecurringId] = useState<string | null>(null);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
   const currencyMask = useCurrencyMask();
+  // The follow-last-value toggle is offered only when the server reports the field (or there is nothing to learn from yet).
+  const followSupported = recurringTransactions.length === 0 || recurringTransactions.some((r) => r.followLastAmount !== undefined);
 
   // Verificar se o usuário já viu o modal de ajuda
   useEffect(() => {
@@ -114,6 +122,7 @@ const RecurringTransactions = () => {
       nextDueDate: new Date(),
       accountId: '',
       isActive: true,
+      followLastAmount: false,
     },
   });
 
@@ -130,6 +139,7 @@ const RecurringTransactions = () => {
         nextDueDate: editingRecurring.nextDueDate instanceof Date ? editingRecurring.nextDueDate : new Date(editingRecurring.nextDueDate),
         accountId: editingRecurring.accountId || '',
         isActive: editingRecurring.isActive,
+        followLastAmount: editingRecurring.followLastAmount === true,
       });
       currencyMask.setValue(editingRecurring.amount || 0);
       setValue('amount', editingRecurring.amount || 0);
@@ -145,6 +155,7 @@ const RecurringTransactions = () => {
         nextDueDate: new Date(),
         accountId: '',
         isActive: true,
+        followLastAmount: false,
       });
       currencyMask.setValue('');
       setValue('amount', 0);
@@ -199,6 +210,7 @@ const RecurringTransactions = () => {
         nextDueDate: data.nextDueDate,
         accountId: data.accountId || undefined,
         isActive: data.isActive,
+        followLastAmount: data.followLastAmount === true,
       };
 
       if (editingRecurring?.id) {
@@ -287,6 +299,15 @@ const RecurringTransactions = () => {
           </span>
         }
       >
+        {canWrite && !detectUnavailable && (
+          <PageButton
+            onClick={() => setIsDetectOpen(true)}
+            variant="secondary"
+            icon={Repeat}
+          >
+            {t.detectRecButton}
+          </PageButton>
+        )}
         <PageButton
           onClick={() => {
             setEditingRecurring(null);
@@ -324,6 +345,14 @@ const RecurringTransactions = () => {
                       {!recurring.isActive && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-light border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400">
                           {t.pause}
+                        </span>
+                      )}
+                      {recurring.followLastAmount && (
+                        <span
+                          title={t.recurringFollowHelp}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-light border border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400"
+                        >
+                          {t.recurringFollowBadge}
                         </span>
                       )}
                     </div>
@@ -648,6 +677,23 @@ const RecurringTransactions = () => {
                 </label>
               </div>
 
+              {followSupported && (
+              <div>
+                <div className="flex items-center">
+                  <input
+                    id="recurring-follow-last"
+                    type="checkbox"
+                    {...register('followLastAmount')}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="recurring-follow-last" className="ml-2 block text-sm font-light text-gray-900 dark:text-white">
+                    {t.recurringFollowLabel}
+                  </label>
+                </div>
+                <p className="mt-1 ml-6 text-xs font-light text-gray-500 dark:text-gray-400">{t.recurringFollowHelp}</p>
+              </div>
+              )}
+
               <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-800">
                 <button
                   type="button"
@@ -673,6 +719,17 @@ const RecurringTransactions = () => {
         </div>,
         document.body
       )}
+
+      <DetectRecurringDialog
+        open={isDetectOpen}
+        onClose={() => setIsDetectOpen(false)}
+        householdId={householdId ?? undefined}
+        canWrite={canWrite}
+        onUnavailable={() => {
+          setDetectUnavailable(true);
+          setIsDetectOpen(false);
+        }}
+      />
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}

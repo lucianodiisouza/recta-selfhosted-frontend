@@ -23,6 +23,8 @@ interface TransactionBasicFieldsProps {
   isCreditCardContext?: boolean;
   disabled?: boolean;
   householdId?: string;
+  /** A note under the amount (e.g. that the value will be used by the next occurrences of a recurrence). */
+  amountHint?: string | null;
 }
 
 export const TransactionBasicFields = ({
@@ -37,6 +39,7 @@ export const TransactionBasicFields = ({
   isCreditCardContext = false,
   disabled = false,
   householdId,
+  amountHint = null,
 }: TransactionBasicFieldsProps) => {
   const { t } = useI18n();
   const { baseCurrency } = useCurrency();
@@ -111,6 +114,9 @@ export const TransactionBasicFields = ({
         />
         {errors.amount && (
           <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.amount.message}</p>
+        )}
+        {amountHint && !disabled && (
+          <p id="transaction-amount-hint" className="mt-1 text-xs font-light text-blue-700 dark:text-blue-300">{amountHint}</p>
         )}
         {(() => {
           if (transactionType === TransactionType.TRANSFER) {

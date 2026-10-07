@@ -9,6 +9,7 @@ import ruRU from '../i18n/ru-RU.json';
 import zhCN from '../i18n/zh-CN.json';
 import frFR from '../i18n/fr-FR.json';
 import arSA from '../i18n/ar-SA.json';
+import { withEnglishFallback } from '../i18n/fallback';
 
 export type Locale = 'pt-BR' | 'en-US' | 'es-ES' | 'ja-JP' | 'ru-RU' | 'zh-CN' | 'fr-FR' | 'ar-SA';
 
@@ -1115,19 +1116,95 @@ export interface Translations {
   forecastWarningMessage: string;
   forecastCriticalMessage: string;
   forecastNote: string;
+
+  // Recurring: follow the last value and detection
+  recurringFollowLabel: string;
+  recurringFollowHelp: string;
+  recurringFollowBadge: string;
+  recurringFollowHint: string;
+  recurringFollowUpdated: string;
+  detectRecButton: string;
+  detectRecTitle: string;
+  detectRecLoading: string;
+  detectRecFailed: string;
+  detectRecRetry: string;
+  detectRecAgain: string;
+  detectRecDetecting: string;
+  detectRecUpdating: string;
+  detectRecEmpty: string;
+  detectRecLeftOut: string;
+  detectRecSkipRecurring: string;
+  detectRecSkipInstallments: string;
+  detectRecSkipSparse: string;
+  detectRecSkipConsumption: string;
+  detectRecIntroOne: string;
+  detectRecIntroMany: string;
+  detectRecIntroEdit: string;
+  detectRecSelectStable: string;
+  detectRecUnselectStable: string;
+  detectRecSelectBills: string;
+  detectRecUnselectBills: string;
+  detectRecFollowAllOn: string;
+  detectRecFollowAllOff: string;
+  detectRecKindStable: string;
+  detectRecKindBill: string;
+  detectRecChipStable: string;
+  detectRecChipBill: string;
+  detectRecSelectedCount: string;
+  detectRecColDay: string;
+  detectRecColMonths: string;
+  detectRecColConfidence: string;
+  detectRecColFollow: string;
+  detectRecColCreate: string;
+  detectRecMonthsSeen: string;
+  detectRecExamplesOne: string;
+  detectRecExamplesMany: string;
+  detectRecExamplesNone: string;
+  detectRecAriaCreate: string;
+  detectRecAriaDescription: string;
+  detectRecAriaAmount: string;
+  detectRecAriaDay: string;
+  detectRecAriaExamples: string;
+  detectRecNothingSelected: string;
+  detectRecSummary: string;
+  detectRecCreate: string;
+  detectRecCreateNone: string;
+  detectRecCreating: string;
+  detectRecWaitDetect: string;
+  detectRecBlockRefresh: string;
+  detectRecBlockNone: string;
+  detectRecBlockInvalid: string;
+  detectRecErrAmountEmpty: string;
+  detectRecErrAmountInvalid: string;
+  detectRecErrAmountZero: string;
+  detectRecErrDay: string;
+  detectRecErrDescEmpty: string;
+  detectRecErrDescLong: string;
+  detectRecResultTitle: string;
+  detectRecResultNothing: string;
+  detectRecResultCreated: string;
+  detectRecResultLinked: string;
+  detectRecResultSkipped: string;
+  detectRecWarnDuplicate: string;
+  detectRecWarnActive: string;
+  detectRecWarnShortMonth: string;
+  detectRecApplyFailed: string;
+  detectRecApplyRefused: string;
+  detectRecApplyPartial: string;
 }
 
-// Note: Some language files may have missing translations. We cast through `unknown`
-// to allow partial translations. Missing keys will show the key name as fallback.
+// Some language files lack keys that en-US has. We cast through `unknown` to allow partial translations, and a key a locale
+// does not define falls back to the en-US text (otherwise it would render empty and code that formats it would receive
+// undefined). pt-BR is the source of the project's own texts and is complete.
 const translations: Record<Locale, Translations> = {
   'pt-BR': ptBR as unknown as Translations,
   'en-US': enUS as unknown as Translations,
-  'es-ES': esES as unknown as Translations,
-  'ja-JP': jaJP as unknown as Translations,
-  'ru-RU': ruRU as unknown as Translations,
-  'zh-CN': zhCN as unknown as Translations,
-  'fr-FR': frFR as unknown as Translations,
-  'ar-SA': arSA as unknown as Translations,
+  'es-ES': withEnglishFallback(esES) as unknown as Translations,
+  'ja-JP': withEnglishFallback(jaJP) as unknown as Translations,
+  'ru-RU': withEnglishFallback(ruRU) as unknown as Translations,
+  'zh-CN': withEnglishFallback(zhCN) as unknown as Translations,
+  'fr-FR': withEnglishFallback(frFR) as unknown as Translations,
+  'ar-SA': withEnglishFallback(arSA) as unknown as Translations,
 };
 
 interface I18nContextType {
