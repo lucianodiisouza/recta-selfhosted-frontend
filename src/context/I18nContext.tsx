@@ -1115,6 +1115,50 @@ export interface Translations {
   forecastWarningMessage: string;
   forecastCriticalMessage: string;
   forecastNote: string;
+
+  // Statement import (OFX/CSV)
+  importStatementButton: string;
+  importStatementButtonLabel: string;
+  importStatementTitle: string;
+  importStatementAccount: string;
+  importStatementChooseAccount: string;
+  importStatementLoadingAccounts: string;
+  importStatementFile: string;
+  importStatementHint: string;
+  importStatementInvalidFormat: string;
+  importStatementNoHousehold: string;
+  importStatementSelectAccount: string;
+  importStatementSelectFile: string;
+  importStatementAnalyzing: string;
+  importStatementPreview: string;
+  importStatementPreviewFailed: string;
+  importStatementUnavailable: string;
+  importStatementNewOne: string;
+  importStatementNewMany: string;
+  importStatementDuplicateOne: string;
+  importStatementDuplicateMany: string;
+  importStatementEmpty: string;
+  importStatementStatus: string;
+  importStatementRowNew: string;
+  importStatementRowDuplicate: string;
+  importStatementNothingNew: string;
+  importStatementConfirm: string;
+  importStatementImporting: string;
+  importStatementConfirmFailed: string;
+  importStatementImportedOne: string;
+  importStatementImportedMany: string;
+  importStatementCardWarning: string;
+  importStatementSkippedTitle: string;
+  importStatementSkipLine: string;
+  importStatementSkipInvalidDate: string;
+  importStatementSkipInvalidAmount: string;
+  importStatementSkipAmbiguousAmount: string;
+  importStatementSkipColumnCount: string;
+  importStatementSkipRepeatedId: string;
+  importStatementMoreRows: string;
+  importStatementPartial: string;
+  importStatementBusy: string;
+  importStatementTimeout: string;
 }
 
 // Note: Some language files may have missing translations. We cast through `unknown`
