@@ -519,10 +519,12 @@ export function useUpdateTransaction() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: { id: string } & Partial<Transaction>) => {
-      const response = await apiClient.patch<Transaction>(`/transactions/${id}`, data);
+      const response = await apiClient.patch<Transaction & { recurringUpdated?: { id: string; amount: number } }>(`/transactions/${id}`, data);
       return response.data!;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
+      // The server also changed the amount of the recurrence the transaction belongs to.
+      if (data?.recurringUpdated) queryClient.invalidateQueries({ queryKey: ['recurring-transactions'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['transactions', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['transactions', 'summary'] });

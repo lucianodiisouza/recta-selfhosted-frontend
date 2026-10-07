@@ -11,6 +11,7 @@ export interface Category {
   icon?: string | null;
   isSystem: boolean;
   householdId?: string;
+  usage?: { transactions: number; recurringTransactions: number; budgets: number } | null;
 }
 
 export interface CategoryStats {
@@ -23,6 +24,8 @@ export interface CategoryStats {
 export interface ListCategoriesParams {
   householdId?: string;
   type?: CategoryType;
+  /** true: every item carries usage counts (the category manager). */
+  includeUsage?: boolean;
 }
 
 /**
@@ -104,10 +107,9 @@ export function useUpdateCategory() {
       const response = await apiClient.patch<Category>(`/categories/${id}`, data);
       return (response as { data?: Category }).data!;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      queryClient.invalidateQueries({ queryKey: ['categories', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['categories', variables.id, 'stats'] });
+    // Dashboard, budgets and reports resolve the name and colour on the server: refetch everything, like a merge does.
+    onSettled: () => {
+      void queryClient.invalidateQueries();
     },
   });
 }
@@ -128,3 +130,39 @@ export function useDeleteCategory() {
   });
 }
 
+
+export interface MergeCategoryResult {
+  preview: boolean;
+  sourceId: string;
+  sourceName: string;
+  type: CategoryType;
+  target: { id: string; name: string; isSystem: boolean };
+  counts: { transactions: number; recurringTransactions: number; budgets: number; budgetsCombined: number };
+}
+
+/** Counts only (POST /categories/:id/merge?preview=true): nothing is written. */
+export async function previewMergeCategory(
+  sourceId: string,
+  body: { targetCategoryId: string } | { targetSystemName: string },
+): Promise<MergeCategoryResult> {
+  const response = await apiClient.post<MergeCategoryResult>(`/categories/${sourceId}/merge?preview=true`, body);
+  return (response as { data?: MergeCategoryResult }).data!;
+}
+
+/**
+ * Merge a custom category into another one of the same type (custom or system): every transaction, recurrence and
+ * budget moves and the source is deleted. Whatever shows a category name changes, so everything is refetched.
+ */
+export function useMergeCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ sourceId, body }: { sourceId: string; body: { targetCategoryId: string } | { targetSystemName: string } }) => {
+      const response = await apiClient.post<MergeCategoryResult>(`/categories/${sourceId}/merge`, body);
+      return (response as { data?: MergeCategoryResult }).data!;
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries();
+    },
+  });
+}

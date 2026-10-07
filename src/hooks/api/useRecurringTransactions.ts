@@ -16,8 +16,18 @@ export interface RecurringTransaction {
   endDate?: string;
   nextRunAt: string;
   isActive: boolean;
+  /** The amount follows the most recent occurrence the user adjusts. Absent on a server that predates it. */
+  followLastAmount?: boolean;
+  /** YYYY-MM-DD of the newest occurrence up to today + 31 days; null when none; absent on an older server. */
+  lastOccurrenceDate?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Sent back by the transaction update when it changed the amount of the recurrence the transaction belongs to. */
+export interface RecurringUpdatedNotice {
+  id: string;
+  amount: number;
 }
 
 export interface ListRecurringTransactionsParams {
@@ -97,6 +107,7 @@ export function useCreateRecurringTransaction() {
       nextRunAt: string;
       endDate?: string;
       isActive?: boolean;
+      followLastAmount?: boolean;
     }) => {
       const response = await apiClient.post<RecurringTransaction>('/recurring-transactions', data);
       return response.data!;

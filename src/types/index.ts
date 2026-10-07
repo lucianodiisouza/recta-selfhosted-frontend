@@ -75,6 +75,10 @@ export interface RecurringTransaction {
   nextDueDate: Date;
   accountId?: string;
   isActive: boolean;
+  /** The amount follows the most recent occurrence the user adjusts. */
+  followLastAmount?: boolean;
+  /** YYYY-MM-DD of the newest occurrence up to today + 31 days; null when none; undefined when the server does not say. */
+  lastOccurrenceDate?: string | null;
 }
 
 import { AccountType } from '../constants/accountTypes';
@@ -143,7 +147,8 @@ export interface TransactionsContextType {
   savingsGoals: SavingsGoal[];
   loading: boolean;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'userId'>) => Promise<void>;
-  updateTransaction: (id: string, transaction: Partial<Transaction>) => Promise<void>;
+  /** Resolves with the notice of the recurrence the server updated, when it did. */
+  updateTransaction: (id: string, transaction: Partial<Transaction>) => Promise<{ recurringUpdated?: { id: string; amount: number } } | void>;
   deleteTransaction: (id: string) => Promise<void>;
   addCategory: (category: Omit<Category, 'id' | 'userId'>) => Promise<void>;
   updateCategory: (id: string, category: Partial<Category>) => Promise<void>;

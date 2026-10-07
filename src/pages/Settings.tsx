@@ -28,9 +28,6 @@ import {
   Smartphone,
   Monitor,
   Trash2,
-  Tag,
-  Pencil,
-  Plus,
 } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import packageJson from "../../package.json";
@@ -49,17 +46,10 @@ import {
 } from "../hooks/api/useUsers";
 import DeleteUserAccountModal from "../components/DeleteUserAccountModal";
 import ResetAccountModal from "../components/ResetAccountModal";
-import ConfirmModal from "../components/ConfirmModal";
 import {
   useDefaultHousehold,
 } from "../hooks/useDefaultHousehold";
-import {
-  useCategories,
-  useCreateCategory,
-  useUpdateCategory,
-  useDeleteCategory,
-} from "../hooks/api/useCategories";
-import { CategoryType } from "../lib/enums";
+import CategoryManager from "../components/categories/CategoryManager";
 import {
   deleteUser,
   GoogleAuthProvider,
@@ -85,15 +75,8 @@ const SettingsPage = () => {
   const [isRestartingOnboarding, setIsRestartingOnboarding] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isResetAccountModalOpen, setIsResetAccountModalOpen] = useState(false);
-  const [categoryDeleteConfirm, setCategoryDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
-  const [categoryForm, setCategoryForm] = useState<{ id: string | null; name: string; type: CategoryType } | null>(null);
   const currencyInfo = getCurrencyInfo();
-  const { householdId } = useDefaultHousehold();
-  const { data: categoriesList = [] } = useCategories({ householdId: householdId ?? undefined, type: undefined });
-  const customCategories = categoriesList.filter((c) => !c.isSystem);
-  const createCategory = useCreateCategory();
-  const updateCategory = useUpdateCategory();
-  const deleteCategory = useDeleteCategory();
+  const { householdId, household } = useDefaultHousehold();
 
   // Memoizar opções para performance
   const countryOptions = useMemo(
@@ -608,143 +591,8 @@ const SettingsPage = () => {
         </div>
       </div>
 
-      {/* Categorias personalizadas */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
-          <Tag className="h-5 w-5 mr-2" />
-          {t.manageCategories}
-        </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
-          {t.noCustomCategories}
-        </p>
-
-        {categoryForm ? (
-          <div className="flex flex-wrap items-end gap-2 mb-4 p-3 border border-gray-100 dark:border-gray-800 rounded-lg">
-            <div className="flex-1 min-w-[140px]">
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-300 mb-1">{t.name}</label>
-              <input
-                value={categoryForm.name}
-                onChange={(e) => setCategoryForm((f) => (f ? { ...f, name: e.target.value } : null))}
-                className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm font-light tracking-tight"
-                placeholder={t.name}
-              />
-            </div>
-            {!categoryForm.id && (
-              <div className="min-w-[120px]">
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-300 mb-1">{t.type}</label>
-                <select
-                  value={categoryForm.type}
-                  onChange={(e) => setCategoryForm((f) => (f ? { ...f, type: e.target.value as CategoryType } : null))}
-                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm font-light tracking-tight"
-                >
-                  <option value={CategoryType.INCOME}>{t.income}</option>
-                  <option value={CategoryType.EXPENSE}>{t.expense}</option>
-                </select>
-              </div>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={async () => {
-                  if (!categoryForm?.name.trim() || !householdId) return;
-                  try {
-                    if (categoryForm.id) {
-                      await updateCategory.mutateAsync({ id: categoryForm.id, name: categoryForm.name.trim() });
-                      success(t.update);
-                    } else {
-                      await createCategory.mutateAsync({
-                        householdId,
-                        name: categoryForm.name.trim(),
-                        type: categoryForm.type,
-                      });
-                      success(t.create);
-                    }
-                    setCategoryForm(null);
-                  } catch (err: unknown) {
-                    showError(err instanceof Error ? err.message : "Erro");
-                  }
-                }}
-                disabled={!categoryForm.name.trim() || createCategory.isPending || updateCategory.isPending}
-                className="px-3 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {categoryForm.id ? t.save : t.create}
-              </button>
-              <button
-                onClick={() => setCategoryForm(null)}
-                className="px-3 py-2.5 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white text-sm font-light tracking-tight rounded-md hover:opacity-70 transition-opacity bg-white dark:bg-gray-900"
-              >
-                {t.cancel}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={() => setCategoryForm({ id: null, name: "", type: CategoryType.EXPENSE })}
-            className="mb-4 inline-flex items-center gap-2 px-3 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity"
-          >
-            <Plus className="h-4 w-4" />
-            {t.addCategory}
-          </button>
-        )}
-
-        <ul className="space-y-2">
-          {customCategories.map((c) => (
-            <li
-              key={c.id}
-              className="flex items-center justify-between py-2 px-3 rounded-md border border-gray-100 dark:border-gray-800"
-            >
-              <span className="font-light text-gray-900 dark:text-white">{c.name}</span>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full border font-light ${c.type === CategoryType.INCOME ? "border-green-300 dark:border-green-700 text-green-600 dark:text-green-400" : "border-red-300 dark:border-red-700 text-red-600 dark:text-red-400"
-                    }`}
-                >
-                  {c.type === CategoryType.INCOME ? t.income : t.expense}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setCategoryForm({ id: c.id, name: c.name, type: c.type })}
-                  className="p-1.5 text-gray-500 hover:text-primary-600 dark:hover:text-primary-400"
-                  aria-label={t.edit}
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCategoryDeleteConfirm({ id: c.id, name: c.name })}
-                  className="p-1.5 text-gray-500 hover:text-red-600 dark:hover:text-red-400"
-                  aria-label={t.delete}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        <ConfirmModal
-          isOpen={!!categoryDeleteConfirm}
-          onClose={() => setCategoryDeleteConfirm(null)}
-          onConfirm={async () => {
-            if (!categoryDeleteConfirm) return;
-            try {
-              await deleteCategory.mutateAsync(categoryDeleteConfirm.id);
-              success(t.delete);
-              setCategoryDeleteConfirm(null);
-            } catch (err: unknown) {
-              const code = (err as Error & { code?: string }).code;
-              if (code === "CATEGORY_IN_USE") {
-                showError(t.categoryDeleteInUse);
-              } else {
-                showError(err instanceof Error ? err.message : t.error);
-              }
-            }
-          }}
-          title={t.delete}
-          message={t.delete + ": " + (categoryDeleteConfirm?.name ?? "") + "?"}
-          variant="danger"
-          isLoading={deleteCategory.isPending}
-        />
-      </div>
+      {/* Categorias: padrão (somente leitura) e personalizadas (criar, renomear, unir, excluir) */}
+      <CategoryManager householdId={householdId ?? undefined} canEdit={!!household && household.role !== 'VIEWER'} />
 
       {/* Moeda Base */}
       <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">

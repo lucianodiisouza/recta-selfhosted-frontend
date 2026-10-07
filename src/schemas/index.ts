@@ -94,6 +94,7 @@ export const createSchemas = (t: Translations) => {
     }),
     accountId: z.string().optional().transform((val) => val ? sanitizeString(val, 100) : '').or(z.literal('')),
     isActive: z.boolean().default(true),
+    followLastAmount: z.boolean().default(false),
   });
 
   // Budget Schema
