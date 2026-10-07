@@ -39,6 +39,9 @@ import TransactionModal from "../components/TransactionModal";
 import { CreditCardModal } from "../components/CreditCardModal";
 import { PageButton } from "../components/PageButton";
 import ConfirmModal from "../components/ConfirmModal";
+import DivideTransactionDialog from "../components/people/DivideTransactionDialog";
+import { canWritePeople } from "../utils/people";
+import { usePeopleAvailable } from "../utils/peopleAvailability";
 import InstallmentDeleteModal from "../components/InstallmentDeleteModal";
 import { AccountType, CategoryName, getCategoryDisplayName, TransactionType } from "../lib/enums";
 import { CreditCardsSummary } from "../components/CreditCardsSummary";
@@ -65,7 +68,10 @@ const CreditCards = () => {
   const { t, locale } = useI18n();
   const { baseCurrency } = useCurrency();
   const { success, error: showError } = useToastContext();
-  const { householdId } = useDefaultHousehold();
+  const { householdId, household } = useDefaultHousehold();
+  // Splitting writes shares: EDITOR or more, and a server that has the people routes.
+  const peopleAvailable = usePeopleAvailable();
+  const canSplitShares = canWritePeople(household) && peopleAvailable;
   
   const payInvoiceMutation = usePayCreditCardInvoice();
   const undoPaymentMutation = useUndoCreditCardPayment();
@@ -101,6 +107,7 @@ const CreditCards = () => {
     useState<Transaction | null>(null);
   const [viewingTransaction, setViewingTransaction] =
     useState<Transaction | null>(null);
+  const [sharingTransaction, setSharingTransaction] = useState<Transaction | null>(null);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<{
     isOpen: boolean;
@@ -975,6 +982,7 @@ const CreditCards = () => {
                                 setEditingTransaction(null);
                                 setIsTransactionModalOpen(true);
                               }}
+                              onSplitShares={canSplitShares && !isPayment && t_item.type === TransactionType.EXPENSE ? setSharingTransaction : undefined}
                             />
                           </div>
                         </div>
@@ -1214,6 +1222,16 @@ const CreditCards = () => {
             setViewingTransaction(null);
           }}
           readOnly={!!viewingTransaction}
+        />
+      )}
+
+      {/* Split a purchase of the invoice with people */}
+      {sharingTransaction?.id && (
+        <DivideTransactionDialog
+          open
+          onClose={() => setSharingTransaction(null)}
+          householdId={householdId ?? undefined}
+          transaction={{ id: sharingTransaction.id, description: sharingTransaction.description, amount: sharingTransaction.amount }}
         />
       )}
 

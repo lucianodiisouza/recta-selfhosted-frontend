@@ -14,6 +14,8 @@ interface TransactionItemProps {
   onDelete: (id: string) => void;
   onMarkAsPaid: (id: string, paid: boolean) => Promise<void>;
   onView: (transaction: Transaction) => void;
+  /** Opens the split dialog; the action only shows for expenses. */
+  onSplitShares?: (transaction: Transaction) => void;
   formatTransactionDescription: (transaction: Transaction) => string;
   getCategoryIcon: (categoryName: string | undefined, customCategories?: Array<{ id: string; name: string; icon?: string | null }>) => React.ComponentType<any>;
   readOnly?: boolean;
@@ -29,6 +31,7 @@ export const TransactionItem = ({
   onDelete,
   onMarkAsPaid,
   onView,
+  onSplitShares,
   formatTransactionDescription,
   getCategoryIcon,
   readOnly = false,
@@ -123,6 +126,7 @@ export const TransactionItem = ({
               onDelete={onDelete}
               onMarkAsPaid={onMarkAsPaid}
               onView={onView}
+              onSplitShares={onSplitShares && transaction.type === TransactionType.EXPENSE && !isInvoicePayment ? onSplitShares : undefined}
               readOnly={readOnly}
             />
           </div>

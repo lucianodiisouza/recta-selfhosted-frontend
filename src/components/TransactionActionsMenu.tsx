@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MoreHorizontal, Edit, Trash2, CheckCircle, Clock, Eye } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, CheckCircle, Clock, Eye, Users } from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
 import { useI18n } from '../context/I18nContext';
 import { Transaction } from '../types';
@@ -10,6 +10,8 @@ interface TransactionActionsMenuProps {
   onDelete: (id: string) => void;
   onMarkAsPaid: (id: string, paid: boolean) => void;
   onView?: (transaction: Transaction) => void;
+  /** Opens the dialog that splits the transaction with people. Omit to hide the action (viewers, transfers, invoice payments). */
+  onSplitShares?: (transaction: Transaction) => void;
   readOnly?: boolean; // If true, disable edit and delete actions
 }
 
@@ -19,6 +21,7 @@ export const TransactionActionsMenu = ({
   onDelete,
   onMarkAsPaid,
   onView,
+  onSplitShares,
   readOnly = false,
 }: TransactionActionsMenuProps) => {
   const { t } = useI18n();
@@ -47,6 +50,13 @@ export const TransactionActionsMenu = ({
   const handleView = () => {
     if (onView) {
       onView(transaction);
+      setOpen(false);
+    }
+  };
+
+  const handleSplitShares = () => {
+    if (onSplitShares) {
+      onSplitShares(transaction);
       setOpen(false);
     }
   };
@@ -111,6 +121,15 @@ export const TransactionActionsMenu = ({
                   <Edit className="h-4 w-4 mr-3" aria-hidden="true" />
                   <span>{t.edit}</span>
                 </button>
+                {onSplitShares && transaction.id && (
+                  <button
+                    onClick={handleSplitShares}
+                    className="w-full flex items-center px-4 py-2.5 text-sm font-light text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-sm focus:outline-none transition-colors"
+                  >
+                    <Users className="h-4 w-4 mr-3" aria-hidden="true" />
+                    <span>{t.peopleDivideAction}</span>
+                  </button>
+                )}
                 <button
                   onClick={handleDelete}
                   className="w-full flex items-center px-4 py-2.5 text-sm font-light text-red-500 dark:text-red-500 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-sm focus:outline-none transition-colors"

@@ -20,6 +20,9 @@ import {
   ArrowLeftRight
 } from 'lucide-react';
 import TransactionModal from '../components/TransactionModal';
+import DivideTransactionDialog from '../components/people/DivideTransactionDialog';
+import { canWritePeople } from '../utils/people';
+import { usePeopleAvailable } from '../utils/peopleAvailability';
 import ConfirmModal from '../components/ConfirmModal';
 import { Transaction } from '../types';
 import { PageButton } from '../components/PageButton';
@@ -45,13 +48,17 @@ const Transactions = () => {
   const { baseCurrency } = useCurrency();
   const { t, locale } = useI18n();
   const { registerHandler, unregisterHandler } = useCommandMenu();
-  const { householdId } = useDefaultHousehold();
+  const { householdId, household } = useDefaultHousehold();
+  // Splitting writes shares: EDITOR or more, and a server that has the people routes.
+  const peopleAvailable = usePeopleAvailable();
+  const canSplitShares = canWritePeople(household) && peopleAvailable;
   const { data: authUser } = useAuthUser();
   const { data: households } = useHouseholds();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
+  const [sharingTransaction, setSharingTransaction] = useState<Transaction | null>(null);
   const [searchInput, setSearchInput] = useState<string>(''); // Input value (updates immediately)
   const [searchTerm, setSearchTerm] = useState<string>(''); // Debounced value (used in query)
   const [dateRange, setDateRange] = useState<DateRange>({ startDate: null, endDate: null }); // Applied date range (used in query)
@@ -829,6 +836,7 @@ const Transactions = () => {
             setEditingTransaction(null);
             setIsModalOpen(true);
           }}
+          onSplitShares={canSplitShares ? setSharingTransaction : undefined}
           formatTransactionDescription={formatTransactionDescription}
           getCategoryIcon={getCategoryIcon}
           isTransactionSharedAndUserParticipated={isTransactionSharedAndUserParticipated}
@@ -851,6 +859,15 @@ const Transactions = () => {
           }}
           defaultAccountId={null}
           readOnly={!!viewingTransaction}
+        />
+      )}
+
+      {sharingTransaction?.id && (
+        <DivideTransactionDialog
+          open
+          onClose={() => setSharingTransaction(null)}
+          householdId={householdId ?? undefined}
+          transaction={{ id: sharingTransaction.id, description: sharingTransaction.description, amount: sharingTransaction.amount }}
         />
       )}
 

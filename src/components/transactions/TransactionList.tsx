@@ -17,6 +17,7 @@ interface TransactionListProps {
   onDelete: (id: string) => void;
   onMarkAsPaid: (id: string, paid: boolean) => Promise<void>;
   onView: (transaction: Transaction) => void;
+  onSplitShares?: (transaction: Transaction) => void;
   formatTransactionDescription: (transaction: Transaction) => string;
   getCategoryIcon: (categoryName: string | undefined, customCategories?: Array<{ id: string; name: string; icon?: string | null }>) => React.ComponentType<any>;
   isTransactionSharedAndUserParticipated: (transaction: Transaction) => boolean;
@@ -60,6 +61,7 @@ export const TransactionList = ({
   onDelete,
   onMarkAsPaid,
   onView,
+  onSplitShares,
   formatTransactionDescription,
   getCategoryIcon,
   isTransactionSharedAndUserParticipated,
@@ -136,6 +138,7 @@ export const TransactionList = ({
                 onDelete={onDelete}
                 onMarkAsPaid={onMarkAsPaid}
                 onView={onView}
+                onSplitShares={onSplitShares}
                 formatTransactionDescription={formatTransactionDescription}
                 getCategoryIcon={getCategoryIcon}
                 readOnly={isTransactionSharedAndUserParticipated(transaction)}

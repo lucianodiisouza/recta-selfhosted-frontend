@@ -9,6 +9,7 @@ import ruRU from '../i18n/ru-RU.json';
 import zhCN from '../i18n/zh-CN.json';
 import frFR from '../i18n/fr-FR.json';
 import arSA from '../i18n/ar-SA.json';
+import { withEnglishFallback } from '../i18n/fallback';
 
 export type Locale = 'pt-BR' | 'en-US' | 'es-ES' | 'ja-JP' | 'ru-RU' | 'zh-CN' | 'fr-FR' | 'ar-SA';
 
@@ -1115,19 +1116,190 @@ export interface Translations {
   forecastWarningMessage: string;
   forecastCriticalMessage: string;
   forecastNote: string;
+  peoplePage: string;
+  peoplePageDescription: string;
+  peopleUnavailable: string;
+  peopleNew: string;
+  peopleSummaryAria: string;
+  peopleOwedToMe: string;
+  peopleIOwe: string;
+  peopleNet: string;
+  peopleNetToReceive: string;
+  peopleNetToPay: string;
+  peopleNetSettled: string;
+  peopleShowInactive: string;
+  peopleLoadFailed: string;
+  peopleEmptyTitle: string;
+  peopleEmptyHint: string;
+  peopleInactive: string;
+  peopleSharesOne: string;
+  peopleSharesMany: string;
+  peoplePickOne: string;
+  peopleOwesYou: string;
+  peopleYouOwe: string;
+  peopleSettledWith: string;
+  peopleStatementAria: string;
+  peopleAliasTitle: string;
+  peopleDeleting: string;
+  peopleDeleteConfirmAria: string;
+  peopleDeleteConfirm: string;
+  peopleDeleteHint: string;
+  peopleDeleted: string;
+  peopleDeactivated: string;
+  peopleDeleteFailed: string;
+  peopleStatReceived: string;
+  peopleStatPaid: string;
+  peopleLedger: string;
+  peopleLedgerEmpty: string;
+  peopleLedgerFailed: string;
+  peopleRetry: string;
+  peopleLoadMore: string;
+  peopleLoadMoreFailed: string;
+  peopleShowing: string;
+  peopleLoaded: string;
+  peopleOfAmount: string;
+  peopleKindTheirShare: string;
+  peopleKindMyShare: string;
+  peopleKindReceived: string;
+  peopleKindPaid: string;
+  peopleFormEditTitle: string;
+  peopleFormAliases: string;
+  peopleFormAliasesPlaceholder: string;
+  peopleFormAliasesHint: string;
+  peopleFormActive: string;
+  peopleFormSaving: string;
+  peopleCreated: string;
+  peopleUpdated: string;
+  peopleErrNameTooLong: string;
+  peopleErrTooManyAliases: string;
+  peopleErrAliasTooLong: string;
+  peopleErrNameTaken: string;
+  peopleErrConflict: string;
+  peopleErrSaveFailed: string;
+  peopleErrNoHousehold: string;
+  peopleDivideAction: string;
+  peopleDivideTitle: string;
+  peopleDivideLoadFailed: string;
+  peopleDivideDirection: string;
+  peopleDirectionTheyOweMe: string;
+  peopleDirectionIOweThem: string;
+  peopleDivideHow: string;
+  peopleStrategyEqual: string;
+  peopleStrategyExact: string;
+  peopleStrategyPercent: string;
+  peopleStrategyShares: string;
+  peopleDivideOtherOne: string;
+  peopleDivideOtherMany: string;
+  peopleMyShares: string;
+  peopleDivideListAria: string;
+  peoplePersonN: string;
+  peoplePickPerson: string;
+  peopleNewPersonOption: string;
+  peopleAmountOf: string;
+  peoplePercentOf: string;
+  peopleSharesOf: string;
+  peopleSharesPlaceholder: string;
+  peoplePartN: string;
+  peopleRemovePersonN: string;
+  peopleNoteOfPart: string;
+  peopleNotePlaceholder: string;
+  peopleAddPerson: string;
+  peopleMaxEntries: string;
+  peopleDivideSummaryAria: string;
+  peopleTransactionAmount: string;
+  peopleDividedTheyOwe: string;
+  peopleDividedIOwe: string;
+  peopleRestMine: string;
+  peopleRestLeft: string;
+  peopleErrRowNoPerson: string;
+  peopleErrRowDuplicate: string;
+  peopleErrRowAmount: string;
+  peopleErrRowPercent: string;
+  peopleErrRowShares: string;
+  peopleErrRowZero: string;
+  peopleErrMyShares: string;
+  peopleErrPercentOver: string;
+  peopleErrNoTotal: string;
+  peopleErrSumOver: string;
+  peopleCheckFailed: string;
+  peopleCheckSame: string;
+  peopleCheckDiffers: string;
+  peopleCheckDiffLine: string;
+  peopleCheckRestLine: string;
+  peopleUseServerValues: string;
+  peopleClearConfirmAria: string;
+  peopleClearTitle: string;
+  peopleClearBody: string;
+  peopleClearing: string;
+  peopleRemove: string;
+  peopleKeep: string;
+  peopleClearAction: string;
+  peopleCheckAction: string;
+  peopleChecking: string;
+  peopleSaveSplit: string;
+  peopleRemoveShares: string;
+  peopleSplitRemoved: string;
+  peopleSavedMine: string;
+  peopleSavedOwe: string;
+  peopleSaveSplitFailed: string;
+  peopleClearFailed: string;
+  peopleSettleAction: string;
+  peopleSettleTitle: string;
+  peopleSettleCurrent: string;
+  peopleSettleWhat: string;
+  peopleSettleReceived: string;
+  peopleSettlePaid: string;
+  peopleSettleNote: string;
+  peopleSettleAfter: string;
+  peopleSettleTransaction: string;
+  peopleModeCreateIncome: string;
+  peopleModeCreateExpense: string;
+  peopleModeLinkIncome: string;
+  peopleModeLinkExpense: string;
+  peopleModeNone: string;
+  peopleSelectAccount: string;
+  peopleSettleDescription: string;
+  peopleSettleDescReceived: string;
+  peopleSettleDescPaid: string;
+  peopleSettleSearch: string;
+  peopleSearchPlaceholder: string;
+  peopleSearching: string;
+  peopleNoTransactions: string;
+  peopleSelectTransaction: string;
+  peopleLinkedHint: string;
+  peopleSettleMismatch: string;
+  peopleUseTransactionAmount: string;
+  peopleSettleNoneHint: string;
+  peopleSettleReview: string;
+  peopleSettleSaved: string;
+  peopleSettleSavedIncome: string;
+  peopleSettleSavedExpense: string;
+  peopleSettleFailed: string;
+  peopleSettling: string;
+  peopleErrAmount: string;
+  peopleErrDate: string;
+  peopleErrAccount: string;
+  peopleErrTransaction: string;
+  peopleUndoSettlement: string;
+  peopleUndoAria: string;
+  peopleUndoHint: string;
+  peopleUndo: string;
+  peopleUndone: string;
+  peopleUndoFailed: string;
 }
 
-// Note: Some language files may have missing translations. We cast through `unknown`
-// to allow partial translations. Missing keys will show the key name as fallback.
+// Some language files lack keys that en-US has. We cast through `unknown` to allow partial translations, and a key a locale
+// does not define falls back to the en-US text (otherwise it would render empty and code that formats it would receive
+// undefined). pt-BR is the source of the project's own texts and is complete.
 const translations: Record<Locale, Translations> = {
   'pt-BR': ptBR as unknown as Translations,
   'en-US': enUS as unknown as Translations,
-  'es-ES': esES as unknown as Translations,
-  'ja-JP': jaJP as unknown as Translations,
-  'ru-RU': ruRU as unknown as Translations,
-  'zh-CN': zhCN as unknown as Translations,
-  'fr-FR': frFR as unknown as Translations,
-  'ar-SA': arSA as unknown as Translations,
+  'es-ES': withEnglishFallback(esES) as unknown as Translations,
+  'ja-JP': withEnglishFallback(jaJP) as unknown as Translations,
+  'ru-RU': withEnglishFallback(ruRU) as unknown as Translations,
+  'zh-CN': withEnglishFallback(zhCN) as unknown as Translations,
+  'fr-FR': withEnglishFallback(frFR) as unknown as Translations,
+  'ar-SA': withEnglishFallback(arSA) as unknown as Translations,
 };
 
 interface I18nContextType {
