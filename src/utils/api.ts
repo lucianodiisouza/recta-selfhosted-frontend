@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
-import { auth } from '../config/firebase';
+import { getCachedAuthMode } from '../config/authMode';
+import { endExpiredLocalSession } from './localAuth';
+import { getLocalToken } from './localToken';
 
 // Get API base URL from environment variable or default to localhost
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
@@ -42,18 +44,30 @@ export interface PaginatedResponse<T> {
 }
 
 /**
- * Get Firebase ID token for authentication
- * Forces token refresh to ensure we have a valid token
+ * The bearer token for the current session: the local JWT when the backend runs AUTH_MODE=local, otherwise the
+ * Firebase ID token. The local JWT is not checked for expiry here; a 401 ends the session (see the response
+ * interceptor).
+ * firebase.ts is imported on demand so a local-mode build never initialises Firebase.
  */
 async function getAuthToken(forceRefresh = false): Promise<string | null> {
-  const user = auth.currentUser;
-  if (!user) {
-    return null;
+  // Chosen by mode, not by what is stored: a leftover local token must not shadow a Firebase session.
+  if (getCachedAuthMode() === 'local') {
+    return getLocalToken();
   }
-  
+
   try {
-    return await user.getIdToken(forceRefresh);
-  } catch (error) {
+    const { getFirebaseAuth } = await import('../config/firebase');
+    const auth = getFirebaseAuth();
+    const user = auth?.currentUser;
+    if (!user) {
+      return null;
+    }
+    try {
+      return await user.getIdToken(forceRefresh);
+    } catch {
+      return null;
+    }
+  } catch {
     return null;
   }
 }
@@ -141,6 +155,9 @@ axiosInstance.interceptors.response.use(
     // Handle different error types
     if (error.response) {
       // Server responded with error status
+      if (error.response.status === 401 && getCachedAuthMode() === 'local' && getLocalToken()) {
+        endExpiredLocalSession();
+      }
       const data = error.response.data as unknown;
       const errorMessage = getBackendErrorMessage(data) || `HTTP ${error.response.status}`;
       

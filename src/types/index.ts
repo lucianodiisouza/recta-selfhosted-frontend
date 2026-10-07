@@ -114,9 +114,14 @@ export interface SavingsGoal {
 }
 
 import { User } from 'firebase/auth';
+import type { AuthMode } from '../config/authMode';
 
 export interface AuthContextType {
   currentUser: User | null;
+  /** How the backend signs users in; 'firebase' until GET /auth/config answers. */
+  authMode: AuthMode;
+  /** False when a local-mode backend has closed sign-ups. */
+  registrationEnabled: boolean;
   signup: (email: string, password: string, referralCode?: string) => Promise<{ user: User }>;
   login: (email: string, password: string) => Promise<{ user: User }>;
   loginWithGoogle: (referralCode?: string) => Promise<{ user: User }>;

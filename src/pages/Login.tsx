@@ -7,11 +7,13 @@ import { Wallet, Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { createSchemas, LoginFormData } from '../schemas';
 import { useI18n } from '../context/I18nContext';
 import { sanitizeFirebaseError } from '../utils/errorHandler';
+import { LocalAuthError } from '../utils/localAuth';
 
 const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { login, signup, loginWithGoogle, authMode, registrationEnabled } = useAuth();
   
   // Check URL parameters to determine initial mode
   const searchParams = new URLSearchParams(location.search);
@@ -22,7 +24,6 @@ const Login = () => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const { login, signup, loginWithGoogle } = useAuth();
   const { loginSchema } = createSchemas(t);
 
   const isObviousFakeEmail = (email: string) => {
@@ -37,13 +38,13 @@ const Login = () => {
   // Sync state with URL changes
   useEffect(() => {
     const newAction = searchParams.get('action');
-    const newMode = newAction === 'signup' ? false : true;
+    const newMode = newAction === 'signup' && registrationEnabled ? false : true;
     if (newMode !== isLogin) {
       setIsLogin(newMode);
       setError(''); // Clear error when mode changes
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.search]);
+  }, [location.search, registrationEnabled]);
 
   const {
     register,
@@ -57,6 +58,19 @@ const Login = () => {
       password: '',
     },
   });
+
+  // A local sign-in failure carries a code instead of a Firebase error, so it is worded here, in the user's language.
+  const errorMessage = (err: unknown): string => {
+    if (err instanceof LocalAuthError) {
+      if (err.code === 'invalid-credentials') return t.localAuthInvalidCredentials;
+      if (err.code === 'email-taken') return t.localAuthEmailTaken;
+      if (err.code === 'invalid-input') return t.localAuthInvalidInput;
+      if (err.code === 'rate-limited') return t.localAuthRateLimited;
+      if (err.code === 'registration-closed') return t.localAuthRegistrationClosed;
+      return t.loginError;
+    }
+    return sanitizeFirebaseError(err) || t.loginError;
+  };
 
   const onSubmit = async (data: LoginFormData) => {
     setError('');
@@ -76,7 +90,7 @@ const Login = () => {
       }
       navigate('/app');
     } catch (err: any) {
-      setError(sanitizeFirebaseError(err) || t.loginError);
+      setError(errorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -138,18 +152,20 @@ const Login = () => {
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             {isLogin ? (
-              <>
-                {t.loginOr}{' '}
-                <button
-                  onClick={toggleMode}
-                  className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
-                >
-                  {t.createNewAccount}
-                </button>
-              </>
+              registrationEnabled && (
+                <>
+                  {t.loginOr}{' '}
+                  <button
+                    onClick={toggleMode}
+                    className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
+                  >
+                    {t.createNewAccount}
+                  </button>
+                </>
+              )
             ) : (
               <>
-                {t.loginSignupWithGoogle}{' '}
+                {authMode === 'local' ? t.localAuthHaveAccount : t.loginSignupWithGoogle}{' '}
                 <button
                   onClick={toggleMode}
                   className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
@@ -167,6 +183,9 @@ const Login = () => {
             </div>
           )}
 
+          {/* Google sign-in is a Firebase provider: not offered when the backend signs users in itself */}
+          {authMode !== 'local' && (
+          <>
           {/* Google Login Button */}
           <div>
             <button
@@ -208,6 +227,8 @@ const Login = () => {
               </span>
             </div>
           </div>
+          </>
+          )}
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="rounded-md shadow-sm -space-y-px">

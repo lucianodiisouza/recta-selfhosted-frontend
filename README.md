@@ -15,7 +15,7 @@ This project is maintained by [PrimoDev](https://www.oprimo.dev).
 - **React 18** + **TypeScript**
 - **Vite** – build
 - **Tailwind CSS** – styling
-- **Firebase** – auth (Google, email)
+- **Firebase** – auth (Google, email), or the backend's own email/password sign-in (`AUTH_MODE=local`)
 - **React Query** – server state
 - **Recharts** – charts
 
@@ -34,9 +34,9 @@ Use the same Firebase project as your backend and restrict allowed domains in th
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 20.19+ (or 22.12+)
 - Recta backend running (e.g. from `recta-public-backend` or your own deploy)
-- Firebase project with Authentication enabled (same project as the backend)
+- Either a Firebase project with Authentication enabled (same project as the backend), or a backend running `AUTH_MODE=local`, which needs no Firebase
 
 ### 1. Install dependencies
 
@@ -50,18 +50,19 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` with your Firebase config and backend URL:
+Edit `.env` with your backend URL and, unless the backend runs `AUTH_MODE=local`, your Firebase config. The app asks the backend which sign-in mode it uses (`GET /auth/config`), so there is nothing to set in the frontend for local mode:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_FIREBASE_API_KEY` | Yes | Firebase API key |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Yes | e.g. `your-project.firebaseapp.com` |
-| `VITE_FIREBASE_PROJECT_ID` | Yes | Firebase project ID |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Yes | Storage bucket |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Yes | Sender ID |
-| `VITE_FIREBASE_APP_ID` | Yes | Web app ID |
+| `VITE_FIREBASE_API_KEY` | Firebase mode | Firebase API key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase mode | e.g. `your-project.firebaseapp.com` |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase mode | Firebase project ID |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase mode | Storage bucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase mode | Sender ID |
+| `VITE_FIREBASE_APP_ID` | Firebase mode | Web app ID |
 | `VITE_FIREBASE_MEASUREMENT_ID` | No | Analytics (optional) |
 | `VITE_API_BASE_URL` | Yes | Backend URL, e.g. `http://localhost:3000` |
+| `VITE_AUTH_MODE` | No | `local` or `firebase`; only used when the backend cannot be reached |
 | `VITE_SENTRY_DSN` | No | Sentry (optional) |
 | `VITE_FLAG_MAINTENANCE` | No | `true` for maintenance mode |
 | `VITE_PREMIUM_FOR_ALL_USERS` | No | Feature flag (optional) |
@@ -95,6 +96,8 @@ Output is in `dist/`. Serve with any static server (Nginx, Vercel, etc.) and set
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build locally |
 | `npm run lint` | Lint |
+| `npm test` | Unit tests (Vitest) |
+| `npm run check:tsc` | Type check; fails only on errors not in `tsc-baseline.txt` |
 
 ## Features
 
@@ -104,6 +107,10 @@ Output is in `dist/`. Serve with any static server (Nginx, Vercel, etc.) and set
 - Recurring transactions
 - Households (share with others)
 - Light/dark theme and multiple languages (PT-BR, EN, ES, FR, etc.)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the checks that must pass before a push, and the pull request rules. User-facing changes are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

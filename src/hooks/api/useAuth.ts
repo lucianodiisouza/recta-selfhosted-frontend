@@ -6,7 +6,7 @@ import { saveHouseholdToLocalStorage, loadHouseholdFromLocalStorage } from '../.
 export interface User {
   id: string;
   email: string;
-  firebaseUid: string;
+  firebaseUid: string | null;
   createdAt: string;
   households: Household[];
 }

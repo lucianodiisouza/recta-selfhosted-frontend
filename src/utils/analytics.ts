@@ -1,5 +1,5 @@
 import { logEvent, setUserProperties } from 'firebase/analytics';
-import { analytics } from '../config/firebase';
+import { getFirebaseAnalytics } from '../config/firebase';
 import { TransactionType } from '../lib/enums';
 
 // Tipo para metadados do analytics
@@ -191,8 +191,9 @@ export const logAnalyticsEvent = (
   eventName: AnalyticsEvent | string,
   eventParams?: Record<string, unknown>
 ): void => {
+  const analytics = getFirebaseAnalytics();
   if (!analytics) {
-    // Analytics não está disponível (SSR ou não suportado)
+    // Analytics não está disponível (SSR, não suportado ou modo local sem Firebase)
     return;
   }
 

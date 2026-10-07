@@ -7,7 +7,7 @@ import { Mail, RefreshCw, Send, LogOut, Check } from 'lucide-react';
 import { sendEmailVerification, reload } from 'firebase/auth';
 
 export const VerificationModal = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, authMode, logout } = useAuth();
   const { t } = useI18n();
   const { success, error: showError } = useToastContext();
   const [loading, setLoading] = useState(false);
@@ -71,10 +71,13 @@ export const VerificationModal = () => {
 
   if (!currentUser || currentUser.emailVerified) return null;
 
+  // Email verification only exists in Firebase mode, and a local session has no providerData to inspect.
+  if (authMode === 'local') return null;
+
   // Only show for email provider
-  const isEmailProvider = currentUser.providerData.some(
+  const isEmailProvider = currentUser.providerData?.some(
     (provider) => provider.providerId === 'password'
-  );
+  ) ?? false;
 
   if (!isEmailProvider) return null;
 

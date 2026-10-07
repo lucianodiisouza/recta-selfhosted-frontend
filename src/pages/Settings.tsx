@@ -71,7 +71,7 @@ const SettingsPage = () => {
   const { locale, setLocale, t } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const { success, error: showError } = useToastContext();
-  const { currentUser } = useAuth();
+  const { currentUser, authMode, logout } = useAuth();
   const { referralCount, getInviteLink } = useReferral();
   const { install, isInstalled, canInstall } = usePWAInstall();
   const [linkCopied, setLinkCopied] = useState(false);
@@ -289,6 +289,13 @@ const SettingsPage = () => {
         // 2. Deletar conta no backend primeiro
         await deleteUserAccount.mutateAsync();
 
+        // A local account has no Firebase user to delete: the backend deletion was all of it. Signing out clears
+        // the session, which sends the user to the login page.
+        if (authMode === 'local') {
+          await logout();
+          return;
+        }
+
         // 3. Depois deletar conta no Firebase Auth
         // Tentar deletar - se exigir reautenticação, o erro será capturado abaixo
         try {
@@ -354,7 +361,7 @@ const SettingsPage = () => {
         }
       }
     },
-    [currentUser, deleteUserAccount, showError, t.cancel, t.emailDoesNotMatch, t.requiresRecentLogin]
+    [currentUser, authMode, logout, deleteUserAccount, showError, t.cancel, t.emailDoesNotMatch, t.requiresRecentLogin]
   );
 
   const handleResetRectaAccount = useCallback(

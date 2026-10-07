@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 export interface User {
   id: string;
   email: string;
-  firebaseUid: string;
+  firebaseUid: string | null;
   displayName?: string | null;
   isPremium?: boolean;
   onboardingCompleted?: boolean;
