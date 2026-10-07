@@ -34,7 +34,7 @@ Use the same Firebase project as your backend and restrict allowed domains in th
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 20.19+ (or 22.12+)
 - Recta backend running (e.g. from `recta-public-backend` or your own deploy)
 - Firebase project with Authentication enabled (same project as the backend)
 
@@ -95,6 +95,8 @@ Output is in `dist/`. Serve with any static server (Nginx, Vercel, etc.) and set
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build locally |
 | `npm run lint` | Lint |
+| `npm test` | Unit tests (Vitest) |
+| `npm run check:tsc` | Type check; fails only on errors not in `tsc-baseline.txt` |
 
 ## Features
 
@@ -104,6 +106,10 @@ Output is in `dist/`. Serve with any static server (Nginx, Vercel, etc.) and set
 - Recurring transactions
 - Households (share with others)
 - Light/dark theme and multiple languages (PT-BR, EN, ES, FR, etc.)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the checks that must pass before a push, and the pull request rules. User-facing changes are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

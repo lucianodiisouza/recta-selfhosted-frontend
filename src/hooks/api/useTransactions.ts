@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useMemo } from 'react';
 import { apiClient } from '../../utils/api';
 import { CategoryType, CategoryName } from '../../lib/enums';
@@ -634,13 +634,22 @@ export interface CreditCardInvoiceParams {
 }
 
 /**
+ * Cache key of one invoice listing. "Load more" appends to the entry of the first page, so both must build
+ * the key here: an array with `undefined` hashes as `null`, and a key that merely omits the cursor is a
+ * different cache entry that nothing renders.
+ */
+export function creditCardInvoiceKey({ accountId, month, householdId, limit, cursor }: CreditCardInvoiceParams) {
+  return ['transactions', 'credit-card-invoice', accountId, month, householdId ?? null, limit ?? null, cursor ?? null] as const;
+}
+
+/**
  * Get credit card invoice for a specific month
  */
 export function useCreditCardInvoice(params: CreditCardInvoiceParams) {
   const { accountId, month, householdId, limit, cursor } = params;
   
   return useQuery({
-    queryKey: ['transactions', 'credit-card-invoice', accountId, month, householdId, limit, cursor],
+    queryKey: creditCardInvoiceKey(params),
     queryFn: async () => {
       if (!accountId) return null;
       const queryParams: Record<string, unknown> = {
@@ -661,6 +670,27 @@ export function useCreditCardInvoice(params: CreditCardInvoiceParams) {
       };
     },
     enabled: !!accountId && !!month,
+  });
+}
+
+/**
+ * Append a "load more" page to the cached first page, the entry the invoice view renders (same key, no cursor).
+ */
+export function appendCreditCardInvoicePage(
+  queryClient: QueryClient,
+  variables: CreditCardInvoiceParams,
+  newData: { data: CreditCardInvoiceResponse; pagination: { nextCursor: string | null; hasMore: boolean } }
+) {
+  queryClient.setQueryData(creditCardInvoiceKey({ ...variables, cursor: undefined }), (oldData: any) => {
+    if (!oldData) return { data: newData.data, pagination: newData.pagination };
+
+    return {
+      data: {
+        ...oldData.data,
+        invoiceTransactions: [...oldData.data.invoiceTransactions, ...newData.data.invoiceTransactions],
+      },
+      pagination: newData.pagination,
+    };
   });
 }
 
@@ -694,23 +724,7 @@ export function useLoadMoreCreditCardInvoice() {
         },
       };
     },
-    onSuccess: (newData, variables) => {
-      // Append new transactions to existing cache
-      // Build query key without cursor to match the original query
-      const queryKey = ['transactions', 'credit-card-invoice', variables.accountId, variables.month, variables.householdId, variables.limit];
-      
-      queryClient.setQueryData(queryKey, (oldData: any) => {
-        if (!oldData) return { data: newData.data, pagination: newData.pagination };
-        
-        return {
-          data: {
-            ...oldData.data,
-            invoiceTransactions: [...oldData.data.invoiceTransactions, ...newData.data.invoiceTransactions],
-          },
-          pagination: newData.pagination,
-        };
-      });
-    },
+    onSuccess: (newData, variables) => appendCreditCardInvoicePage(queryClient, variables, newData),
   });
 }
 
