@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useSyncExternalStore } from 'react';
 import type React from 'react';
 import { useTransactions as useTransactionsContext } from '../context/TransactionsContext';
 import { useCommandMenu } from '../context/CommandMenuContext';
@@ -17,9 +17,11 @@ import {
   Wallet, Briefcase, TrendingUp, ShoppingBag, Home, DollarSign,
   UtensilsCrossed, Car, House, Heart, GraduationCap, Film, Shirt,
   Zap, CreditCard, ShoppingCart, ShoppingBasket, Utensils, Droplet, Pill, MoreHorizontal, Circle,
-  ArrowLeftRight
+  ArrowLeftRight, Upload
 } from 'lucide-react';
 import TransactionModal from '../components/TransactionModal';
+import ImportTransactionsDialog from '../components/ImportTransactionsDialog';
+import { getImporterMissing, subscribeImporterMissing } from '../utils/importStatement';
 import ConfirmModal from '../components/ConfirmModal';
 import { Transaction } from '../types';
 import { PageButton } from '../components/PageButton';
@@ -50,6 +52,9 @@ const Transactions = () => {
   const { data: households } = useHouseholds();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isImportOpen, setImportOpen] = useState<boolean>(false);
+  // Becomes true once the server has answered that it has no statement importer (older backend).
+  const importerMissing = useSyncExternalStore(subscribeImporterMissing, getImporterMissing);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
   const [searchInput, setSearchInput] = useState<string>(''); // Input value (updates immediately)
@@ -691,6 +696,16 @@ const Transactions = () => {
           >
             CSV
           </PageButton>
+          {!importerMissing && (
+            <PageButton
+              onClick={() => setImportOpen(true)}
+              variant="secondary"
+              icon={Upload}
+              aria-label={t.importStatementButtonLabel}
+            >
+              {t.importStatementButton}
+            </PageButton>
+          )}
           <PageButton
             onClick={handleAdd}
             variant="primary"
@@ -720,6 +735,17 @@ const Transactions = () => {
             >
               CSV
             </PageButton>
+            {!importerMissing && (
+              <PageButton
+                onClick={() => setImportOpen(true)}
+                variant="secondary"
+                icon={Upload}
+                aria-label={t.importStatementButtonLabel}
+                className="flex-1"
+              >
+                {t.importStatementButton}
+              </PageButton>
+            )}
           </div>
         </div>
       </div>
@@ -862,6 +888,14 @@ const Transactions = () => {
         message={`${t.delete} ${t.transaction?.toLowerCase() || t.transactions.toLowerCase()}?`}
         variant="danger"
       />
+
+      {isImportOpen && (
+        <ImportTransactionsDialog
+          open={isImportOpen}
+          onClose={() => setImportOpen(false)}
+          householdId={householdId ?? undefined}
+        />
+      )}
     </div>
   );
 };
