@@ -20,7 +20,6 @@ export interface Account {
   availableLimit?: number;
   dueDay?: number;
   closingDay?: number;
-  bestDayOffset?: number;
   linkedAccountId?: string;
   isActive: boolean;
   createdAt: string;
@@ -152,7 +151,6 @@ export function useCreateAccount() {
       creditLimit?: number;
       dueDay?: number;
       closingDay?: number;
-      bestDayOffset?: number;
     }) => {
       const response = await apiClient.post<Account>('/accounts', data);
       return response.data!;

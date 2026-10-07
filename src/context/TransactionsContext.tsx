@@ -58,6 +58,7 @@ import { useCategories } from '../hooks/api/useCategories';
 
 // Import parseDateFromAPI and formatDateForAPI from utils
 import { parseDateFromAPI, formatDateForAPI } from '../utils/format';
+import { firstInstallmentAnchor } from '../utils/closingDay';
 
 const TransactionsContext = createContext<TransactionsContextType>({} as TransactionsContextType);
 
@@ -229,7 +230,6 @@ const convertAccountFromBackend = (a: BackendAccount): Account => {
     availableLimit: (a.availableLimit !== null && a.availableLimit !== undefined) ? Number(a.availableLimit) : undefined,
     dueDay: a.dueDay,
     closingDay: a.closingDay,
-    bestDayOffset: a.bestDayOffset,
     linkedAccountId: a.linkedAccountId,
     isPersonal: (a as any).isPersonal,
     accountOwnerId: (a as any).accountOwnerId || null,
@@ -718,7 +718,7 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
       icon: account.icon,
       creditLimit: account.creditLimit,
       dueDay: account.dueDay,
-      bestDayOffset: account.bestDayOffset,
+      closingDay: account.closingDay,
     });
 
     // A conta criada retorna com o householdId (que pode ter sido criado pelo backend)
@@ -873,24 +873,17 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
       !!linkedAccount && linkedAccount.type === AccountType.CREDIT;
 
     // For credit cards, the purchase date and the first-invoice month can
-    // differ. If the user buys on or after closingDay, the purchase lands in
+    // differ. If the user buys on or after the closing day (the card's own, or
+    // due day - 7 when it has none), the purchase lands in
     // the NEXT month's invoice — so the first installment must be pushed one
     // month forward to avoid two installments falling in the same calendar
     // month (the bug reported on Reddit).
     const purchaseDate = new Date(transaction.date);
-    let firstInstallmentAnchor = purchaseDate;
-    if (
-      isCreditCardInstallment &&
-      linkedAccount.closingDay !== undefined &&
-      linkedAccount.closingDay !== null &&
-      purchaseDate.getDate() >= linkedAccount.closingDay
-    ) {
-      firstInstallmentAnchor = addMonths(purchaseDate, 1);
-    }
+    const installmentsAnchor = isCreditCardInstallment ? firstInstallmentAnchor(purchaseDate, linkedAccount) : purchaseDate;
 
     const transactionsToCreate = [];
     for (let i = 0; i < installments; i++) {
-      const installmentDate = addMonths(firstInstallmentAnchor, i);
+      const installmentDate = addMonths(installmentsAnchor, i);
       const catName = (toCategoryName(transaction.category, t as unknown as Record<string, string>, custom as CustomCategoryInfo[] | undefined) || CategoryName.OTHER_EXPENSES) as CategoryName;
       const accountId = transaction.accountId || accounts[0]?.id;
       if (!accountId) {

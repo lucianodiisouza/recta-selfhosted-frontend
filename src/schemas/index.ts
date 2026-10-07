@@ -133,11 +133,6 @@ export const createSchemas = (t: Translations) => {
       z.null(),
       z.undefined(),
     ]).optional().transform((val) => val === null || val === undefined ? undefined : val),
-    bestDayOffset: z.union([
-      z.number().int().min(1).max(30),
-      z.null(),
-      z.undefined(),
-    ]).optional().transform((val) => val === null || val === undefined ? undefined : val),
     linkedAccountId: z.string().uuid().optional().nullable(),
   }).refine((data) => {
     // Se for cartão de crédito e tiver creditLimit definido, deve ser positivo
