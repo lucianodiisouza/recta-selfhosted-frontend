@@ -13,6 +13,7 @@ import {
   Repeat,
   CreditCard,
   PiggyBank,
+  Users,
   User,
   Settings,
   MessageSquare,
@@ -28,6 +29,7 @@ import { FeedbackModal } from "./FeedbackModal";
 import { useUser, useUpdateUserPreferences } from "../hooks/api/useUsers";
 import { useCommandMenu } from "../context/CommandMenuContext";
 import { HouseholdSelector } from "./HouseholdSelector";
+import { usePeopleAvailable } from "../utils/peopleAvailability";
 import { InvitesNotification } from "./InvitesNotification";
 import { InvitesModal } from "./InvitesModal";
 
@@ -41,6 +43,7 @@ interface NavItem {
 const Layout = () => {
   const { logout, currentUser } = useAuth();
   const { t } = useI18n();
+  const peopleAvailable = usePeopleAvailable();
   const { setDisabled: setCommandMenuDisabled, registerHandler, unregisterHandler } = useCommandMenu();
   const location = useLocation();
   const navigate = useNavigate();
@@ -151,6 +154,7 @@ const Layout = () => {
     { path: "/app/credit-cards", label: `${t.creditCards}`, icon: CreditCard },
     { path: "/app/recurring", label: t.recurring, icon: Repeat },
     { path: "/app/goals", label: t.goals, icon: PiggyBank },
+    ...(peopleAvailable ? [{ path: "/app/people", label: t.peoplePage, icon: Users }] : []),
     { path: "/app/budgets", label: t.budgets, icon: Target },
     { path: "/app/reports", label: t.reports, icon: Wallet },
     { path: "/app/settings", label: t.settings, icon: Settings },

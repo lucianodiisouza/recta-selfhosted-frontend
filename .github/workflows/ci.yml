@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Only superseded pull request runs are cancelled; a push to main always finishes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # The "prepare" script installs the husky hooks, which make no sense in CI
+  # (the commit hook asks for a version bump interactively).
+  HUSKY: '0'
+
+jobs:
+  gates:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Vite 7 needs ^20.19 or >=22.12, so 20.19 is the supported floor (the
+        # README and CONTRIBUTING say the same); 22 is the current LTS.
+        node: ['20.19', 22]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The codebase carries older type errors (tsc-baseline.txt): the gate fails only on new ones.
+      - name: Typecheck (no new errors)
+        run: npm run check:tsc
+
+      # tsc-baseline.txt can only shrink: editing it by hand to hide a new error fails here.
+      # The first PR that creates the file has no base copy to compare with.
+      - name: Baseline did not grow
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if git cat-file -e "origin/${BASE_REF}:tsc-baseline.txt" 2>/dev/null; then
+            git show "origin/${BASE_REF}:tsc-baseline.txt" > "$RUNNER_TEMP/base-tsc-baseline.txt"
+            node scripts/check-tsc-baseline.mjs --against "$RUNNER_TEMP/base-tsc-baseline.txt"
+          else
+            echo "No tsc-baseline.txt on the base branch; nothing to compare with."
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      # "vite build" does not type-check; that is why the typecheck above is its own step.
+      - name: Build
+        run: npm run build
+
+      - name: Tests
+        run: npm test
+
+      - name: Whitespace errors (git diff --check)
+        if: github.event_name == 'pull_request'
+        run: git diff --check "origin/${{ github.base_ref }}...HEAD"
