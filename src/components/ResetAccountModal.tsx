@@ -70,21 +70,21 @@ const ResetAccountModal = ({
     <div className="fixed inset-0 z-[70] overflow-y-auto">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 transition-opacity" 
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
         onClick={onClose}
         aria-hidden="true"
       />
       
       {/* Scrollable Container */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
         {/* Modal Card */}
-        <div className="relative w-full sm:w-[500px] max-w-md p-6 border shadow-2xl rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <div className="relative w-full sm:w-[500px] max-w-md p-6 bg-surface-elevated rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
-              <div className="flex-shrink-0 bg-red-100 dark:bg-red-900/30 rounded-full p-2 mr-3">
-                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <div className="flex-shrink-0 bg-negative-soft rounded-full p-2 mr-3">
+                <AlertTriangle className="h-5 w-5 text-negative" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              <h3 className="text-lg font-medium text-content">
                 {t.resetRectaAccount || 'Resetar Conta do Recta'}
               </h3>
             </div>
@@ -99,20 +99,20 @@ const ResetAccountModal = ({
           </div>
 
           <div className="mb-6 space-y-4">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="bg-negative-soft border border-negative/25 rounded-lg p-4">
               <p className="text-sm font-medium text-red-800 dark:text-red-300 mb-2">
                 {t.resetAccountWarning || 'Atenção'}
               </p>
-              <p className="text-sm text-red-700 dark:text-red-400">
+              <p className="text-sm text-negative">
                 {t.resetAccountWarningMessage || 'Esta ação é permanente e não pode ser desfeita. Todos os seus dados serão deletados e você começará do zero, incluindo o onboarding.'}
               </p>
             </div>
 
             <div>
-              <label htmlFor="confirmation-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="confirmation-input" className="block text-sm font-medium text-content-secondary mb-2">
                 {t.resetAccountConfirmationLabel || 'Digite a frase de confirmação:'}
               </label>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 italic">
+              <p className="text-xs text-content-tertiary mb-2 italic">
                 "{confirmationPhrase}"
               </p>
               <input
@@ -123,13 +123,13 @@ const ResetAccountModal = ({
                 onKeyPress={handleKeyPress}
                 placeholder={confirmationPhrase}
                 disabled={isResetting}
-                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  confirmationText && !textMatches ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                className={`w-full px-3 py-2 border rounded-md bg-surface-elevated text-content placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  confirmationText && !textMatches ? 'border-negative/60' : 'border-line'
                 }`}
                 autoFocus
               />
               {confirmationText && !textMatches && (
-                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                <p className="mt-1 text-xs text-negative">
                   {t.resetAccountConfirmationMismatch || 'O texto digitado não corresponde à frase de confirmação.'}
                 </p>
               )}
@@ -141,7 +141,7 @@ const ResetAccountModal = ({
               type="button"
               onClick={onClose}
               disabled={isResetting}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
             >
               {t.cancel}
             </button>
@@ -152,7 +152,7 @@ const ResetAccountModal = ({
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 canConfirm
                   ? 'bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white'
-                  : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-300 dark:bg-gray-600 text-content-tertiary cursor-not-allowed'
               }`}
             >
               {isResetting ? (t.loading || 'Resetando...') : (t.resetAccount || 'Resetar Conta')}

@@ -31,14 +31,14 @@ export const AccountField = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <label className="block text-sm font-medium text-content-secondary mb-1">
         {isCreditCardContext ? t.creditCard : t.account}
       </label>
       
       {hasNoAccountsAvailable && (
-        <div className="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+        <div className="mb-3 p-3 bg-warning/10 border border-warning/25 rounded-lg">
           <div className="flex items-start space-x-2">
-            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
                 {t.noAccountsAvailable}
@@ -96,7 +96,7 @@ export const AccountField = ({
         )}
       />
       {errors.accountId && (
-        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.accountId.message}</p>
+        <p className="mt-1 text-sm text-negative">{errors.accountId.message}</p>
       )}
     </div>
   );

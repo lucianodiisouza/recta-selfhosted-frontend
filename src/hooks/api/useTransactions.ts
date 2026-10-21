@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useMemo } from 'react';
 import { apiClient } from '../../utils/api';
 import { CategoryType, CategoryName } from '../../lib/enums';
@@ -75,6 +75,8 @@ export interface ListTransactionsParams {
   month?: string; // YYYY-MM format
   type?: CategoryType;
   categoryName?: CategoryName;
+  /** Comma separated categoryNames; a transaction matches any of them (fdbk #123). */
+  categoryNames?: string;
   accountId?: string;
   search?: string;
 }
@@ -209,6 +211,7 @@ export function useLoadMoreTransactions() {
           queryParams.search === queryParamsWithoutCursor.search &&
           queryParams.type === queryParamsWithoutCursor.type &&
           queryParams.categoryName === queryParamsWithoutCursor.categoryName &&
+          queryParams.categoryNames === queryParamsWithoutCursor.categoryNames &&
           queryParams.accountId === queryParamsWithoutCursor.accountId &&
           // Compare dates by converting to ISO strings
           (!queryParams.startDate || !queryParamsWithoutCursor.startDate || 
@@ -504,6 +507,7 @@ export function useCreateTransaction() {
       queryClient.invalidateQueries({ queryKey: ['transactions', 'by-category'] });
       queryClient.invalidateQueries({ queryKey: ['transactions', 'heatmap'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] }); // Invalidate all dashboard data
+      queryClient.invalidateQueries({ queryKey: ['budgets', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       // Invalidate auth/me to refresh household list
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
@@ -529,6 +533,7 @@ export function useUpdateTransaction() {
       queryClient.invalidateQueries({ queryKey: ['transactions', 'by-category'] });
       queryClient.invalidateQueries({ queryKey: ['transactions', 'heatmap'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] }); // Invalidate all dashboard data
+      queryClient.invalidateQueries({ queryKey: ['budgets', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
   });
@@ -550,6 +555,7 @@ export function useDeleteTransaction() {
       queryClient.invalidateQueries({ queryKey: ['transactions', 'by-category'] });
       queryClient.invalidateQueries({ queryKey: ['transactions', 'heatmap'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] }); // Invalidate all dashboard data
+      queryClient.invalidateQueries({ queryKey: ['budgets', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
   });
@@ -584,6 +590,7 @@ export function useBatchCreateTransactions() {
       queryClient.invalidateQueries({ queryKey: ['transactions', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['transactions', 'heatmap'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] }); // Invalidate all dashboard data
+      queryClient.invalidateQueries({ queryKey: ['budgets', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       // Invalidate auth/me to refresh household list
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
@@ -629,88 +636,63 @@ export interface CreditCardInvoiceParams {
   accountId: string | null;
   month: string;
   householdId?: string;
-  limit?: number;
-  cursor?: string;
 }
 
 /**
  * Get credit card invoice for a specific month
  */
-export function useCreditCardInvoice(params: CreditCardInvoiceParams) {
-  const { accountId, month, householdId, limit, cursor } = params;
-  
-  return useQuery({
-    queryKey: ['transactions', 'credit-card-invoice', accountId, month, householdId, limit, cursor],
-    queryFn: async () => {
-      if (!accountId) return null;
-      const queryParams: Record<string, unknown> = {
-        ...(householdId && { householdId }),
-        ...(limit && { limit }),
-        ...(cursor && { cursor }),
-      };
-      const response = await apiClient.get<CreditCardInvoiceResponse>(
-        `/transactions/credit-cards/${accountId}/invoice/${month}`,
-        queryParams
-      );
-      return {
-        data: response.data!,
-        pagination: (response as any).pagination || {
-          nextCursor: null,
-          hasMore: false,
-        },
-      };
-    },
-    enabled: !!accountId && !!month,
+/**
+ * Invoice total of several cards for one month, straight from the backend's invoice
+ * view (the same number the card's own invoice screen shows).
+ */
+export function useCreditCardInvoiceTotals(accountIds: string[], month: string, householdId?: string | null) {
+  const results = useQueries({
+    queries: accountIds.map((accountId) => ({
+      queryKey: ['transactions', 'credit-card-invoice', accountId, month, householdId, 'total'],
+      queryFn: async () => {
+        const response = await apiClient.get<CreditCardInvoiceResponse>(
+          `/transactions/credit-cards/${accountId}/invoice/${month}`,
+          { ...(householdId && { householdId }), limit: 1 }
+        );
+        return Number(response.data?.total ?? 0);
+      },
+      enabled: !!month,
+    })),
   });
+  const totals: Record<string, number> = {};
+  accountIds.forEach((id, i) => {
+    totals[id] = results[i]?.data ?? 0;
+  });
+  return totals;
 }
 
-/**
- * Load more credit card invoice transactions
- */
-export function useLoadMoreCreditCardInvoice() {
-  const queryClient = useQueryClient();
+export function useCreditCardInvoice(params: CreditCardInvoiceParams) {
+  const { accountId, month, householdId } = params;
 
-  return useMutation({
-    mutationFn: async (params: CreditCardInvoiceParams & { cursor: string }) => {
-      const { accountId, month, householdId, limit, cursor } = params;
-      if (!accountId) throw new Error('accountId is required');
-      
-      const queryParams: Record<string, unknown> = {
-        ...(householdId && { householdId }),
-        ...(limit && { limit }),
-        cursor,
-      };
-      
-      const response = await apiClient.get<CreditCardInvoiceResponse>(
-        `/transactions/credit-cards/${accountId}/invoice/${month}`,
-        queryParams
-      );
-      
-      return {
-        data: response.data!,
-        pagination: (response as any).pagination || {
-          nextCursor: null,
-          hasMore: false,
-        },
-      };
+  return useQuery({
+    queryKey: ['transactions', 'credit-card-invoice', accountId, month, householdId, 'all'],
+    queryFn: async () => {
+      if (!accountId) return null;
+      // The whole invoice, page by page: search, item count and totals need every row,
+      // and a single page used to leave a "load more" that never appended (fdbk #174).
+      let first: CreditCardInvoiceResponse | undefined;
+      const rows: Transaction[] = [];
+      let cursor: string | null = null;
+      for (let page = 0; page < 50; page++) {
+        const response = await apiClient.get<CreditCardInvoiceResponse>(
+          `/transactions/credit-cards/${accountId}/invoice/${month}`,
+          { ...(householdId && { householdId }), limit: 100, ...(cursor ? { cursor } : {}) }
+        );
+        const pageData = response.data!;
+        first = first ?? pageData;
+        rows.push(...(pageData.invoiceTransactions || []));
+        const pagination = (response as any).pagination as { hasMore?: boolean; nextCursor?: string | null } | undefined;
+        if (!pagination?.hasMore || !pagination.nextCursor) break;
+        cursor = pagination.nextCursor;
+      }
+      return first ? { ...first, invoiceTransactions: rows } : null;
     },
-    onSuccess: (newData, variables) => {
-      // Append new transactions to existing cache
-      // Build query key without cursor to match the original query
-      const queryKey = ['transactions', 'credit-card-invoice', variables.accountId, variables.month, variables.householdId, variables.limit];
-      
-      queryClient.setQueryData(queryKey, (oldData: any) => {
-        if (!oldData) return { data: newData.data, pagination: newData.pagination };
-        
-        return {
-          data: {
-            ...oldData.data,
-            invoiceTransactions: [...oldData.data.invoiceTransactions, ...newData.data.invoiceTransactions],
-          },
-          pagination: newData.pagination,
-        };
-      });
-    },
+    enabled: !!accountId && !!month,
   });
 }
 
@@ -798,6 +780,7 @@ export function useCreateTransfer() {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['transactions', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] }); // Invalidate all dashboard data
+      queryClient.invalidateQueries({ queryKey: ['budgets', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
   });
@@ -826,6 +809,7 @@ export function useCreateAllocation() {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['transactions', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] }); // Invalidate all dashboard data
+      queryClient.invalidateQueries({ queryKey: ['budgets', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
   });
@@ -854,6 +838,7 @@ export function useCreateDeallocation() {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['transactions', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] }); // Invalidate all dashboard data
+      queryClient.invalidateQueries({ queryKey: ['budgets', 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
   });
@@ -972,10 +957,18 @@ export interface DashboardTrend {
   expenseTrend: 'up' | 'down' | 'stable';
 }
 
+export interface ForecastMonthItem {
+  month: string; // YYYY-MM
+  predictedIncome: number;
+  predictedExpense: number;
+  predictedBalance: number;
+}
+
 export interface DashboardForecast {
   predictedIncome: number;
   predictedExpense: number;
   predictedBalance: number;
+  next6Months?: ForecastMonthItem[];
 }
 
 export interface CategoryBreakdown {

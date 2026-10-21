@@ -20,12 +20,12 @@ export const TransactionModalFooter = ({
   const { t } = useI18n();
 
   return (
-    <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+    <div className="sticky bottom-0 z-10 -mx-6 -mb-6 flex flex-col-reverse gap-2 border-t border-line-subtle bg-surface-elevated/95 px-6 pb-6 pt-4 backdrop-blur sm:flex-row sm:justify-end">
       {readOnly ? (
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity focus:outline-none"
+          className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
         >
           {t.close}
         </button>
@@ -34,7 +34,7 @@ export const TransactionModalFooter = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity focus:outline-none"
+            className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
           >
             {t.cancel}
           </button>
@@ -43,7 +43,7 @@ export const TransactionModalFooter = ({
               type="button"
               onClick={onSaveAndCreateNew}
               disabled={isSubmitting || hasErrors}
-              className="px-4 py-2.5 border border-primary-600 dark:border-primary-500 rounded-md text-sm font-light tracking-tight text-primary-600 dark:text-primary-400 bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity focus:outline-none disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-brand-soft text-brand-on-soft hover:bg-brand/15"
             >
               {isSubmitting ? t.loading : t.saveAndCreateNew}
             </button>
@@ -51,7 +51,7 @@ export const TransactionModalFooter = ({
           <button
             type="submit"
             disabled={isSubmitting || hasErrors}
-            className="px-4 py-2.5 border border-primary-600 dark:border-primary-500 rounded-md text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 hover:opacity-80 transition-opacity focus:outline-none disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-brand-fill text-white hover:bg-brand-fill-hover"
           >
             {isSubmitting ? t.loading : isUpdate ? t.update : t.create}
           </button>

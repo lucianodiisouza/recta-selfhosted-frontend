@@ -8,7 +8,7 @@ export const TransactionsSkeleton = () => (
     </div>
     
     {/* Filtros skeleton */}
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mb-6">
+    <div className="surface-card p-4 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -19,11 +19,11 @@ export const TransactionsSkeleton = () => (
     {/* Lista de transações skeleton */}
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 shadow rounded-md overflow-hidden">
-          <div className="px-4 sm:px-6 py-3 bg-gray-50 dark:bg-gray-700/50">
+        <div key={i} className="surface-card overflow-hidden">
+          <div className="px-4 sm:px-6 py-3 bg-surface-sunken">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
           </div>
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+          <ul className="divide-y divide-line-subtle">
             {[1, 2].map((j) => (
               <li key={j} className="px-4 sm:px-6 py-4">
                 <div className="flex items-center justify-between">
@@ -50,8 +50,8 @@ export const BudgetsSkeleton = () => (
     </div>
 
     {/* Lista de orçamentos skeleton */}
-    <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+    <div className="bg-surface-elevated shadow overflow-hidden sm:rounded-md">
+      <ul className="divide-y divide-line-subtle">
         {[1, 2, 3].map((i) => (
           <li key={i} className="px-4 sm:px-6 py-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -83,7 +83,7 @@ export const AccountsSkeleton = () => (
     {/* Seletor de contas skeleton */}
     <div className="flex overflow-x-auto pb-2 gap-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex-shrink-0 w-[200px] bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div key={i} className="flex-shrink-0 w-[200px] bg-surface-elevated border-2 border-line rounded-lg p-4">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg mr-3"></div>
             <div className="flex-1">
@@ -97,7 +97,7 @@ export const AccountsSkeleton = () => (
     </div>
 
     {/* Resumo consolidado skeleton */}
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+    <div className="surface-card p-6">
       <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
       <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
     </div>
@@ -106,19 +106,19 @@ export const AccountsSkeleton = () => (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
       {/* Card lateral skeleton */}
       <div className="space-y-6 order-1 xl:order-2">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-surface-elevated rounded-lg shadow border border-line p-6">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-6"></div>
           <div className="space-y-6">
             <div>
               <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-              <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-line-subtle">
+              <div className="p-4 rounded-lg bg-surface-sunken">
                 <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-2"></div>
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
               </div>
-              <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+              <div className="p-4 rounded-lg bg-surface-sunken">
                 <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-2"></div>
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
               </div>
@@ -129,8 +129,8 @@ export const AccountsSkeleton = () => (
 
       {/* Lista de transações skeleton */}
       <div className="xl:col-span-2 space-y-6 order-2 xl:order-1">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-surface-elevated rounded-lg shadow border border-line overflow-hidden">
+          <div className="p-6 border-b border-line">
             <div className="flex items-center gap-4">
               <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
               <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
@@ -172,7 +172,7 @@ export const SavingsGoalsSkeleton = () => (
     {/* Grid de metas skeleton */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div key={i} className="surface-card p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center">
               <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded mr-2"></div>
@@ -209,8 +209,8 @@ export const RecurringTransactionsSkeleton = () => (
     </div>
 
     {/* Lista de transações recorrentes skeleton */}
-    <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+    <div className="bg-surface-elevated shadow overflow-hidden sm:rounded-md">
+      <ul className="divide-y divide-line-subtle">
         {[1, 2, 3, 4].map((i) => (
           <li key={i} className="px-4 sm:px-6 py-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -239,7 +239,7 @@ export const ReportsSkeleton = () => (
     </div>
 
     {/* Filtros skeleton */}
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mb-6">
+    <div className="surface-card p-4 mb-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -250,7 +250,7 @@ export const ReportsSkeleton = () => (
     {/* Resumo skeleton */}
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg p-5">
+        <div key={i} className="bg-surface-elevated overflow-hidden shadow rounded-lg p-5">
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
           <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
         </div>
@@ -260,7 +260,7 @@ export const ReportsSkeleton = () => (
     {/* Gráficos skeleton */}
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
       {[1, 2].map((i) => (
-        <div key={i} className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div key={i} className="surface-card p-6">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
           <div className="h-[300px] bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
@@ -268,12 +268,12 @@ export const ReportsSkeleton = () => (
     </div>
 
     {/* Tabela skeleton */}
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <div className="surface-card overflow-hidden">
+      <div className="px-6 py-4 border-b border-line">
         <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <table className="min-w-full divide-y divide-line-subtle">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
               {[1, 2, 3, 4].map((i) => (
@@ -283,7 +283,7 @@ export const ReportsSkeleton = () => (
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-surface-elevated divide-y divide-line-subtle">
             {[1, 2, 3].map((i) => (
               <tr key={i}>
                 {[1, 2, 3, 4].map((j) => (

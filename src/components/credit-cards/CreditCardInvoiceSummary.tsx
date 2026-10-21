@@ -45,23 +45,23 @@ export const CreditCardInvoiceSummary = ({
   }, [previousBalance, expenses, incomes]);
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
+    <div className={`bg-surface-elevated rounded-lg border border-line p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-content">
           Resumo da Fatura
         </h3>
         {isPaid ? (
-          <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
+          <div className="flex items-center space-x-2 text-positive">
             <CheckCircle2 className="h-5 w-5" />
             <span className="text-sm font-medium">Paga</span>
           </div>
         ) : total > 0 ? (
-          <div className="flex items-center space-x-2 text-yellow-600 dark:text-yellow-400">
+          <div className="flex items-center space-x-2 text-warning">
             <Clock className="h-5 w-5" />
             <span className="text-sm font-medium">Pendente</span>
           </div>
         ) : (
-          <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
+          <div className="flex items-center space-x-2 text-content-tertiary">
             <AlertCircle className="h-5 w-5" />
             <span className="text-sm font-medium">Sem fatura</span>
           </div>
@@ -73,14 +73,14 @@ export const CreditCardInvoiceSummary = ({
           if (!item.show) return null;
           return (
             <div key={index} className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-content-secondary">
                 {item.label}
               </span>
               <span
                 className={`text-sm font-medium ${
                   item.value < 0
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-gray-900 dark:text-white'
+                    ? 'text-positive'
+                    : 'text-content'
                 }`}
               >
                 {item.value < 0 ? '-' : '+'}
@@ -91,30 +91,30 @@ export const CreditCardInvoiceSummary = ({
         })}
       </div>
 
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-4 border-t border-line">
         <div className="flex justify-between items-center">
-          <span className="text-base font-semibold text-gray-900 dark:text-white">
+          <span className="text-base font-semibold text-content">
             Total
           </span>
-          <span className="text-lg font-bold text-gray-900 dark:text-white">
+          <span className="text-lg font-bold text-content">
             {formatCurrency(total, baseCurrency)}
           </span>
         </div>
       </div>
 
       {paymentTransactions.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+        <div className="mt-4 pt-4 border-t border-line">
+          <p className="text-xs text-content-tertiary mb-2">
             Pagamentos realizados:
           </p>
           <div className="space-y-1">
             {paymentTransactions.map((payment) => (
               <div
                 key={payment.id}
-                className="flex justify-between text-sm text-gray-600 dark:text-gray-400"
+                className="flex justify-between text-sm text-content-secondary"
               >
                 <span>{formatDate(payment.date)}</span>
-                <span className="text-green-600 dark:text-green-400">
+                <span className="text-positive">
                   {formatCurrency(payment.amount, baseCurrency)}
                 </span>
               </div>

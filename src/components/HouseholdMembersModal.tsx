@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Info } from 'lucide-react';
 import {
   useHouseholdMembers,
   useInviteMember,
@@ -26,6 +27,8 @@ import {
   HouseholdMembersList,
   InviteMemberForm,
   AccountSharingSection,
+  JoinLinkCard,
+  JoinWithCodeForm,
 } from './households';
 import { saveHouseholdToLocalStorage, clearHouseholdFromLocalStorage } from '../utils/householdStorage';
 import ConfirmModal from './ConfirmModal';
@@ -137,9 +140,14 @@ export function HouseholdMembersModal({
       success(t.inviteSent);
       analyticsHelpers.logHouseholdMemberInvited(data.role);
       reset();
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error || error?.message || t.errorInvitingMember;
-      showError(errorMessage);
+    } catch (error: unknown) {
+      const inviteErrors: Record<string, string> = {
+        HOUSEHOLD_MEMBER_EXISTS: t.inviteErrorAlreadyMember,
+        HOUSEHOLD_INVITE_PENDING: t.inviteErrorAlreadyPending,
+        HOUSEHOLD_FULL: t.inviteErrorHouseholdFull,
+      };
+      const code = (error as Error & { code?: string })?.code;
+      showError((code && inviteErrors[code]) || t.errorInvitingMember);
     }
   };
 
@@ -347,15 +355,15 @@ export function HouseholdMembersModal({
     <div className="fixed inset-0 z-[60] overflow-y-auto" onClick={handleBackdropClick}>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/40 animate-fade-in transition-opacity duration-300 ease-out" 
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
         aria-hidden="true"
       />
       
       {/* Scrollable Container */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
         {/* Modal Card */}
         <div 
-          className="relative w-full sm:w-[600px] max-w-2xl p-6 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 max-h-[90vh] overflow-y-auto min-w-0 animate-slide-in-bottom"
+          className="relative w-full sm:w-[600px] max-w-2xl p-6 bg-surface-elevated max-h-[90vh] overflow-y-auto min-w-0 rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -395,6 +403,17 @@ export function HouseholdMembersModal({
             />
           )}
 
+          {/* Invitees see everything in this household (fdbk #163) */}
+          {isOwner && !isAtMemberLimit && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg border border-line-subtle p-3">
+              <Info className="h-4 w-4 mt-px shrink-0 text-brand" aria-hidden="true" />
+              <p className="text-xs text-content-tertiary">{t.householdVisibilityNotice}</p>
+            </div>
+          )}
+
+          {/* Invite link / code: joins at once, whatever email the person uses */}
+          {isOwner && !isAtMemberLimit && <JoinLinkCard householdId={householdId} />}
+
           {/* Invite Form */}
           {isOwner && (
             <InviteMemberForm
@@ -409,19 +428,21 @@ export function HouseholdMembersModal({
             />
           )}
 
+          <JoinWithCodeForm onNavigate={onClose} />
+
           {/* Sair da household (membro não-dono em household compartilhada) */}
           {!isOwner && isSharedHousehold && (
-            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300 mb-2">
+            <div className="mt-6 pt-6 border-t border-line-subtle">
+              <h4 className="text-sm font-medium text-content-secondary mb-2">
                 {t.leaveHousehold}
               </h4>
-              <p className="text-xs font-light text-gray-500 dark:text-gray-400 mb-3">
+              <p className="text-xs font-light text-content-tertiary mb-3">
                 {t.leaveHouseholdDescription}
               </p>
               <button
                 type="button"
                 onClick={() => setShowLeaveConfirm(true)}
-                className="px-4 py-2.5 text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md hover:opacity-70 transition-opacity"
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
               >
                 {t.leaveHousehold}
               </button>
@@ -430,17 +451,17 @@ export function HouseholdMembersModal({
 
           {/* Danger zone: deletar household (apenas OWNER em household compartilhada) */}
           {isOwner && isSharedHousehold && (
-            <div className="mt-6 pt-6 border-t border-red-200 dark:border-red-800">
-              <h4 className="text-sm font-medium text-red-500 dark:text-red-400 mb-2">
+            <div className="mt-6 pt-6 border-t border-negative/25">
+              <h4 className="text-sm font-medium text-negative mb-2">
                 {t.dangerZone}
               </h4>
-              <p className="text-xs font-light text-gray-500 dark:text-gray-400 mb-3">
+              <p className="text-xs font-light text-content-tertiary mb-3">
                 {t.deleteHouseholdDescription}
               </p>
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2.5 text-sm font-light tracking-tight text-red-500 dark:text-red-400 bg-white dark:bg-gray-900 border border-red-200 dark:border-red-800 rounded-md hover:opacity-70 transition-opacity"
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-negative-soft text-negative-on-soft hover:brightness-95 dark:hover:brightness-125"
               >
                 {t.deleteHousehold}
               </button>

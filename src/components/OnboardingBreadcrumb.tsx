@@ -98,9 +98,9 @@ const OnboardingBreadcrumb = () => {
   }
 
   return (
-    <div className="mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+    <div className="mb-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-line">
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        <span className="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap mr-2 flex-shrink-0">
+        <span className="text-xs font-medium text-content-secondary whitespace-nowrap mr-2 flex-shrink-0">
           {t.goals || 'Metas'}:
         </span>
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -118,8 +118,8 @@ const OnboardingBreadcrumb = () => {
                 className={`
                   flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0
                   ${goal.completed 
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700' 
-                    : 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 cursor-pointer'
+                    ? 'bg-positive-soft text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700' 
+                    : 'bg-warning/10 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 cursor-pointer'
                   }
                 `}
               >
@@ -134,7 +134,7 @@ const OnboardingBreadcrumb = () => {
             </div>
           ))}
         </div>
-        <div className="ml-auto text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
+        <div className="ml-auto text-xs text-content-tertiary whitespace-nowrap flex-shrink-0">
           {completedCount}/{totalGoals}
         </div>
       </div>

@@ -254,15 +254,15 @@ export const AccountModal = ({ account, onClose, defaultType = AccountType.CHECK
     <div className="fixed inset-0 z-[60] overflow-y-auto">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 transition-opacity" 
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
         onClick={onClose}
         aria-hidden="true"
       />
       
       {/* Scrollable Container */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
         {/* Modal Card */}
-        <div className="relative w-full sm:w-96 max-w-md p-6 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800">
+        <div className="relative w-full sm:w-96 max-w-md p-6 bg-surface-elevated rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
           <AccountModalHeader isEditing={!!account} onClose={onClose} />
 
           <form onSubmit={handleSubmit(
@@ -301,13 +301,13 @@ export const AccountModal = ({ account, onClose, defaultType = AccountType.CHECK
 
             {/* Campo de cor */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-content-secondary mb-1">
                 {t.color}
               </label>
               <input
                 type="color"
                 {...register('color')}
-                className="block w-full h-10 p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
+                className="block w-full h-10 p-1 border border-line rounded-md bg-surface-elevated"
               />
             </div>
 

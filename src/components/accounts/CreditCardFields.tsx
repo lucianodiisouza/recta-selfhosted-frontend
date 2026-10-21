@@ -31,7 +31,7 @@ export const CreditCardFields = ({
     return (
       <>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {t.cardLimit}
           </label>
           <input
@@ -43,8 +43,8 @@ export const CreditCardFields = ({
               setValue('creditLimit', numericValue, { shouldValidate: true });
             }}
             placeholder={t.currencyPlaceholder || '0,00'}
-            className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-              errors.creditLimit ? 'border-red-300 dark:border-red-600' : ''
+            className={`field-control ${
+              errors.creditLimit ? 'border-negative/60' : ''
             }`}
           />
           <input
@@ -52,49 +52,49 @@ export const CreditCardFields = ({
             {...register('creditLimit', { valueAsNumber: true })}
           />
           {errors.creditLimit && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.creditLimit.message}</p>
+            <p className="mt-1 text-sm text-negative">{errors.creditLimit.message}</p>
           )}
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {t.dueDay || 'Dia de Vencimento'}
           </label>
           <input
             type="number"
             {...register('dueDay', { valueAsNumber: true })}
-            className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="field-control"
             placeholder="1-31"
             min="1"
             max="31"
           />
           {errors.dueDay && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.dueDay.message}</p>
+            <p className="mt-1 text-sm text-negative">{errors.dueDay.message}</p>
           )}
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {t.closingDay || 'Dia de Fechamento'}
           </label>
           <input
             type="number"
             {...register('closingDay', { valueAsNumber: true })}
-            className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="field-control"
             placeholder="1-31"
             min="1"
             max="31"
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs text-content-tertiary">
             {t.closingDayHint || 'Dia em que a fatura fecha. Ex: se fecha no dia 7, a fatura inclui compras do dia 7 do mês anterior até o dia 6 do mês atual.'}
           </p>
           {errors.closingDay && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.closingDay.message}</p>
+            <p className="mt-1 text-sm text-negative">{errors.closingDay.message}</p>
           )}
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             Conta Bancária Vinculada
           </label>
           <Controller
@@ -125,7 +125,7 @@ export const CreditCardFields = ({
               />
             )}
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs text-content-tertiary">
             Vincule o cartão a uma conta bancária para herdar automaticamente a cor.
           </p>
         </div>
@@ -138,27 +138,27 @@ export const CreditCardFields = ({
     return (
       <>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {t.closingDay || 'Dia de Fechamento'}
           </label>
           <input
             type="number"
             {...register('closingDay', { valueAsNumber: true })}
-            className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="field-control"
             placeholder="1-31"
             min="1"
             max="31"
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs text-content-tertiary">
             {t.closingDayHint || 'Dia em que a fatura fecha. Ex: se fecha no dia 7, a fatura inclui compras do dia 7 do mês anterior até o dia 6 do mês atual.'}
           </p>
           {errors.closingDay && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.closingDay.message}</p>
+            <p className="mt-1 text-sm text-negative">{errors.closingDay.message}</p>
           )}
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             Conta Bancária Vinculada
           </label>
           <Controller
@@ -189,7 +189,7 @@ export const CreditCardFields = ({
               />
             )}
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs text-content-tertiary">
             Vincule o cartão a uma conta bancária para herdar automaticamente a cor.
           </p>
         </div>

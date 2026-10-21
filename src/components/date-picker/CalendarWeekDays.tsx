@@ -28,7 +28,7 @@ export const CalendarWeekDays = ({
       {weekDays.map((day, index) => (
         <div
           key={index}
-          className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 py-1"
+          className="text-center text-xs font-medium text-content-tertiary py-1"
         >
           {day}
         </div>

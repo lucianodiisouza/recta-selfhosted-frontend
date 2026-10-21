@@ -157,7 +157,7 @@ export function InvitesNotification({ onInviteClick }: InvitesNotificationProps)
           setIsDropdownOpen(!isDropdownOpen);
           setHasNewNotifications(false);
         }}
-        className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
+        className="relative p-2 text-content-secondary hover:text-content hover:bg-surface-sunken rounded-lg transition-colors flex-shrink-0"
         aria-label="Notificações"
         title={hasNotifications ? `${unreadCount} ${unreadCount === 1 ? 'notificação não lida' : 'notificações não lidas'}` : 'Notificações'}
       >
@@ -173,7 +173,7 @@ export function InvitesNotification({ onInviteClick }: InvitesNotificationProps)
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 max-h-[500px] overflow-y-auto">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface-elevated border border-line rounded-lg shadow-xl z-50 max-h-[500px] overflow-y-auto">
           <NotificationDropdownHeader
             unreadCount={unreadCount}
             totalCount={allNotifications.length}

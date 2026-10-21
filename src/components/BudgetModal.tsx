@@ -177,7 +177,11 @@ export const BudgetModal = ({
       onClose();
       currencyMask.setValue('');
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : t.errorSavingBudget;
+      // 409: a budget for this category, type and month already exists
+      const status = (err as { status?: number } | null)?.status;
+      const errorMsg = status === 409
+        ? t.budgetAlreadyExists
+        : err instanceof Error ? err.message : t.errorSavingBudget;
       showError(errorMsg);
     }
   };
@@ -186,15 +190,15 @@ export const BudgetModal = ({
 
   return createPortal(
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="relative w-full sm:w-96 max-w-md p-4 sm:p-5 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 max-h-[90vh] overflow-y-auto min-w-0">
-        <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="text-lg font-light tracking-tight text-gray-900 dark:text-white">
+      <div className="relative w-full sm:w-96 max-w-md p-4 sm:p-5 bg-surface-elevated max-h-[90vh] overflow-y-auto min-w-0 rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
+        <div className="flex items-center justify-between mb-6 pb-6 border-b border-line-subtle">
+          <h3 className="font-rounded text-lg font-semibold text-content">
             {editingBudget ? t.editBudget : t.newBudget}
           </h3>
           <button
             onClick={onClose}
             aria-label="Fechar modal"
-            className="text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1"
+            className="text-content-tertiary hover:opacity-70 transition-opacity p-1"
           >
             <span aria-hidden="true">×</span>
           </button>
@@ -202,7 +206,7 @@ export const BudgetModal = ({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 min-w-0">
           <div>
-            <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-light text-content-tertiary mb-2">
               {t.type}
             </label>
             <SelectCombobox
@@ -212,12 +216,12 @@ export const BudgetModal = ({
               placeholder={t.select}
             />
             {errors.type && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.type.message}</p>
+              <p className="mt-1 text-sm text-negative">{errors.type.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-light text-content-tertiary mb-2">
               {t.category}
             </label>
             <SelectCombobox
@@ -227,7 +231,7 @@ export const BudgetModal = ({
               placeholder={t.selectCategory}
               searchable={true}
             />
-            <p className="mt-1 text-xs font-light text-gray-400 dark:text-gray-500">
+            <p className="mt-1 text-xs font-light text-content-tertiary">
               {t.general} - {watchedType === TransactionType.EXPENSE ? t.totalExpense : t.totalIncome}
             </p>
             {errors.category && (
@@ -236,7 +240,7 @@ export const BudgetModal = ({
           </div>
 
           <div>
-            <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-light text-content-tertiary mb-2">
               {t.amount}
             </label>
             <input
@@ -248,8 +252,8 @@ export const BudgetModal = ({
                 setValue('amount', numericValue, { shouldValidate: true });
               }}
               placeholder={t.currencyPlaceholder}
-              className={`block w-full px-3 py-2.5 border rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 sm:text-sm font-light tracking-tight ${
-                errors.amount ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-800'
+              className={`field-control ${
+                errors.amount ? 'border-negative/60' : 'border-line-subtle'
               }`}
             />
             <input
@@ -264,7 +268,7 @@ export const BudgetModal = ({
           </div>
 
           <div className="min-w-0">
-            <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-light text-content-tertiary mb-2">
               {t.month}
             </label>
             <DatePicker
@@ -281,7 +285,7 @@ export const BudgetModal = ({
                 }
               }}
               placeholder={t.month}
-              className={errors.month ? 'border-red-300 dark:border-red-600' : ''}
+              className={errors.month ? 'border-negative/60' : ''}
               useModal={true}
             />
             <input
@@ -295,18 +299,18 @@ export const BudgetModal = ({
             )}
           </div>
 
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex justify-end space-x-3 pt-6 border-t border-line-subtle">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity"
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-brand-fill text-white hover:bg-brand-fill-hover"
             >
               {isSubmitting ? t.loading : editingBudget ? t.update : t.create}
             </button>

@@ -495,3 +495,92 @@ export function useUpdateSharedAccountIds() {
     },
   });
 }
+
+// ============================================================================
+// JOIN CODES (link recta.app/join/<code>: whoever opens it joins at once)
+// ============================================================================
+
+export interface HouseholdJoinCode {
+  id: string;
+  code: string;
+  role: 'EDITOR' | 'VIEWER';
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface JoinCodePreview {
+  householdId: string;
+  householdName: string;
+  inviterName: string;
+  role: 'EDITOR' | 'VIEWER';
+  expiresAt: string;
+  alreadyMember: boolean;
+}
+
+/** The household's code still waiting to be used (OWNER only). */
+export function useActiveJoinCode(householdId: string, enabled = true) {
+  return useQuery({
+    queryKey: ['households', householdId, 'join-code'],
+    queryFn: async () => {
+      const response = await apiClient.get<HouseholdJoinCode | null>(`/households/${householdId}/join-codes/active`);
+      return response.data ?? null;
+    },
+    enabled: enabled && !!householdId,
+  });
+}
+
+/** New code for the household; the previous one stops working. */
+export function useCreateJoinCode() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ householdId, role }: { householdId: string; role: 'EDITOR' | 'VIEWER' }) => {
+      const response = await apiClient.post<HouseholdJoinCode>(`/households/${householdId}/join-codes`, { role });
+      return response.data!;
+    },
+    onSuccess: (data, { householdId }) => {
+      queryClient.setQueryData(['households', householdId, 'join-code'], data);
+    },
+  });
+}
+
+export function useRevokeJoinCode() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ householdId, joinCodeId }: { householdId: string; joinCodeId: string }) => {
+      await apiClient.delete(`/households/${householdId}/join-codes/${joinCodeId}`);
+    },
+    onSuccess: (_data, { householdId }) => {
+      queryClient.setQueryData(['households', householdId, 'join-code'], null);
+    },
+  });
+}
+
+/** Household, inviter and role behind a code, for the confirm screen. */
+export function useJoinCodePreview(code: string, enabled = true) {
+  return useQuery({
+    queryKey: ['households', 'join', code],
+    queryFn: async () => {
+      const response = await apiClient.get<JoinCodePreview>(`/households/join/${encodeURIComponent(code)}`);
+      return response.data!;
+    },
+    enabled: enabled && !!code,
+    retry: false,
+  });
+}
+
+export function useRedeemJoinCode() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (code: string) => {
+      const response = await apiClient.post<{ householdId: string; householdName: string; role: 'EDITOR' | 'VIEWER' }>(
+        `/households/join/${encodeURIComponent(code)}`
+      );
+      return response.data!;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['households'] });
+      queryClient.invalidateQueries({ queryKey: ['households', data.householdId, 'members'] });
+      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+    },
+  });
+}

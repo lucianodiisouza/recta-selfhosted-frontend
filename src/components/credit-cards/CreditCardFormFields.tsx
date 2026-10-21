@@ -6,6 +6,8 @@ interface CreditCardFormFieldsProps {
   form: UseFormReturn<any>;
   creditLimitMask: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void };
   balanceMask?: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void };
+  // Only passed when editing: "available limit today" (fdbk #108)
+  availableLimitMask?: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void };
   // Loose type so the parent can pass either a strict UseFormSetValue or a relaxed
   // string-based setValue without a type error.
   setValue: UseFormSetValue<any> | ((name: string, value: any, options?: any) => void);
@@ -16,6 +18,7 @@ export const CreditCardFormFields = ({
   form,
   creditLimitMask,
   balanceMask,
+  availableLimitMask,
   setValue,
   isCreation,
 }: CreditCardFormFieldsProps) => {
@@ -25,14 +28,14 @@ export const CreditCardFormFields = ({
   return (
     <>
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.accountName || 'Nome do Cartão'}
         </label>
         <input
           type="text"
           {...register('name')}
-          className={`block w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-            errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+          className={`field-control ${
+            errors.name ? 'border-negative/60' : 'border-line'
           }`}
           placeholder={t.accountNamePlaceholder || 'Ex: Nubank, Inter...'}
         />
@@ -40,7 +43,7 @@ export const CreditCardFormFields = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.cardLimit}
         </label>
         <input
@@ -52,8 +55,8 @@ export const CreditCardFormFields = ({
             setValue('creditLimit', numericValue, { shouldValidate: true });
           }}
           placeholder={t.currencyPlaceholder || '0,00'}
-          className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-            errors.creditLimit ? 'border-red-300 dark:border-red-600' : ''
+          className={`field-control ${
+            errors.creditLimit ? 'border-negative/60' : ''
           }`}
         />
         <input
@@ -61,55 +64,83 @@ export const CreditCardFormFields = ({
           {...register('creditLimit', { valueAsNumber: true })}
         />
         {errors.creditLimit && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{(errors.creditLimit as { message?: string }).message ?? ''}</p>
+          <p className="mt-1 text-sm text-negative">{(errors.creditLimit as { message?: string }).message ?? ''}</p>
         )}
       </div>
       
+      {!isCreation && availableLimitMask && (
+        <div>
+          <label className="block text-sm font-medium text-content-secondary mb-1">
+            {t.availableLimitToday}
+          </label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={availableLimitMask.value}
+            onChange={(e) => {
+              availableLimitMask.onChange(e);
+              const numericValue = parseCurrencyValue(e.target.value);
+              setValue('availableLimit', numericValue, { shouldDirty: true });
+            }}
+            placeholder={t.currencyPlaceholder || '0,00'}
+            className={`field-control ${
+              errors.availableLimit ? 'border-negative/60' : ''
+            }`}
+          />
+          <p className="mt-1 text-xs font-light text-content-tertiary">
+            {t.availableLimitTodayHint}
+          </p>
+          {errors.availableLimit && (
+            <p className="mt-1 text-sm text-negative">{(errors.availableLimit as { message?: string }).message ?? ''}</p>
+          )}
+        </div>
+      )}
+
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.dueDay}
         </label>
         <input
           type="number"
           {...register('dueDay', { valueAsNumber: true })}
-          className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-            errors.dueDay ? 'border-red-300 dark:border-red-600' : ''
+          className={`field-control ${
+            errors.dueDay ? 'border-negative/60' : ''
           }`}
           placeholder="1-31"
           min="1"
           max="31"
         />
         {errors.dueDay && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{(errors.dueDay as { message?: string }).message ?? ''}</p>
+          <p className="mt-1 text-sm text-negative">{(errors.dueDay as { message?: string }).message ?? ''}</p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.bestDayOffset || 'Dias antes do vencimento (melhor dia)'}
         </label>
         <input
           type="number"
           {...register('bestDayOffset', { valueAsNumber: true })}
-          className={`block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-            errors.bestDayOffset ? 'border-red-300 dark:border-red-600' : ''
+          className={`field-control ${
+            errors.bestDayOffset ? 'border-negative/60' : ''
           }`}
           placeholder="10"
           min="1"
           max="30"
         />
-        <p className="mt-1 text-xs font-light text-gray-400 dark:text-gray-500">
+        <p className="mt-1 text-xs font-light text-content-tertiary">
           {t.bestDayOffsetHint || 'Quantos dias antes do vencimento indica o melhor dia para compra. Padrão: 10.'}
         </p>
         {errors.bestDayOffset && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{(errors.bestDayOffset as { message?: string }).message ?? ''}</p>
+          <p className="mt-1 text-sm text-negative">{(errors.bestDayOffset as { message?: string }).message ?? ''}</p>
         )}
       </div>
 
       {/* Dívida inicial só aparece na criação, não na edição */}
       {isCreation && balanceMask && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {t.initialDebt}
           </label>
           <input
@@ -120,7 +151,7 @@ export const CreditCardFormFields = ({
               const numericValue = parseCurrencyValue(e.target.value);
               setValue('balance', numericValue, { shouldValidate: true });
             }}
-            className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className="field-control"
             placeholder={t.currencyPlaceholder || '0,00'}
           />
           <input
@@ -128,19 +159,19 @@ export const CreditCardFormFields = ({
             {...register('balance', { valueAsNumber: true })}
           />
           {errors.balance && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{(errors.balance as { message?: string }).message ?? ''}</p>
+            <p className="mt-1 text-sm text-negative">{(errors.balance as { message?: string }).message ?? ''}</p>
           )}
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.color}
         </label>
         <input
           type="color"
           {...register('color')}
-          className="block w-full h-10 p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
+          className="block w-full h-10 p-1 border border-line rounded-md bg-surface-elevated"
         />
       </div>
     </>

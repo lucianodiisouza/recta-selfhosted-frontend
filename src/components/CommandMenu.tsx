@@ -55,6 +55,11 @@ const CommandMenu = ({
   const { install, isInstalled, canInstall } = usePWAInstall();
   const { success, error: showError } = useToastContext();
 
+  // Close it when it gets disabled (onboarding, app lock).
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
+
   // Toggle the menu when Cmd+K (Mac) or Ctrl+K (Windows/Linux) is pressed
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -169,163 +174,163 @@ const CommandMenu = ({
         className="fixed top-[50%] left-[50%] z-[100] translate-x-[-50%] translate-y-[-50%] w-full max-w-lg"
         label={t.commandMenuPlaceholder}
       >
-        <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
+        <div className="overflow-hidden rounded-2xl bg-surface-elevated shadow-floating ring-1 ring-line-subtle animate-menu-in">
           <h2 className="sr-only">{t.commandMenuPlaceholder}</h2>
           <p className="sr-only">{t.commandMenuDescription}</p>
           <Command.Input 
             placeholder={t.commandMenuPlaceholder}
-            className="w-full px-4 py-3 text-sm border-0 focus:outline-none focus:ring-0 bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+            className="w-full h-[52px] px-5 text-base border-0 border-b border-line-subtle focus:outline-none focus:ring-0 bg-transparent text-content placeholder:text-content-tertiary"
           />
           <Command.List className="max-h-[300px] overflow-y-auto p-2">
-          <Command.Empty className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <Command.Empty className="py-6 text-center text-sm text-content-tertiary">
             {t.commandMenuNoResults}
           </Command.Empty>
 
-          <Command.Group heading={t.commandMenuTransactionsGroup} className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+          <Command.Group heading={t.commandMenuTransactionsGroup} className="px-2 py-1.5 text-xs font-semibold text-content-tertiary">
             <Command.Item 
               onSelect={() => runCommand(handleNewTransaction)}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.newTransaction}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(handleNewRecurring)}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Calendar className="mr-2 h-4 w-4" />
+              <Calendar className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.newRecurring}</span>
             </Command.Item>
           </Command.Group>
 
-          <Command.Group heading={t.commandMenuManagementGroup} className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+          <Command.Group heading={t.commandMenuManagementGroup} className="px-2 py-1.5 text-xs font-semibold text-content-tertiary">
             <Command.Item 
               onSelect={() => runCommand(handleNewBudget)}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Target className="mr-2 h-4 w-4" />
+              <Target className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.newBudget}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(handleNewAccount)}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Wallet className="mr-2 h-4 w-4" />
+              <Wallet className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.newAccount}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(handleNewGoal)}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Target className="mr-2 h-4 w-4" />
+              <Target className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.commandMenuNewSavingsGoal}</span>
             </Command.Item>
           </Command.Group>
 
-          <Command.Group heading={t.commandMenuNavigationGroup} className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+          <Command.Group heading={t.commandMenuNavigationGroup} className="px-2 py-1.5 text-xs font-semibold text-content-tertiary">
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <BarChart3 className="mr-2 h-4 w-4" />
+              <BarChart3 className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.dashboard}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/app/transactions'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <FileText className="mr-2 h-4 w-4" />
+              <FileText className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.transactions}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/app/budgets'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Target className="mr-2 h-4 w-4" />
+              <Target className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.budgets}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/app/recurring'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Calendar className="mr-2 h-4 w-4" />
+              <Calendar className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.recurring}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/app/credit-cards'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <CreditCard className="mr-2 h-4 w-4" />
+              <CreditCard className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.creditCards}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/app/accounts'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Wallet className="mr-2 h-4 w-4" />
+              <Wallet className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.accounts}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/app/goals'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <Target className="mr-2 h-4 w-4" />
+              <Target className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.goals}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/app/reports'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <BarChart3 className="mr-2 h-4 w-4" />
+              <BarChart3 className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.reports}</span>
             </Command.Item>
             {onShowMonthlyRecap && (
               <Command.Item 
                 onSelect={() => runCommand(onShowMonthlyRecap, 'showMonthlyRecap')}
-                className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+                className="flex items-center"
               >
-                <Trophy className="mr-2 h-4 w-4" />
+                <Trophy className="me-2 h-[18px] w-[18px] opacity-80" />
                 <span>Monthly Recap</span>
               </Command.Item>
             )}
           </Command.Group>
 
-          <Command.Group heading={t.commandMenuManagementGroup} className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+          <Command.Group heading={t.commandMenuManagementGroup} className="px-2 py-1.5 text-xs font-semibold text-content-tertiary">
             <Command.Item 
               onSelect={() => runCommand(() => navigate('/app/settings'))}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
-              <FileText className="mr-2 h-4 w-4" />
+              <FileText className="me-2 h-[18px] w-[18px] opacity-80" />
               <span>{t.settings}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(toggleTheme)}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
               {theme === 'dark' ? (
-                <Sun className="mr-2 h-4 w-4" />
+                <Sun className="me-2 h-[18px] w-[18px] opacity-80" />
               ) : (
-                <Moon className="mr-2 h-4 w-4" />
+                <Moon className="me-2 h-[18px] w-[18px] opacity-80" />
               )}
               <span>{theme === 'dark' ? t.lightMode : t.darkMode}</span>
             </Command.Item>
             <Command.Item 
               onSelect={() => runCommand(toggleBlur)}
-              className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+              className="flex items-center"
             >
               {isBlurred ? (
-                <EyeOff className="mr-2 h-4 w-4" />
+                <EyeOff className="me-2 h-[18px] w-[18px] opacity-80" />
               ) : (
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="me-2 h-[18px] w-[18px] opacity-80" />
               )}
               <span>{isBlurred ? t.showValuesBlur : t.hideValuesBlur}</span>
             </Command.Item>
             {onRestartOnboarding && (
               <Command.Item 
                 onSelect={() => runCommand(onRestartOnboarding)}
-                className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+                className="flex items-center"
               >
-                <RefreshCcw className="mr-2 h-4 w-4" />
+                <RefreshCcw className="me-2 h-[18px] w-[18px] opacity-80" />
                 <span>{t.restartOnboarding}</span>
               </Command.Item>
             )}
@@ -340,21 +345,21 @@ const CommandMenu = ({
                     showError(t.pwaInstallNotAvailable || 'Instalação não disponível no momento. Verifique as instruções nas configurações.');
                   }
                 }}
-                className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+                className="flex items-center"
               >
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="me-2 h-[18px] w-[18px] opacity-80" />
                 <span>{t.installApp || 'Instalar App'}</span>
               </Command.Item>
             )}
           </Command.Group>
 
           {onShowConfetti && (
-            <Command.Group heading={t.commandMenuFunGroup} className="px-2 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+            <Command.Group heading={t.commandMenuFunGroup} className="px-2 py-1.5 text-xs font-semibold text-content-tertiary">
               <Command.Item 
                 onSelect={() => runCommand(onShowConfetti)}
-                className="flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 aria-selected:bg-primary-50 dark:aria-selected:bg-primary-900/30 aria-selected:text-primary-700 dark:aria-selected:text-primary-400"
+                className="flex items-center"
               >
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Sparkles className="me-2 h-[18px] w-[18px] opacity-80" />
                 <span>{t.commandMenuShowConfetti}</span>
               </Command.Item>
             </Command.Group>

@@ -46,26 +46,27 @@ export const MonthNavigator = ({
 
   const formattedMonth = format(selectedMonth, 'MMMM yyyy', { locale: currentLocale });
 
+  // Chevrons around the month, like the app's month switcher.
   return (
-    <div className={`flex items-center justify-between ${className}`}>
+    <div className={`inline-flex items-center gap-1 rounded-full bg-surface-elevated p-1 shadow-card dark:shadow-none dark:ring-1 dark:ring-line/60 ${className}`}>
       <button
         onClick={handlePrevMonth}
-        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand-on-soft hover:bg-brand/15 transition-colors rtl:rotate-180"
         aria-label="Mês anterior"
       >
-        <ChevronLeft className="h-5 w-5" />
+        <ChevronLeft className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
       </button>
-      
-      <span className="text-lg font-medium px-4">
+
+      <span className="min-w-[8.5rem] px-2 text-center text-[15px] font-semibold capitalize text-content" aria-live="polite">
         {formattedMonth}
       </span>
-      
+
       <button
         onClick={handleNextMonth}
-        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand-on-soft hover:bg-brand/15 transition-colors rtl:rotate-180"
         aria-label="Próximo mês"
       >
-        <ChevronRight className="h-5 w-5" />
+        <ChevronRight className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
       </button>
     </div>
   );

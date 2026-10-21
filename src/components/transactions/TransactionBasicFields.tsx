@@ -22,6 +22,8 @@ interface TransactionBasicFieldsProps {
   currencyMask: UseCurrencyMaskReturn;
   isCreditCardContext?: boolean;
   disabled?: boolean;
+  /** Trava só o valor (ex.: transferência existente, cujo valor não se edita). */
+  amountLocked?: boolean;
   householdId?: string;
 }
 
@@ -36,8 +38,10 @@ export const TransactionBasicFields = ({
   currencyMask,
   isCreditCardContext = false,
   disabled = false,
+  amountLocked = false,
   householdId,
 }: TransactionBasicFieldsProps) => {
+  const amountDisabled = disabled || amountLocked;
   const { t } = useI18n();
   const { baseCurrency } = useCurrency();
   const selectedAccountId = watch('accountId');
@@ -46,9 +50,76 @@ export const TransactionBasicFields = ({
 
   return (
     <>
+      <div>
+        <label htmlFor="transaction-amount" className="sr-only">
+          {t.amount}
+        </label>
+        <input
+          id="transaction-amount"
+          type="text"
+          // The amount is what people type first, like the app's capture sheet.
+          autoFocus={!amountDisabled}
+          inputMode="decimal"
+          aria-invalid={errors.amount ? true : undefined}
+          value={currencyMask.value}
+          onChange={(e) => {
+            if (!amountDisabled) {
+              currencyMask.onChange(e);
+              const numericValue = parseCurrencyValue(e.target.value);
+              setValue('amount', numericValue, { shouldValidate: true });
+            }
+          }}
+          placeholder={t.currencyPlaceholder}
+          disabled={amountDisabled}
+          readOnly={amountDisabled}
+          className={`block w-full rounded-xl border-0 bg-surface-sunken px-4 py-5 text-center font-rounded text-4xl sm:text-[44px] font-bold tabular-nums text-content placeholder:text-content-tertiary focus:outline-none focus:ring-4 ${
+            errors.amount ? 'ring-2 ring-negative/60 focus:ring-negative/15' : 'focus:ring-brand/15'
+          } ${amountDisabled ? 'text-content-tertiary cursor-not-allowed' : ''}`}
+        />
+        <input
+          type="hidden"
+          {...register('amount', {
+            valueAsNumber: true,
+          })}
+        />
+        {errors.amount && (
+          <p className="mt-1.5 text-center text-sm text-negative">{errors.amount.message}</p>
+        )}
+        {(() => {
+          if (transactionType === TransactionType.TRANSFER) {
+            const fromAccountId = watch('fromAccountId');
+            const fromAccount = accounts.find(a => a.id === fromAccountId);
+            if (fromAccount) {
+              const availableBalance = getAvailableBalance(fromAccount);
+              return (
+                <p className="mt-1.5 text-center text-xs text-content-tertiary">
+                  {t.availableBalance}: {formatCurrency(availableBalance, baseCurrency)}
+                </p>
+              );
+            }
+          }
+          if (transactionType === TransactionType.EXPENSE && paid && selectedAccountId) {
+            const selectedAccount = accounts.find(a => a.id === selectedAccountId);
+            if (selectedAccount && selectedAccount.type !== AccountType.CREDIT) {
+              const availableBalance = getAvailableBalance(selectedAccount);
+              const isOverBalance = transactionAmount > availableBalance;
+              return (
+                <p className={`mt-1.5 text-center text-xs ${isOverBalance ? 'text-negative font-medium' : 'text-content-tertiary'}`}>
+                  {t.availableBalance}: {formatCurrency(availableBalance, baseCurrency)}
+                  {isOverBalance && (
+                    <span className="ml-2">({t.insufficientAvailableBalance})</span>
+                  )}
+                </p>
+              );
+            }
+          }
+          return null;
+        })()}
+      </div>
+
       {transactionType !== TransactionType.TRANSFER && (
         <div>
-          <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+          <label className="field-label">
             {t.category}
           </label>
           <Controller
@@ -77,75 +148,13 @@ export const TransactionBasicFields = ({
             }}
           />
           {errors.category && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.category.message}</p>
+            <p className="mt-1 text-sm text-negative">{errors.category.message}</p>
           )}
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {t.amount}
-        </label>
-        <input
-          type="text"
-          value={currencyMask.value}
-          onChange={(e) => {
-            if (!disabled) {
-              currencyMask.onChange(e);
-              const numericValue = parseCurrencyValue(e.target.value);
-              setValue('amount', numericValue, { shouldValidate: true });
-            }
-          }}
-          placeholder={t.currencyPlaceholder}
-          disabled={disabled}
-          readOnly={disabled}
-          className={`block w-full px-3 py-2.5 border rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 sm:text-sm font-light tracking-tight ${
-            errors.amount ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-          } ${disabled ? 'bg-gray-100 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 cursor-not-allowed' : ''}`}
-        />
-        <input
-          type="hidden"
-          {...register('amount', {
-            valueAsNumber: true,
-          })}
-        />
-        {errors.amount && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.amount.message}</p>
-        )}
-        {(() => {
-          if (transactionType === TransactionType.TRANSFER) {
-            const fromAccountId = watch('fromAccountId');
-            const fromAccount = accounts.find(a => a.id === fromAccountId);
-            if (fromAccount) {
-              const availableBalance = getAvailableBalance(fromAccount);
-              return (
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {t.availableBalance}: {formatCurrency(availableBalance, baseCurrency)}
-                </p>
-              );
-            }
-          }
-          if (transactionType === TransactionType.EXPENSE && paid && selectedAccountId) {
-            const selectedAccount = accounts.find(a => a.id === selectedAccountId);
-            if (selectedAccount && selectedAccount.type !== AccountType.CREDIT) {
-              const availableBalance = getAvailableBalance(selectedAccount);
-              const isOverBalance = transactionAmount > availableBalance;
-              return (
-                <p className={`mt-1 text-xs ${isOverBalance ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
-                  {t.availableBalance}: {formatCurrency(availableBalance, baseCurrency)}
-                  {isOverBalance && (
-                    <span className="ml-2">({t.insufficientAvailableBalance})</span>
-                  )}
-                </p>
-              );
-            }
-          }
-          return null;
-        })()}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="field-label">
           {t.description}
         </label>
         <input
@@ -153,17 +162,16 @@ export const TransactionBasicFields = ({
           {...register('description')}
           disabled={disabled}
           readOnly={disabled}
-          className={`block w-full px-3 py-2.5 border rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 sm:text-sm font-light tracking-tight ${
-            errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-          } ${disabled ? 'bg-gray-100 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 cursor-not-allowed' : ''}`}
+          aria-invalid={errors.description ? true : undefined}
+          className="field-control"
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description.message}</p>
+          <p className="mt-1 text-sm text-negative">{errors.description.message}</p>
         )}
       </div>
 
       <div className="min-w-0">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="field-label">
           {t.date}
         </label>
         <DatePicker
@@ -174,7 +182,7 @@ export const TransactionBasicFields = ({
             }
           }}
           placeholder={t.date}
-          className={errors.date ? 'border-red-300 dark:border-red-600' : ''}
+          className={errors.date ? 'border-negative/60' : ''}
           useModal={true}
           disabled={disabled}
         />
@@ -185,25 +193,23 @@ export const TransactionBasicFields = ({
           })}
         />
         {errors.date && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.date.message}</p>
+          <p className="mt-1 text-sm text-negative">{errors.date.message}</p>
         )}
       </div>
 
       {transactionType !== TransactionType.TRANSFER && (
-        <div className="flex items-center">
+        <label className={`flex items-center justify-between gap-4 rounded-xl bg-surface-sunken/70 px-4 py-3 ${disabled ? 'opacity-60' : 'cursor-pointer'}`}>
+          <span className="min-w-0">
+            <span className="block text-[15px] font-medium text-content">{t.paid}</span>
+            <span className="block text-xs text-content-tertiary">{t.paidDescription}</span>
+          </span>
           <input
             type="checkbox"
             {...register('paid')}
             disabled={disabled}
-            className={`h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+            className="switch-input"
           />
-          <label className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
-            {t.paid}
-          </label>
-          <p className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-            ({t.paidDescription})
-          </p>
-        </div>
+        </label>
       )}
     </>
   );

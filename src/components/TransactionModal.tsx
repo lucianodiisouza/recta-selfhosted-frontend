@@ -205,8 +205,8 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
     return isCreditCardContext;
   }, [selectedAccountId, accounts, isCreditCardContext]);
 
-  // Filtrar contas baseado no contexto
-  // Incluir CHECKING, SAVINGS, CREDIT, CASH (não INVESTMENT)
+  // Filtrar contas baseado no contexto. Investimentos entram (rendimento, aporte, resgate; fdbk #162),
+  // mas nunca viram a conta padrão (ver fallbackAccountId).
   const availableAccounts = useMemo(() => {
     if (isCreditCardContext) {
       // Se for contexto de cartão, mostrar apenas cartões de crédito
@@ -214,13 +214,14 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
         account.type === AccountType.CREDIT
       );
     } else {
-      // Caso contrário, mostrar todas as contas (bancárias, cartões de crédito, dinheiro), exceto investimentos
-      // O campo de parcelas será controlado pela conta selecionada
-      return accounts.filter(account => 
-        account.type !== AccountType.INVESTMENT
-      );
+      // Caso contrário, todas as contas; o campo de parcelas é controlado pela conta selecionada
+      return accounts;
     }
   }, [accounts, isCreditCardContext]);
+
+  // Conta usada quando nenhuma foi escolhida: a primeira que não é investimento
+  const fallbackAccountId =
+    (availableAccounts.find(account => account.type !== AccountType.INVESTMENT) ?? availableAccounts[0])?.id || '';
 
   // Verificar se há contas disponíveis para mostrar warning
   const hasNoAccountsAvailable = availableAccounts.length === 0 && !isCreditCardContext;
@@ -388,7 +389,7 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
       // Selecionar primeira conta disponível se não tiver defaultAccountId
       let selectedAccountId = defaultAccountId || '';
       if (!selectedAccountId && availableAccounts.length > 0) {
-        selectedAccountId = availableAccounts[0].id || '';
+        selectedAccountId = fallbackAccountId;
       }
 
       // Se for contexto de cartão de crédito, sempre usar EXPENSE
@@ -577,11 +578,26 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
     setSplitBalanceErrors(errors);
   }, [splits, transactionPaid, accounts, householdMembers, isSplit, isSharedHousehold, transactionType, baseCurrency, t]);
 
+  // Transferência existente: contas, tipo e valor travados; só descrição e data mudam.
+  const isEditingTransfer = !!transaction && transaction.type === TransactionType.TRANSFER;
+
   const onSubmit = async (data: TransactionFormData, shouldCreateNew = false) => {
     if (readOnly) {
       return; // Não permitir submit em modo read-only
     }
     try {
+      // Transferência existente: só descrição e data. O backend não refaz os saldos de uma
+      // transferência editada, e recriar duplicava o movimento (contas e valor ficam travados).
+      if (transaction?.id && data.type === TransactionType.TRANSFER) {
+        await updateTransaction(transaction.id, {
+          description: data.description ?? '',
+          date: data.date,
+        });
+        success(t.transactionUpdated);
+        onClose();
+        return;
+      }
+
       // Handle transfers separately
       if (data.type === TransactionType.TRANSFER) {
         if (!data.fromAccountId || !data.toAccountId) {
@@ -747,7 +763,7 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
           setSplitBalanceErrors({});
           let selectedAccountId = defaultAccountId || '';
           if (!selectedAccountId && availableAccounts.length > 0) {
-            selectedAccountId = availableAccounts[0].id || '';
+            selectedAccountId = fallbackAccountId;
           }
           reset({
             description: '',
@@ -783,7 +799,7 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
           setSplitBalanceErrors({});
           let selectedAccountId = defaultAccountId || '';
           if (!selectedAccountId && availableAccounts.length > 0) {
-            selectedAccountId = availableAccounts[0].id || '';
+            selectedAccountId = fallbackAccountId;
           }
           const defaultType = isCreditCardContext ? TransactionType.EXPENSE : TransactionType.EXPENSE;
           reset({
@@ -819,7 +835,7 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
           setSplits([]);
           let selectedAccountId = defaultAccountId || '';
           if (!selectedAccountId && availableAccounts.length > 0) {
-            selectedAccountId = availableAccounts[0].id || '';
+            selectedAccountId = fallbackAccountId;
           }
           const defaultType = isCreditCardContext ? TransactionType.EXPENSE : TransactionType.EXPENSE;
           reset({
@@ -848,14 +864,14 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
     <div className="fixed inset-0 z-[60] overflow-y-auto">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/40 animate-fade-in transition-opacity duration-300 ease-out" 
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
         onClick={onClose}
         aria-hidden="true"
       />
       
       {/* Scrollable Container */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative w-full sm:w-[450px] max-w-lg p-6 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 max-h-[90vh] overflow-y-auto min-w-0 animate-slide-in-bottom">
+      <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
+        <div className="relative w-full sm:w-[450px] max-w-lg p-6 bg-surface-elevated max-h-[90vh] overflow-y-auto min-w-0 rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
           <TransactionModalHeader
             title={readOnly ? t.viewDetails : (transaction ? t.editTransaction : t.newTransaction)}
             onClose={onClose}
@@ -868,7 +884,7 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
                 control={control}
                 errors={errors}
                 accounts={accounts}
-                disabled={readOnly}
+                disabled={readOnly || isEditingTransfer}
               />
             )}
 
@@ -879,8 +895,11 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
                 setValue={setValue}
                 errors={errors}
                 accounts={accounts}
-                disabled={readOnly}
+                disabled={readOnly || isEditingTransfer}
               />
+            )}
+            {isEditingTransfer && !readOnly && (
+              <p className="text-xs font-light text-content-tertiary">{t.transferEditHint}</p>
             )}
 
             <TransactionBasicFields
@@ -894,6 +913,7 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
               currencyMask={currencyMask}
               isCreditCardContext={isCreditCardContext}
               disabled={readOnly}
+              amountLocked={isEditingTransfer}
               householdId={householdId ?? undefined}
             />
 
@@ -960,7 +980,7 @@ const TransactionModal = ({ transaction, onClose, defaultAccountId, defaultPaid,
                     disabled={readOnly}
                     className={`h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded ${readOnly ? 'cursor-not-allowed opacity-60' : ''}`}
                   />
-                  <label htmlFor="isRecurring" className="ml-2 block text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
+                  <label htmlFor="isRecurring" className="ml-2 block text-sm text-content cursor-pointer">
                     {t.recurring}
                   </label>
                 </div>

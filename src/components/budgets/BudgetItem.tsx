@@ -24,52 +24,52 @@ export const BudgetItem = ({
   t,
 }: BudgetItemProps) => {
   return (
-    <li key={budget.id} className="px-5 sm:px-6 py-5 hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors">
+    <li key={budget.id} className="px-5 sm:px-6 py-5">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-light tracking-tight text-gray-900 dark:text-white mb-4">
+          <h3 className="card-title mb-4">
             {isGeneralBudget(budget) ? t.general : budget.category}
           </h3>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-300 mb-1">
+                <div className="text-xs font-medium text-content-secondary mb-1">
                   {t.budgetAmount}
                 </div>
-                <div className="text-base font-light text-gray-900 dark:text-white">
+                <div className="font-rounded text-lg font-semibold tabular-nums text-content">
                   {formatCurrency(budget.amount, baseCurrency)}
                 </div>
               </div>
               <div>
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-300 mb-1">
+                <div className="text-xs font-medium text-content-secondary mb-1">
                   {t.spent}
                 </div>
-                <div className="text-base font-light text-gray-900 dark:text-white">
+                <div className="font-rounded text-lg font-semibold tabular-nums text-content">
                   {formatCurrency(budget.spent, baseCurrency)}
                 </div>
               </div>
             </div>
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="pt-4 border-t border-line-subtle">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-300">
+                <span className="text-xs font-medium text-content-secondary">
                   {budget.remaining >= 0 ? t.remaining : t.exceeded}
                 </span>
-                <span className={`text-sm font-light ${
-                  budget.remaining >= 0 ? 'text-green-500' : 'text-red-500'
+                <span className={`font-rounded text-[15px] font-semibold tabular-nums ${
+                  budget.remaining >= 0 ? 'text-positive' : 'text-negative'
                 }`}>
                   {formatCurrency(Math.abs(budget.remaining), baseCurrency)}
                 </span>
               </div>
-              <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1 mb-2">
+              <div className="w-full bg-line rounded-full h-2 mb-2 overflow-hidden">
                 <div
-                  className={`h-1 rounded-full transition-all ${
-                    budget.status === 'exceeded' ? 'bg-red-500' :
-                    budget.status === 'warning' ? 'bg-yellow-500' : 'bg-green-500'
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    budget.status === 'exceeded' ? 'bg-negative' :
+                    budget.status === 'warning' ? 'bg-[#F79009]' : 'bg-positive'
                   }`}
                   style={{ width: `${Math.min(budget.percentage, 100)}%` }}
                 />
               </div>
-              <div className="text-xs font-light text-gray-400 dark:text-gray-500">
+              <div className="text-xs text-content-tertiary tabular-nums">
                 {budget.percentage.toFixed(1)}% {t.used}
               </div>
             </div>

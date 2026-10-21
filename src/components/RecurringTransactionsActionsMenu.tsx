@@ -54,7 +54,7 @@ export const RecurringTransactionsActionsMenu = ({
     <Popover.Root open={open} onOpenChange={handleOpenChange}>
       <Popover.Trigger asChild>
         <button
-          className="text-gray-400 dark:text-gray-500 hover:opacity-70 focus:outline-none rounded p-1 transition-opacity"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-content-tertiary hover:bg-surface-sunken hover:text-content data-[state=open]:bg-surface-sunken data-[state=open]:text-content transition-colors"
           aria-label={t.moreOptions || 'Mais opções'}
         >
           <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
@@ -63,40 +63,40 @@ export const RecurringTransactionsActionsMenu = ({
 
       <Popover.Portal>
         <Popover.Content
-          className="w-56 bg-white dark:bg-gray-900 rounded-md border border-gray-100 dark:border-gray-800 z-50 p-1"
+          className="min-w-[14rem] bg-surface-elevated rounded-xl shadow-floating ring-1 ring-line-subtle z-50 p-1.5 animate-menu-in"
           sideOffset={4}
           align="end"
         >
-          <div className="py-1">
+          <div>
             <button
               onClick={handleToggleActive}
               disabled={isToggling}
-              className="w-full flex items-center px-4 py-2 text-sm font-light text-gray-900 dark:text-white hover:bg-gray-50/50 dark:hover:bg-gray-900/50 rounded-sm focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex items-center gap-3 h-10 px-3 text-[15px] text-content rounded-lg hover:bg-surface-sunken focus:outline-none focus-visible:bg-surface-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {recurring.isActive ? (
                 <>
-                  <Pause className="h-4 w-4 mr-3" aria-hidden="true" />
+                  <Pause className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden="true" />
                   <span>{t.pause}</span>
                 </>
               ) : (
                 <>
-                  <Play className="h-4 w-4 mr-3" aria-hidden="true" />
+                  <Play className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden="true" />
                   <span>{t.activate}</span>
                 </>
               )}
             </button>
             <button
               onClick={handleEdit}
-              className="w-full flex items-center px-4 py-2 text-sm font-light text-gray-900 dark:text-white hover:bg-gray-50/50 dark:hover:bg-gray-900/50 rounded-sm focus:outline-none transition-colors"
+              className="w-full flex items-center gap-3 h-10 px-3 text-[15px] text-content rounded-lg hover:bg-surface-sunken focus:outline-none focus-visible:bg-surface-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <Edit className="h-4 w-4 mr-3" aria-hidden="true" />
+              <Edit className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden="true" />
               <span>{t.edit}</span>
             </button>
             <button
               onClick={handleDelete}
-              className="w-full flex items-center px-4 py-2 text-sm font-light text-red-500 dark:text-red-400 hover:bg-gray-50/50 dark:hover:bg-gray-900/50 rounded-sm focus:outline-none transition-colors"
+              className="w-full flex items-center gap-3 h-10 px-3 text-[15px] text-negative-on-soft rounded-lg hover:bg-negative-soft focus:outline-none focus-visible:bg-negative-soft transition-colors"
             >
-              <Trash2 className="h-4 w-4 mr-3" aria-hidden="true" />
+              <Trash2 className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden="true" />
               <span>{t.delete}</span>
             </button>
           </div>

@@ -311,19 +311,19 @@ export const DatePicker = ({
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
-          className={`flex items-center gap-2 px-2 sm:px-3 h-9 sm:h-10 w-full border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm ${
+          className={`flex items-center gap-2 px-3 h-10 w-full border rounded-lg bg-surface-elevated text-content focus:outline-none focus-visible:border-brand focus-visible:ring-4 focus-visible:ring-brand/15 text-sm font-medium transition-colors ${
             disabled
-              ? 'bg-gray-100 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 cursor-not-allowed border-gray-200 dark:border-gray-700'
-              : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-          } ${!displayValue && !disabled ? 'text-gray-500 dark:text-gray-400' : ''}`}
+              ? '!bg-surface-sunken text-content-tertiary cursor-not-allowed border-line'
+              : 'border-line hover:bg-surface-sunken'
+          } ${isOpen ? '!border-brand' : ''} ${!displayValue && !disabled ? 'text-content-tertiary' : ''}`}
         >
-          <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-          <span className="flex-1 text-left text-xs sm:text-sm truncate">{displayValue || placeholder}</span>
+          <Calendar className="h-4 w-4 text-content-tertiary flex-shrink-0" aria-hidden="true" />
+          <span className="flex-1 text-start text-sm truncate">{displayValue || placeholder}</span>
         </button>
 
         {/* Dropdown mode (não-modal) */}
         {isOpen && !disabled && !useModal && (
-          <div className="absolute z-50 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 sm:p-4">
+          <div className="absolute z-50 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-surface-elevated rounded-xl shadow-floating ring-1 ring-line-subtle p-3 sm:p-4 animate-menu-in">
             {renderCalendar()}
           </div>
         )}

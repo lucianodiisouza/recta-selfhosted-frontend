@@ -233,10 +233,10 @@ export const DateRangePicker = ({ value, onChange, presets = ['thisMonth', 'last
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`flex items-center gap-2 px-3 h-10 w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors text-sm ${
+        className={`flex items-center gap-2 px-3 h-10 w-full border border-line rounded-md shadow-sm bg-surface-elevated text-content-secondary focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors text-sm ${
           disabled 
-            ? 'bg-gray-100 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 cursor-not-allowed border-gray-200 dark:border-gray-700' 
-            : 'hover:bg-gray-50 dark:hover:bg-gray-600'
+            ? 'bg-gray-100 dark:bg-gray-900/50 text-content-tertiary cursor-not-allowed border-line' 
+            : 'hover:bg-surface-sunken'
         }`}
       >
         <Calendar className="h-4 w-4" />
@@ -249,7 +249,7 @@ export const DateRangePicker = ({ value, onChange, presets = ['thisMonth', 'last
               if (!disabled) clearRange();
             }}
             disabled={disabled}
-            className={`ml-2 text-gray-400 ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:text-gray-600 dark:hover:text-gray-300'}`}
+            className={`ml-2 text-gray-400 ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:text-content-secondary'}`}
           >
             <X className="h-4 w-4" />
           </button>
@@ -257,7 +257,7 @@ export const DateRangePicker = ({ value, onChange, presets = ['thisMonth', 'last
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute z-50 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+        <div className="absolute z-50 mt-2 w-80 bg-surface-elevated border border-line rounded-lg shadow-lg">
           <div className="p-4">
             <div className="space-y-2 mb-4">
               {presets.map((preset) => (
@@ -267,8 +267,8 @@ export const DateRangePicker = ({ value, onChange, presets = ['thisMonth', 'last
                   onClick={() => handlePresetClick(preset)}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                     selectedPreset === preset
-                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-brand-soft text-primary-700 dark:text-primary-300'
+                      : 'text-content-secondary hover:bg-surface-sunken'
                   }`}
                 >
                   {presetLabels[preset]}
@@ -277,9 +277,9 @@ export const DateRangePicker = ({ value, onChange, presets = ['thisMonth', 'last
             </div>
 
             {selectedPreset === 'custom' && (
-              <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="space-y-3 pt-3 border-t border-line">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-content-secondary mb-1">
                     {t.startDate}
                   </label>
                   <DatePicker
@@ -290,7 +290,7 @@ export const DateRangePicker = ({ value, onChange, presets = ['thisMonth', 'last
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-content-secondary mb-1">
                     {t.endDate}
                   </label>
                   <DatePicker

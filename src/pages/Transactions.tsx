@@ -1,3 +1,4 @@
+import { SegmentedControl, Skeleton, SkeletonRow } from '../components/ui';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import type React from 'react';
 import { useTransactions as useTransactionsContext } from '../context/TransactionsContext';
@@ -5,8 +6,12 @@ import { useCommandMenu } from '../context/CommandMenuContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useI18n } from '../context/I18nContext';
 import { useSearchParams } from 'react-router-dom';
-import { formatCurrency, formatDate, parseDateFromAPI } from '../utils/format';
+import { formatCurrency, formatDate, formatDateForAPI, parseDateFromAPI } from '../utils/format';
 import { useTransactions, useLoadMoreTransactions } from '../hooks/api/useTransactions';
+import { useRecurringProjections, useExecuteRecurringTransaction, type RecurringProjection } from '../hooks/api/useRecurringTransactions';
+import { useToastContext } from '../context/ToastContext';
+import { filterProjections, mergeProjectionsIntoGroups } from '../utils/projectedRecurring';
+import { categoriesFromSearchParams, toCategoryNamesParam } from '../utils/categoryFilter';
 import { useDefaultHousehold } from '../hooks/useDefaultHousehold';
 import { useAuthUser } from '../hooks/api/useAuth';
 import { useHouseholds } from '../hooks/api/useHouseholds';
@@ -17,14 +22,14 @@ import {
   Wallet, Briefcase, TrendingUp, ShoppingBag, Home, DollarSign,
   UtensilsCrossed, Car, House, Heart, GraduationCap, Film, Shirt,
   Zap, CreditCard, ShoppingCart, ShoppingBasket, Utensils, Droplet, Pill, MoreHorizontal, Circle,
-  ArrowLeftRight
+  ArrowLeftRight, CalendarClock
 } from 'lucide-react';
 import TransactionModal from '../components/TransactionModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { Transaction } from '../types';
 import { PageButton } from '../components/PageButton';
 import { CategoryName, getCategoryIconName, getCategoryDisplayName, TransactionType } from '../lib/enums';
-import { TransactionFilters, TransactionList } from '../components/transactions';
+import { TransactionFilters, TransactionList, ProjectedTransactionModal } from '../components/transactions';
 
 // Helper function to get icon component for category (supports enum or CUSTOM:uuid)
 const getCategoryIcon = (categoryName: string | undefined, customCategories?: { id: string; name: string; icon?: string | null }[]) => {
@@ -45,7 +50,10 @@ const Transactions = () => {
   const { baseCurrency } = useCurrency();
   const { t, locale } = useI18n();
   const { registerHandler, unregisterHandler } = useCommandMenu();
-  const { householdId } = useDefaultHousehold();
+  const { householdId, household } = useDefaultHousehold();
+  const { success: showSuccess, error: showError } = useToastContext();
+  // Viewers can read everything but never write (backend enforces EDITOR+ too)
+  const canEdit = household?.role !== 'VIEWER';
   const { data: authUser } = useAuthUser();
   const { data: households } = useHouseholds();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -73,13 +81,10 @@ const Transactions = () => {
   };
   
   const [typeFilter, setTypeFilter] = useState<string>(getInitialTypeFilter);
-  const [categoryFilter, setCategoryFilter] = useState<string>('todas');
+  // Chosen categoryNames (enum or "CUSTOM:<id>"); empty = all (fdbk #123). They don't depend on the
+  // language, so the filter survives a locale change. Deep links may set it via ?categories= or ?category=.
+  const [categoryFilter, setCategoryFilter] = useState<string[]>(() => categoriesFromSearchParams(searchParams));
   const [paidFilter, setPaidFilter] = useState<string>('todos');
-  
-  // Resetar filtro de categoria quando o idioma mudar (para evitar incompatibilidade)
-  useEffect(() => {
-    setCategoryFilter('todas');
-  }, [locale]);
   
   // Build query params for API
   // Note: cursor is NOT included here - it's only used in loadMore mutation
@@ -89,13 +94,14 @@ const Transactions = () => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    const categoryNames = toCategoryNamesParam(categoryFilter);
     const params: any = {
       householdId,
       limit: 25,
       // cursor is NOT included here - it's only used in loadMore mutation
       ...(searchTerm && { search: searchTerm }),
       ...(typeFilter !== 'todos' && { type: typeFilter === TransactionType.INCOME ? CategoryType.INCOME : CategoryType.EXPENSE }),
-      ...(categoryFilter && categoryFilter !== 'todas' && categoryFilter !== '' && { categoryName: categoryFilter }),
+      ...(categoryNames && { categoryNames }),
     };
 
     if (activeTab === 'scheduled') {
@@ -110,6 +116,12 @@ const Transactions = () => {
     return params;
   }, [householdId, dateRange, searchTerm, typeFilter, categoryFilter, activeTab]);
   
+  // Export every transaction that matches the current filters, not only the loaded page
+  const handleExportCSV = useCallback(() => {
+    const { limit: _limit, ...filters } = transactionsQuery;
+    exportToCSV(filters).catch((error) => console.error('[Transactions] CSV export failed:', error));
+  }, [transactionsQuery, exportToCSV]);
+
   // Fetch transactions with pagination
   const { data: transactionsData, isLoading: transactionsLoading } = useTransactions(transactionsQuery);
   const loadMoreMutation = useLoadMoreTransactions();
@@ -273,6 +285,11 @@ const Transactions = () => {
     } else if (!typeParam && searchParams.has('type')) {
       // Se há query param 'type' mas é vazio, reseta para 'todos'
       setTypeFilter('todos');
+    }
+
+    // Categorias vindas de link (?categories=A,B ou o formato antigo ?category=A)
+    if (searchParams.has('categories') || searchParams.has('category')) {
+      setCategoryFilter(categoriesFromSearchParams(searchParams));
     }
 
     // Ler datas dos query params (formato ISO: YYYY-MM-DD)
@@ -509,6 +526,55 @@ const Transactions = () => {
       .filter((group): group is { dateKey: string; date: Date; transactions: Transaction[] } => group !== null);
   }, [filteredTransactions]);
 
+  // Projected recurring occurrences (fdbk #116): today through today + 90 days, "Future" tab only.
+  // Display only: never in totals, selection or CSV export.
+  const projectionRange = useMemo(() => {
+    const today = new Date();
+    const to = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 90);
+    return { from: formatDateForAPI(today), to: formatDateForAPI(to) };
+  }, []);
+  const { data: projectionsData } = useRecurringProjections(
+    { householdId: householdId ?? undefined, ...projectionRange },
+    { enabled: activeTab === 'scheduled' },
+  );
+  const executeRecurring = useExecuteRecurringTransaction();
+  const [selectedProjection, setSelectedProjection] = useState<RecurringProjection | null>(null);
+
+  const visibleProjections = useMemo(() => {
+    if (activeTab !== 'scheduled' || !projectionsData?.length) return [];
+    const filtered = filterProjections(
+      projectionsData,
+      { type: typeFilter, category: categoryFilter, search: searchInput || searchTerm, paid: paidFilter },
+      (name) => getCategoryDisplayName(name, t as unknown as Record<string, string>, customCategories as unknown as Parameters<typeof getCategoryDisplayName>[2]),
+    );
+    // Not capped to the loaded pages: the tab is newest first, so with installments a year or more
+    // ahead the first pages would hide every projection (all within 90 days). The merge re-sorts by
+    // day on each page load, so real rows still land in their place as they arrive.
+    return filtered;
+  }, [activeTab, projectionsData, typeFilter, categoryFilter, searchInput, searchTerm, paidFilter, t, customCategories]);
+
+  const listGroups = useMemo(
+    () => (visibleProjections.length > 0
+      ? mergeProjectionsIntoGroups(groupedTransactions, visibleProjections, parseDateFromAPI)
+      : groupedTransactions),
+    [groupedTransactions, visibleProjections],
+  );
+
+  const handleLaunchProjection = async (projection: RecurringProjection): Promise<void> => {
+    try {
+      await executeRecurring.mutateAsync({
+        recurringId: projection.recurringTransactionId,
+        date: formatDateForAPI(new Date()),
+        paid: true,
+      });
+      setSelectedProjection(null);
+      showSuccess(t.projectedLaunched);
+    } catch (error) {
+      console.error('[Transactions] Failed to launch projected recurring:', error);
+      showError(t.projectedLaunchError);
+    }
+  };
+
   // Determine personal household (oldest by createdAt)
   const personalHouseholdId = useMemo(() => {
     if (!households || households.length === 0) return null;
@@ -671,20 +737,20 @@ const Transactions = () => {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 dashboard-fade-in">
-      <div className="mb-12 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+    <div className="dashboard-fade-in">
+      <div className="mb-5 sm:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div className="min-w-0 flex-shrink">
-          <h1 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 dark:text-white">
+          <h1 className="font-rounded text-[28px] sm:text-[34px] leading-tight font-bold tracking-tight text-content">
             {t.transactions}
           </h1>
-          <p className="mt-1 text-sm font-medium text-gray-500 dark:text-gray-300">
+          <p className="mt-1 text-[15px] text-content-secondary">
             {t.income} & {t.expense}
           </p>
         </div>
         {/* Desktop: todos os botões */}
         <div className="hidden sm:flex gap-2 items-center w-auto flex-shrink-0">
           <PageButton
-            onClick={exportToCSV}
+            onClick={handleExportCSV}
             variant="secondary"
             icon={Download}
             aria-label={t.exportCSV}
@@ -712,7 +778,7 @@ const Transactions = () => {
           </PageButton>
           <div className="flex gap-2">
             <PageButton
-              onClick={exportToCSV}
+              onClick={handleExportCSV}
               variant="secondary"
               icon={Download}
               aria-label={t.exportCSV}
@@ -725,32 +791,17 @@ const Transactions = () => {
       </div>
 
       {/* Abas: Transações | Próximos agendamentos */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-        <button
-          type="button"
-          onClick={() => { if (!loading) setActiveTab('transactions'); }}
-          disabled={loading}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'transactions'
-              ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-          } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {t.transactions}
-        </button>
-        <button
-          type="button"
-          onClick={() => { if (!loading) setActiveTab('scheduled'); }}
-          disabled={loading}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'scheduled'
-              ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-          } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {t.upcomingScheduled}
-        </button>
-      </div>
+      <SegmentedControl
+        label={t.transactions}
+        value={activeTab}
+        onChange={(tab) => { if (!loading) setActiveTab(tab); }}
+        disabled={loading}
+        className="mb-5"
+        options={[
+          { value: 'transactions', label: t.transactions },
+          { value: 'scheduled', label: t.upcomingScheduled },
+        ]}
+      />
 
       {/* Filtros */}
       <TransactionFilters
@@ -767,11 +818,7 @@ const Transactions = () => {
         typeFilter={typeFilter}
         onTypeFilterChange={handleTypeFilterChange}
         categoryFilter={categoryFilter}
-        onCategoryFilterChange={(value) => {
-          if (!value || value === t.all) setCategoryFilter('todas');
-          else setCategoryFilter(value);
-          // O filtro de categoria agora é feito no backend - React Query fará refetch automaticamente
-        }}
+        onCategoryFilterChange={setCategoryFilter}
         paidFilter={paidFilter}
         onPaidFilterChange={setPaidFilter}
         activeTab={activeTab}
@@ -782,42 +829,40 @@ const Transactions = () => {
           setSearchInput('');
           setSearchTerm('');
           handleTypeFilterChange('todos');
-          setCategoryFilter('todas');
+          setCategoryFilter([]);
           setPaidFilter('todos');
           setDateRange({ startDate: null, endDate: null });
           // Reset cache quando filtros são limpos - o React Query vai fazer nova query
         }}
-        hasActiveFilters={!!(searchInput || typeFilter !== 'todos' || categoryFilter !== 'todas' || paidFilter !== 'todos' || dateRange.startDate || dateRange.endDate)}
+        hasActiveFilters={!!(searchInput || typeFilter !== 'todos' || categoryFilter.length > 0 || paidFilter !== 'todos' || dateRange.startDate || dateRange.endDate)}
         disabled={loading}
       />
 
+      {/* Previstas: deixa claro que não são transações lançadas (fdbk #116) */}
+      {!loading && visibleProjections.length > 0 && (
+        <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-info/10 px-4 py-3 text-[13px] text-content-secondary" role="note">
+          <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+          <p>{filteredTransactions.length === 0 ? t.projectedOnlyNotice : t.projectedNotice}</p>
+        </div>
+      )}
+
       {/* Lista de transações */}
       {loading ? (
-        <div className="space-y-4 animate-pulse">
+        <div className="space-y-5" aria-busy="true">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 shadow rounded-md overflow-hidden">
-              <div className="px-4 sm:px-6 py-3 bg-gray-50 dark:bg-gray-700/50">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+            <div key={i}>
+              <Skeleton className="h-3.5 w-24 mb-3 ms-1" />
+              <div className="surface-card overflow-hidden divide-y divide-line-subtle">
+                <SkeletonRow />
+                <SkeletonRow />
               </div>
-              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                {[1, 2].map((j) => (
-                  <li key={j} className="px-4 sm:px-6 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                      </div>
-                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
             </div>
           ))}
         </div>
       ) : (
         <TransactionList
-          groupedTransactions={groupedTransactions}
+          groupedTransactions={listGroups}
+          onOpenProjection={setSelectedProjection}
           accounts={accounts}
           baseCurrency={baseCurrency}
           customCategories={customCategories}
@@ -853,6 +898,22 @@ const Transactions = () => {
           readOnly={!!viewingTransaction}
         />
       )}
+
+      <ProjectedTransactionModal
+        projection={selectedProjection}
+        accounts={accounts}
+        baseCurrency={baseCurrency}
+        customCategories={customCategories}
+        canLaunch={canEdit}
+        launchFirstDate={
+          selectedProjection && selectedProjection.isNext === false
+            ? projectionsData?.find((p) => p.recurringTransactionId === selectedProjection.recurringTransactionId && p.isNext)?.date ?? null
+            : null
+        }
+        isLaunching={executeRecurring.isPending}
+        onLaunch={handleLaunchProjection}
+        onClose={() => setSelectedProjection(null)}
+      />
 
       <ConfirmModal
         isOpen={confirmModal.isOpen}

@@ -14,11 +14,11 @@ export const CalendarFooter = ({
   const { locale } = useI18n();
 
   return (
-    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+    <div className="flex items-center justify-between mt-4 pt-4 border-t border-line">
       <button
         type="button"
         onClick={onToday}
-        className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+        className="text-sm text-brand hover:underline"
       >
         {locale === 'pt-BR' ? 'Usar hoje' : 'Use today'}
       </button>
@@ -26,7 +26,7 @@ export const CalendarFooter = ({
         <button
           type="button"
           onClick={onClear}
-          className="text-sm text-red-600 dark:text-red-400 hover:underline"
+          className="text-sm text-negative hover:underline"
         >
           {locale === 'pt-BR' ? 'Limpar' : 'Clear'}
         </button>

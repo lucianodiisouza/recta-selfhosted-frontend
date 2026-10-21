@@ -38,8 +38,9 @@ export interface ListBudgetsParams {
 
 export interface BudgetSummaryParams {
   householdId: string;
-  startDate: string;
-  endDate: string;
+  month?: string; // YYYY-MM
+  startDate?: string;
+  endDate?: string;
 }
 
 /**
@@ -89,7 +90,7 @@ export function useBudgetSummary(params: BudgetSummaryParams) {
       const response = await apiClient.get<BudgetSummary>('/budgets/summary', params);
       return response.data!;
     },
-    enabled: isAuthenticated && !!params.householdId && !!params.startDate && !!params.endDate, // Only fetch when authenticated and all params are available
+    enabled: isAuthenticated && !!params.householdId && (!!params.month || (!!params.startDate && !!params.endDate)),
   });
 }
 

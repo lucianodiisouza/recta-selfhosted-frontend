@@ -58,7 +58,7 @@ const ConfirmModal = ({
 
   const variantStyles = {
     danger: {
-      icon: 'text-red-500',
+      icon: 'text-negative',
       button: 'bg-red-500 dark:bg-red-500 text-white border-red-500 dark:border-red-500',
     },
     warning: {
@@ -66,7 +66,7 @@ const ConfirmModal = ({
       button: 'bg-yellow-500 dark:bg-yellow-500 text-white border-yellow-500 dark:border-yellow-500',
     },
     info: {
-      icon: 'text-blue-500',
+      icon: 'text-info',
       button: 'bg-blue-500 dark:bg-blue-500 text-white border-blue-500 dark:border-blue-500',
     },
   };
@@ -77,33 +77,33 @@ const ConfirmModal = ({
     <div className="fixed inset-0 z-[70] overflow-y-auto">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/40 transition-opacity" 
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
         onClick={onClose}
         aria-hidden="true"
       />
       
       {/* Scrollable Container */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
         {/* Modal Card */}
-        <div className="relative w-full sm:w-96 max-w-md p-6 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800">
+        <div className="relative w-full sm:w-96 max-w-md p-6 bg-surface-elevated rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <AlertTriangle className={`h-5 w-5 ${styles.icon} mr-3`} />
-              <h3 className="text-lg font-light tracking-tight text-gray-900 dark:text-white">
+              <h3 className="font-rounded text-lg font-semibold text-content">
                 {title}
               </h3>
             </div>
             <button
               onClick={onClose}
               aria-label="Fechar modal"
-              className="text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1"
+              className="text-content-tertiary hover:opacity-70 transition-opacity p-1"
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
 
           <div className="mb-8">
-            <p className="text-sm font-light text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-sm font-light text-content-secondary leading-relaxed">
               {message}
             </p>
           </div>
@@ -112,7 +112,7 @@ const ConfirmModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md hover:opacity-70 transition-opacity"
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
             >
               {cancelText || t.cancel}
             </button>

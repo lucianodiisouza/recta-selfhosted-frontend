@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import { useI18n } from '../../context/I18nContext';
 import { AccountType } from '../../lib/enums';
@@ -6,6 +7,7 @@ import { formatCurrency } from '../../utils/format';
 import { getDisplayBalance } from '../../utils/accountBalance';
 import { parseCurrencyValue } from '../../utils/currency';
 import SelectCombobox from '../SelectCombobox';
+import { Switch } from '../ui/Switch';
 import type { AccountFormData } from '../../schemas';
 import type { Account } from '../../types';
 import type { UseFormReturn } from 'react-hook-form';
@@ -32,19 +34,31 @@ export const AccountBasicFields = ({
   const { t } = useI18n();
   const { register, control, watch, formState: { errors } } = form;
   const accountType = watch('type');
+  // Conta que já começa no negativo (cheque especial, fdbk #133). O valor segue digitado
+  // positivo e vai com sinal; cartão não entra aqui (a dívida do cartão já é positiva).
+  const [startsNegative, setStartsNegative] = useState(false);
+  const canStartNegative = accountType !== AccountType.CREDIT;
+  const signedBalance = (amount: number, negative: boolean) =>
+    negative && canStartNegative ? -Math.abs(amount) : Math.abs(amount);
+  // Trocar para cartão com o interruptor ligado não pode mandar dívida negativa.
+  useEffect(() => {
+    if (account) return;
+    setValue('balance', signedBalance(parseCurrencyValue(currencyMask.value), startsNegative));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canStartNegative]);
 
   return (
     <>
       {/* Nome da conta */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.accountName}
         </label>
         <input
           type="text"
           {...register('name')}
-          className={`block w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-            errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+          className={`field-control ${
+            errors.name ? 'border-negative/60' : 'border-line'
           }`}
         />
         {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
@@ -53,7 +67,7 @@ export const AccountBasicFields = ({
       {/* Tipo de conta só aparece na criação, não na edição */}
       {!account && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {t.accountType}
           </label>
           <Controller
@@ -75,7 +89,7 @@ export const AccountBasicFields = ({
             }}
           />
           {errors.type && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.type.message}</p>
+            <p className="mt-1 text-sm text-negative">{errors.type.message}</p>
           )}
         </div>
       )}
@@ -83,10 +97,10 @@ export const AccountBasicFields = ({
       {/* Mostrar tipo de conta quando estiver editando */}
       {account && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {t.accountType}
           </label>
-          <div className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+          <div className="block w-full px-3 py-2 border border-line rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-content">
             {getAccountTypeLabel(account.type, t as unknown as Record<string, string>)}
           </div>
         </div>
@@ -95,7 +109,7 @@ export const AccountBasicFields = ({
       {/* Saldo inicial só aparece na criação, não na edição */}
       {!account && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {accountType === AccountType.CREDIT ? t.initialDebt : t.initialBalance}
           </label>
           <input
@@ -104,20 +118,36 @@ export const AccountBasicFields = ({
             onChange={(e) => {
               currencyMask.onChange(e);
               const numericValue = parseCurrencyValue(e.target.value);
-              setValue('balance', numericValue, { shouldValidate: true });
+              setValue('balance', signedBalance(numericValue, startsNegative), { shouldValidate: true });
             }}
-            className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            className={`field-control ${startsNegative && canStartNegative ? 'text-negative' : ''}`}
           />
+          {canStartNegative && (
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-content">{t.startsNegative}</p>
+                <p className="text-xs text-content-tertiary">{t.startsNegativeHint}</p>
+              </div>
+              <Switch
+                checked={startsNegative}
+                label={t.startsNegative}
+                onChange={(on) => {
+                  setStartsNegative(on);
+                  setValue('balance', signedBalance(parseCurrencyValue(currencyMask.value), on), { shouldValidate: true });
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
       
       {/* Mostrar saldo atual quando estiver editando */}
       {account && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-content-secondary mb-1">
             {t.currentBalance || 'Saldo Atual'}
           </label>
-          <div className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+          <div className="block w-full px-3 py-2 border border-line rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-content">
             {formatCurrency(getDisplayBalance(account), baseCurrency || 'BRL')}
           </div>
           <p className="mt-1 text-xs text-gray-500">

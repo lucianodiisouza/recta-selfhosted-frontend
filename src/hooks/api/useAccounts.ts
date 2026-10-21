@@ -18,6 +18,7 @@ export interface Account {
   creditLimit?: number;
   totalLimit?: number;
   availableLimit?: number;
+  limitAdjustment?: number;
   dueDay?: number;
   closingDay?: number;
   bestDayOffset?: number;

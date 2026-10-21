@@ -1,3 +1,4 @@
+import { Select } from '../components/ui';
 import { useCurrency } from "../context/CurrencyContext";
 import { useI18n, Locale } from "../context/I18nContext";
 import { useTheme } from "../context/ThemeContext";
@@ -31,6 +32,8 @@ import {
   Tag,
   Pencil,
   Plus,
+  MessageSquare,
+  ExternalLink,
 } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import packageJson from "../../package.json";
@@ -50,6 +53,7 @@ import {
 import DeleteUserAccountModal from "../components/DeleteUserAccountModal";
 import ResetAccountModal from "../components/ResetAccountModal";
 import ConfirmModal from "../components/ConfirmModal";
+import AppLockSettings from "../components/AppLockSettings";
 import {
   useDefaultHousehold,
 } from "../hooks/useDefaultHousehold";
@@ -60,6 +64,7 @@ import {
   useDeleteCategory,
 } from "../hooks/api/useCategories";
 import { CategoryType } from "../lib/enums";
+import { FEEDBACK_BOARD_URL } from "../constants/links";
 import {
   deleteUser,
   GoogleAuthProvider,
@@ -400,7 +405,7 @@ const SettingsPage = () => {
   );
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div>
       <PageHeader
         title={
           <span className="flex items-center">
@@ -412,8 +417,8 @@ const SettingsPage = () => {
       />
 
       {/* Perfil - Bloqueado */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <User className="h-5 w-5 mr-2" />
           {t.profile}
         </h2>
@@ -421,13 +426,13 @@ const SettingsPage = () => {
         <div className="space-y-4">
           {/* Avatar */}
           <div>
-            <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-light text-content-tertiary mb-2">
               {t.avatar}
             </label>
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0">
-                <div className="h-16 w-16 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center">
-                  <User className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                <div className="h-16 w-16 rounded-full bg-surface border border-line-subtle flex items-center justify-center">
+                  <User className="h-8 w-8 text-content-tertiary" />
                 </div>
               </div>
               <div className="flex-1">
@@ -436,11 +441,11 @@ const SettingsPage = () => {
                     type="text"
                     value=""
                     disabled
-                    className="block w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 cursor-not-allowed pr-10 font-light"
+                    className="block w-full px-3 py-2.5 border border-line-subtle rounded-md bg-surface text-content-tertiary cursor-not-allowed pr-10 font-light"
                     placeholder={t.avatar}
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <Lock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <Lock className="h-4 w-4 text-content-tertiary" />
                   </div>
                 </div>
               </div>
@@ -449,7 +454,7 @@ const SettingsPage = () => {
 
           {/* Nome */}
           <div>
-            <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-light text-content-tertiary mb-2">
               {t.name}
             </label>
             <div className="flex gap-2">
@@ -460,7 +465,7 @@ const SettingsPage = () => {
                   onChange={(e) => setDisplayName(e.target.value)}
                   onBlur={handleUpdateName}
                   onKeyDown={(e) => e.key === "Enter" && handleUpdateName()}
-                  className="block w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 pr-10 font-light tracking-tight"
+                  className="field-control pr-10 font-light tracking-tight"
                   placeholder={t.name}
                 />
                 {isSavingName && (
@@ -472,7 +477,7 @@ const SettingsPage = () => {
               <button
                 onClick={handleUpdateName}
                 disabled={isSavingName || !displayName.trim()}
-                className="px-4 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-sm font-light tracking-tight text-white bg-brand-fill border border-brand rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t.save}
               </button>
@@ -480,17 +485,17 @@ const SettingsPage = () => {
           </div>
 
           {/* Aviso de Privacidade */}
-          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <div className="border border-blue-200 dark:border-blue-800 p-4 rounded-lg">
+          <div className="mt-4 pt-4 border-t border-line-subtle">
+            <div className="border border-info/25 p-4 rounded-lg">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                  <Info className="h-5 w-5 text-info mt-0.5" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
+                  <h3 className="text-sm font-medium text-info mb-1">
                     {t.privacyNotice}
                   </h3>
-                  <p className="text-sm font-light text-blue-600 dark:text-blue-400">
+                  <p className="text-sm font-light text-info">
                     {t.privacyNoticeDescription}
                   </p>
                 </div>
@@ -500,22 +505,25 @@ const SettingsPage = () => {
         </div>
       </div>
 
+      {/* Bloqueio com PIN neste navegador (fdbk #110) */}
+      <AppLockSettings />
+
       {/* Instalação do App */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <Download className="h-5 w-5 mr-2" />
           {t.installApp || "Instalar App"}
         </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm font-light text-content-tertiary mb-4">
           {t.pwaInfoDescription ||
             "Instale o Recta na tela inicial do seu celular ou computador para acesso rápido e melhor experiência!"}
         </p>
 
         {isInstalled ? (
-          <div className="border border-green-200 dark:border-green-800 rounded-lg p-4">
+          <div className="border border-positive/25 rounded-lg p-4">
             <div className="flex items-center">
-              <Check className="h-5 w-5 text-green-500 dark:text-green-400 mr-2" />
-              <p className="text-sm font-light text-green-600 dark:text-green-400">
+              <Check className="h-5 w-5 text-positive mr-2" />
+              <p className="text-sm font-light text-positive">
                 {t.pwaInstalled || "App instalado com sucesso!"}
               </p>
             </div>
@@ -530,33 +538,33 @@ const SettingsPage = () => {
                     success(t.installApp || "App instalado com sucesso!");
                   }
                 }}
-                className="w-full sm:w-auto px-4 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-lg hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-4 py-2.5 text-sm font-light tracking-tight text-white bg-brand-fill border border-brand rounded-lg hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
               >
                 <Download className="h-5 w-5" />
                 {t.installNow || "Instalar Agora"}
               </button>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-start space-x-3 p-3 border border-gray-100 dark:border-gray-800 rounded-lg">
-                  <Smartphone className="h-5 w-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start space-x-3 p-3 rounded-xl bg-surface-sunken/70">
+                  <Smartphone className="h-5 w-5 text-brand flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white text-sm mb-1">
+                    <h3 className="font-medium text-content text-sm mb-1">
                       {t.pwaInfoMobileTitle || "No celular"}
                     </h3>
-                    <p className="text-xs font-light text-gray-500 dark:text-gray-400">
+                    <p className="text-xs font-light text-content-tertiary">
                       {t.pwaInfoMobileDescription ||
                         'Toque no menu do navegador e selecione "Adicionar à tela inicial"'}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-3 p-3 border border-gray-100 dark:border-gray-800 rounded-lg">
-                  <Monitor className="h-5 w-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start space-x-3 p-3 rounded-xl bg-surface-sunken/70">
+                  <Monitor className="h-5 w-5 text-brand flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white text-sm mb-1">
+                    <h3 className="font-medium text-content text-sm mb-1">
                       {t.pwaInfoDesktopTitle || "No computador"}
                     </h3>
-                    <p className="text-xs font-light text-gray-500 dark:text-gray-400">
+                    <p className="text-xs font-light text-content-tertiary">
                       {t.pwaInfoDesktopDescription ||
                         "Clique no ícone de instalação na barra de endereços ou no menu do navegador"}
                     </p>
@@ -569,8 +577,8 @@ const SettingsPage = () => {
       </div>
 
       {/* Aparência / Tema */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           {theme === "dark" ? (
             <Moon className="h-5 w-5 mr-2" />
           ) : (
@@ -578,15 +586,15 @@ const SettingsPage = () => {
           )}
           {t.appearance}
         </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm font-light text-content-tertiary mb-4">
           {t.themeDescription}
         </p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-300">
+            <span className="text-sm font-medium text-content-secondary">
               {t.theme}:
             </span>
-            <span className="text-sm font-light text-gray-500 dark:text-gray-400">
+            <span className="text-sm font-light text-content-tertiary">
               {theme === "dark" ? t.darkMode : t.lightMode}
             </span>
           </div>
@@ -609,37 +617,39 @@ const SettingsPage = () => {
       </div>
 
       {/* Categorias personalizadas */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <Tag className="h-5 w-5 mr-2" />
           {t.manageCategories}
         </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm font-light text-content-tertiary mb-4">
           {t.noCustomCategories}
         </p>
 
         {categoryForm ? (
-          <div className="flex flex-wrap items-end gap-2 mb-4 p-3 border border-gray-100 dark:border-gray-800 rounded-lg">
+          <div className="flex flex-wrap items-end gap-2 mb-4 p-3 rounded-xl bg-surface-sunken/70">
             <div className="flex-1 min-w-[140px]">
-              <label className="block text-xs font-medium text-gray-500 dark:text-gray-300 mb-1">{t.name}</label>
+              <label className="block text-xs font-medium text-content-secondary mb-1">{t.name}</label>
               <input
                 value={categoryForm.name}
                 onChange={(e) => setCategoryForm((f) => (f ? { ...f, name: e.target.value } : null))}
-                className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm font-light tracking-tight"
+                className="w-full px-3 py-2.5 border border-line-subtle rounded-md bg-surface-elevated text-content text-sm font-light tracking-tight"
                 placeholder={t.name}
               />
             </div>
             {!categoryForm.id && (
               <div className="min-w-[120px]">
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-300 mb-1">{t.type}</label>
-                <select
+                <label className="block text-xs font-medium text-content-secondary mb-1">{t.type}</label>
+                <Select
+                  size="sm"
+                  aria-label={t.type}
                   value={categoryForm.type}
-                  onChange={(e) => setCategoryForm((f) => (f ? { ...f, type: e.target.value as CategoryType } : null))}
-                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm font-light tracking-tight"
-                >
-                  <option value={CategoryType.INCOME}>{t.income}</option>
-                  <option value={CategoryType.EXPENSE}>{t.expense}</option>
-                </select>
+                  onChange={(type) => setCategoryForm((f) => (f ? { ...f, type } : null))}
+                  options={[
+                    { value: CategoryType.INCOME, label: t.income },
+                    { value: CategoryType.EXPENSE, label: t.expense },
+                  ]}
+                />
               </div>
             )}
             <div className="flex gap-2">
@@ -664,13 +674,13 @@ const SettingsPage = () => {
                   }
                 }}
                 disabled={!categoryForm.name.trim() || createCategory.isPending || updateCategory.isPending}
-                className="px-3 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2.5 text-sm font-light tracking-tight text-white bg-brand-fill border border-brand rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {categoryForm.id ? t.save : t.create}
               </button>
               <button
                 onClick={() => setCategoryForm(null)}
-                className="px-3 py-2.5 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white text-sm font-light tracking-tight rounded-md hover:opacity-70 transition-opacity bg-white dark:bg-gray-900"
+                className="px-3 py-2.5 border border-line-subtle text-content text-sm font-light tracking-tight rounded-md hover:opacity-70 transition-opacity bg-surface-elevated"
               >
                 {t.cancel}
               </button>
@@ -679,7 +689,7 @@ const SettingsPage = () => {
         ) : (
           <button
             onClick={() => setCategoryForm({ id: null, name: "", type: CategoryType.EXPENSE })}
-            className="mb-4 inline-flex items-center gap-2 px-3 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity"
+            className="mb-4 inline-flex items-center gap-2 px-3 py-2.5 text-sm font-light tracking-tight text-white bg-brand-fill border border-brand rounded-md hover:opacity-80 transition-opacity"
           >
             <Plus className="h-4 w-4" />
             {t.addCategory}
@@ -690,12 +700,12 @@ const SettingsPage = () => {
           {customCategories.map((c) => (
             <li
               key={c.id}
-              className="flex items-center justify-between py-2 px-3 rounded-md border border-gray-100 dark:border-gray-800"
+              className="flex items-center justify-between py-2 px-3 rounded-md border border-line-subtle"
             >
-              <span className="font-light text-gray-900 dark:text-white">{c.name}</span>
+              <span className="font-light text-content">{c.name}</span>
               <div className="flex items-center gap-2">
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full border font-light ${c.type === CategoryType.INCOME ? "border-green-300 dark:border-green-700 text-green-600 dark:text-green-400" : "border-red-300 dark:border-red-700 text-red-600 dark:text-red-400"
+                  className={`text-xs px-2 py-0.5 rounded-full border font-light ${c.type === CategoryType.INCOME ? "border-green-300 dark:border-green-700 text-positive" : "border-negative/60 text-negative"
                     }`}
                 >
                   {c.type === CategoryType.INCOME ? t.income : t.expense}
@@ -703,7 +713,7 @@ const SettingsPage = () => {
                 <button
                   type="button"
                   onClick={() => setCategoryForm({ id: c.id, name: c.name, type: c.type })}
-                  className="p-1.5 text-gray-500 hover:text-primary-600 dark:hover:text-primary-400"
+                  className="p-1.5 text-gray-500 hover:text-brand"
                   aria-label={t.edit}
                 >
                   <Pencil className="h-4 w-4" />
@@ -747,12 +757,12 @@ const SettingsPage = () => {
       </div>
 
       {/* Moeda Base */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <DollarSign className="h-5 w-5 mr-2" />
           {t.baseCurrency}
         </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm font-light text-content-tertiary mb-4">
           {t.baseCurrencyDescription}
         </p>
         <SelectCombobox
@@ -762,21 +772,21 @@ const SettingsPage = () => {
           placeholder={t.selectCurrency}
           searchable={true}
         />
-        <p className="mt-2 text-xs font-light text-gray-400 dark:text-gray-500">
+        <p className="mt-2 text-xs font-light text-content-tertiary">
           {t.baseCurrency}:{" "}
-          <span className="font-light text-gray-900 dark:text-white">
+          <span className="font-light text-content">
             {currencyInfo.symbol} {currencyInfo.name}
           </span>
         </p>
       </div>
 
       {/* Idioma */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <Languages className="h-5 w-5 mr-2" />
           {t.language}
         </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm font-light text-content-tertiary mb-4">
           {t.languageDescription}
         </p>
         <SelectCombobox
@@ -786,21 +796,21 @@ const SettingsPage = () => {
           placeholder={t.selectLanguage}
           searchable={true}
         />
-        <p className="mt-2 text-xs font-light text-gray-400 dark:text-gray-500">
+        <p className="mt-2 text-xs font-light text-content-tertiary">
           {t.language}:{" "}
-          <span className="font-light text-gray-900 dark:text-white">
+          <span className="font-light text-content">
             {LANGUAGES.find((l) => l.code === locale)?.name || "Português"}
           </span>
         </p>
       </div>
 
       {/* País */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <Globe className="h-5 w-5 mr-2" />
           {t.country}
         </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm font-light text-content-tertiary mb-4">
           {t.onboardingStep3Description}
         </p>
         <SelectCombobox
@@ -810,27 +820,27 @@ const SettingsPage = () => {
           placeholder={t.selectCountry}
           searchable={true}
         />
-        <p className="mt-2 text-xs font-light text-gray-400 dark:text-gray-500">
+        <p className="mt-2 text-xs font-light text-content-tertiary">
           {t.country}:{" "}
-          <span className="font-light text-gray-900 dark:text-white">
+          <span className="font-light text-content">
             {COUNTRIES.find((c) => c.code === selectedCountry)?.name || "-"}
           </span>
         </p>
       </div>
 
       {/* Reiniciar Onboarding */}
-      <div className="bg-white dark:bg-gray-900 border border-amber-200 dark:border-amber-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="bg-surface-elevated border border-amber-200 dark:border-amber-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <RefreshCcw className="h-5 w-5 mr-2 text-amber-500" />
           {t.restartOnboarding}
         </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm font-light text-content-tertiary mb-4">
           {t.restartOnboardingDescription}
         </p>
         <button
           onClick={handleRestartOnboarding}
           disabled={isRestartingOnboarding}
-          className="inline-flex items-center px-4 py-2.5 text-sm font-light tracking-tight text-white bg-amber-500 dark:bg-amber-500 border border-amber-500 dark:border-amber-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
         >
           {isRestartingOnboarding ? (
             <Check className="h-4 w-4 mr-2 animate-spin" />
@@ -842,17 +852,17 @@ const SettingsPage = () => {
       </div>
 
       {/* Referrals / Convites */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <UserPlus className="h-5 w-5 mr-2" />
           {t.referralCount}
         </h2>
-        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm font-light text-content-tertiary mb-4">
           {t.referralCountDescription}
         </p>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-light text-content-tertiary mb-2">
               {t.yourInviteLink}
             </label>
             <div className="flex items-center gap-2">
@@ -860,11 +870,11 @@ const SettingsPage = () => {
                 type="text"
                 value={getInviteLink()}
                 readOnly
-                className="flex-1 block w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 text-sm font-light tracking-tight"
+                className="flex-1 block w-full px-3 py-2.5 border border-line-subtle rounded-md bg-surface text-content focus:outline-none focus:border-brand text-sm font-light tracking-tight"
               />
               <button
                 onClick={handleCopyInviteLink}
-                className="inline-flex items-center px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity"
+                className="inline-flex items-center px-3 py-2.5 border border-line-subtle rounded-md text-sm font-light tracking-tight text-content bg-surface-elevated hover:opacity-70 transition-opacity"
                 aria-label={t.copyInviteLink}
               >
                 {linkCopied ? (
@@ -881,20 +891,20 @@ const SettingsPage = () => {
               </button>
             </div>
           </div>
-          <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="pt-4 border-t border-line-subtle">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
+                <p className="text-sm font-medium text-content-secondary">
                   {t.referralCount}
                 </p>
-                <p className="text-xs font-light text-gray-400 dark:text-gray-500 mt-1">
+                <p className="text-xs font-light text-content-tertiary mt-1">
                   {referralCount === 0
                     ? t.noReferralsYet
                     : `${referralCount} ${referralCount === 1 ? t.person : t.people
                     }`}
                 </p>
               </div>
-              <div className="text-3xl font-light tracking-tight text-primary-600 dark:text-primary-400">
+              <div className="text-3xl font-rounded font-semibold tabular-nums text-brand">
                 {referralCount}
               </div>
             </div>
@@ -902,20 +912,41 @@ const SettingsPage = () => {
         </div>
       </div>
 
+      {/* Feedback */}
+      <div className="surface-card p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
+          <MessageSquare className="h-5 w-5 mr-2" aria-hidden="true" />
+          {t.feedbackBoardTitle}
+        </h2>
+        <p className="text-sm font-light text-content-tertiary mb-4">
+          {t.feedbackBoardDescription}
+        </p>
+        <a
+          href={FEEDBACK_BOARD_URL}
+          target="_blank"
+          rel="noopener"
+          className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-brand-fill text-white hover:bg-brand-fill-hover"
+        >
+          <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />
+          {t.feedbackBoardLink}
+          <span className="sr-only"> {t.feedbackBoardOpensInNewTab}</span>
+        </a>
+      </div>
+
       {/* Resetar Conta do Recta */}
-      <div className="bg-white dark:bg-gray-900 border border-orange-200 dark:border-orange-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="bg-surface-elevated border border-orange-200 dark:border-orange-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
           <RefreshCcw className="h-5 w-5 mr-2 text-orange-500" />
           {t.resetRectaAccount}
         </h2>
         <div className="space-y-4">
           <div>
-            <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-sm font-light text-content-tertiary mb-4">
               {t.resetRectaAccountDescription}
             </p>
             <button
               onClick={() => setIsResetAccountModalOpen(true)}
-              className="inline-flex items-center px-4 py-2.5 text-sm font-light tracking-tight text-white bg-orange-500 dark:bg-orange-500 border border-orange-500 dark:border-orange-500 rounded-md hover:opacity-80 transition-opacity"
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-negative-soft text-negative-on-soft hover:brightness-95 dark:hover:brightness-125"
             >
               <RefreshCcw className="h-4 w-4 mr-2" />
               {t.resetRectaAccount}
@@ -925,22 +956,22 @@ const SettingsPage = () => {
       </div>
 
       {/* Zona de Perigo - Deletar Conta */}
-      <div className="bg-white dark:bg-gray-900 border border-red-200 dark:border-red-800 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
-          <Trash2 className="h-5 w-5 mr-2 text-red-500" />
+      <div className="bg-surface-elevated border border-negative/25 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="card-title mb-4 flex items-center">
+          <Trash2 className="h-5 w-5 mr-2 text-negative" />
           {t.confirmDelete}
         </h2>
         <div className="space-y-4">
           <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-300 mb-2">
+            <h3 className="text-sm font-medium text-content-secondary mb-2">
               {t.deleteUserAccount}
             </h3>
-            <p className="text-sm font-light text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-sm font-light text-content-tertiary mb-4">
               {t.deleteUserAccountWarning}
             </p>
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              className="inline-flex items-center px-4 py-2.5 text-sm font-light tracking-tight text-white bg-red-500 dark:bg-red-500 border border-red-500 dark:border-red-500 rounded-md hover:opacity-80 transition-opacity"
+              className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-negative-fill text-white hover:opacity-90"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {t.delete}
@@ -950,17 +981,17 @@ const SettingsPage = () => {
       </div>
 
       {/* Informações do App */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="surface-card p-4 sm:p-6">
+        <h2 className="card-title mb-4 flex items-center">
           <Info className="h-5 w-5 mr-2" />
           {t.appInfo}
         </h2>
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm font-light text-gray-500 dark:text-gray-400">
+            <span className="text-sm font-light text-content-tertiary">
               {t.appVersion}:
             </span>
-            <span className="text-sm font-light text-gray-900 dark:text-white">
+            <span className="text-sm font-light text-content">
               v{packageJson.version}
             </span>
           </div>

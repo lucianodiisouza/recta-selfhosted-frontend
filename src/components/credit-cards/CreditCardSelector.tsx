@@ -43,18 +43,18 @@ export const CreditCardSelector = ({
             onClick={() => onSelectAccount(card.id || null)}
             className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
               isSelected
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-400'
-                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                ? 'border-primary-500 bg-brand-soft dark:border-primary-400'
+                : 'border-line hover:border-gray-300 dark:hover:border-gray-600 bg-surface-elevated'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <CreditCard className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <CreditCard className="h-5 w-5 text-content-secondary" />
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-white">
+                  <div className="font-medium text-content">
                     {card.name}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="text-sm text-content-tertiary">
                     {formatCurrency(invoiceAmount, baseCurrency)}
                   </div>
                 </div>

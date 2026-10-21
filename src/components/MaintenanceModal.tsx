@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Wallet } from 'lucide-react';
+import RectaMark from './RectaMark';
 import { useI18n } from '../context/I18nContext';
 
 interface MaintenanceModalProps {
@@ -44,30 +44,30 @@ export const MaintenanceModal = ({ endTime }: MaintenanceModalProps) => {
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl dark:bg-gray-800">
+      <div className="relative mx-4 w-full max-w-md rounded-2xl bg-surface-elevated p-8 shadow-floating ring-1 ring-line-subtle">
         {/* Loading Animation */}
         <div className="mb-6 flex justify-center">
           <div className="relative">
             {/* Spinner circular animado */}
             <div className="h-20 w-20">
-              <div className="absolute inset-0 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-line"></div>
               <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-primary-600 border-r-primary-600"></div>
             </div>
             
-            {/* Ícone de carteira no centro */}
+            {/* Marca do Recta no centro */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <Wallet className="h-8 w-8 text-primary-600" />
+              <RectaMark className="h-6 w-auto text-content" />
             </div>
           </div>
         </div>
 
         {/* Conteúdo */}
         <div className="text-center">
-          <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="mb-4 text-2xl font-bold text-content">
             {t.maintenanceInProgress}
           </h2>
           
-          <div className="mb-6 space-y-3 text-gray-600 dark:text-gray-400">
+          <div className="mb-6 space-y-3 text-content-secondary">
             <p className="text-base leading-relaxed">
               {t.maintenanceMessage1}
             </p>
@@ -80,14 +80,14 @@ export const MaintenanceModal = ({ endTime }: MaintenanceModalProps) => {
           <div className="mb-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{t.maintenanceEstimatedEnd}</span>
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                <span className="text-content-secondary">{t.maintenanceEstimatedEnd}</span>
+                <span className="font-semibold text-content">
                   {formattedEndTime}
                 </span>
               </div>
               {timeRemaining && (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t.maintenanceTimeRemaining}</span>
+                  <span className="text-content-secondary">{t.maintenanceTimeRemaining}</span>
                   <span className="font-semibold text-primary-600">
                     {timeRemaining.hours}h {timeRemaining.minutes}min
                   </span>

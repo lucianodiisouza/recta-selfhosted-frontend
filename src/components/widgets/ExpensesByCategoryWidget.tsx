@@ -15,13 +15,13 @@ import { useCategories } from '../../hooks/api/useCategories';
 import { useDefaultHousehold } from '../../hooks/useDefaultHousehold';
 
 const COLORS = [
-  '#0ea5e9',
-  '#10b981',
-  '#f59e0b',
-  '#ef4444',
-  '#8b5cf6',
-  '#ec4899',
-  '#06b6d4',
+  '#5B3DF5',
+  '#12B76A',
+  '#F79009',
+  '#F04438',
+  '#7A5AF8',
+  '#EE46BC',
+  '#15B79E',
   '#84cc16',
 ];
 
@@ -82,15 +82,15 @@ export const ExpensesByCategoryWidget = ({
 
   if (expenseByCategory.length === 0) {
     return (
-      <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+      <div className="text-center text-content-tertiary py-8">
         {t.noExpensesByCategory}
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 w-full h-full flex flex-col">
-      <h2 className="text-base sm:text-lg lg:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+    <div className="surface-card p-4 sm:p-6 w-full h-full flex flex-col">
+      <h2 className="card-title mb-3 sm:mb-4">
         {t.expensesByCategory}
       </h2>
       <ResponsiveContainer
@@ -100,6 +100,8 @@ export const ExpensesByCategoryWidget = ({
       >
         <PieChart>
           <Pie
+                  stroke="rgb(var(--bg-elevated))"
+                  strokeWidth={2}
             data={expenseByCategory}
             cx="50%"
             cy="50%"
@@ -114,7 +116,7 @@ export const ExpensesByCategoryWidget = ({
               return `${(percent * 100).toFixed(0)}%`;
             }}
             outerRadius={80}
-            fill="#8884d8"
+            fill="#5B3DF5"
             dataKey="value"
           >
             {expenseByCategory.map((_, index) => (
@@ -137,7 +139,7 @@ export const ExpensesByCategoryWidget = ({
               padding: '12px',
             }}
             labelStyle={{
-              color: '#374151',
+              color: '#2C2C38',
               fontWeight: 600,
               marginBottom: '8px',
             }}
@@ -148,25 +150,25 @@ export const ExpensesByCategoryWidget = ({
       {/* Top 3 categorias */}
       {topCategories.length > 0 && (
         <div className="mt-4 space-y-2">
-          <h3 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <h3 className="text-xs font-medium text-content-secondary mb-2">
             {t.topCategories}
           </h3>
           {topCategories.map((cat) => (
-            <div key={cat.name} className="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-700/50">
+            <div key={cat.name} className="flex items-center justify-between p-2 rounded bg-surface-sunken">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <div
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: COLORS[expenseByCategory.findIndex(c => c.name === cat.name) % COLORS.length] }}
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                <span className="text-sm text-content-secondary truncate">
                   {resolveCategoryName(cat.name)}
                 </span>
               </div>
               <div className="flex items-center gap-2 ml-2">
-                <span className={`text-sm font-light tracking-tight text-gray-900 dark:text-gray-100 ${blurNumbers ? 'demo-blur' : ''}`}>
+                <span className={`text-sm font-rounded font-semibold tabular-nums text-content ${blurNumbers ? 'demo-blur' : ''}`}>
                   {blurNumbers ? '••••' : formatCurrency(cat.value, baseCurrency)}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-content-tertiary">
                   {cat.percentage.toFixed(0)}%
                 </span>
               </div>
@@ -177,9 +179,9 @@ export const ExpensesByCategoryWidget = ({
 
       {/* Alerta para categorias dominantes */}
       {dominantCategories.length > 0 && (
-        <div className="mt-4 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+        <div className="mt-4 p-3 rounded-lg bg-warning/10 border border-warning/25">
           <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-xs font-medium text-yellow-800 dark:text-yellow-300 mb-1">
                 {t.reportInsightDominantCategoryTitle}

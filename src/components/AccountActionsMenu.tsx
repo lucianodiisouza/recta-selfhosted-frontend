@@ -36,7 +36,7 @@ export const AccountActionsMenu = ({
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
-          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 rounded p-1 transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-content-tertiary hover:bg-surface-sunken hover:text-content data-[state=open]:bg-surface-sunken data-[state=open]:text-content transition-colors"
           aria-label={t.moreOptions || 'Mais opções'}
         >
           <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
@@ -45,35 +45,35 @@ export const AccountActionsMenu = ({
 
       <Popover.Portal>
         <Popover.Content
-          className="w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 p-1"
+          className="min-w-[14rem] bg-surface-elevated rounded-xl shadow-floating ring-1 ring-line-subtle z-50 p-1.5 animate-menu-in"
           sideOffset={4}
           align="end"
         >
-          <div className="py-1">
+          <div>
             <button
               onClick={handleEdit}
               disabled={!isAccountOwner}
-              className={`w-full flex items-center px-4 py-2 text-sm rounded-sm focus:outline-none ${
+              className={`w-full flex items-center gap-3 h-10 px-3 text-[15px] rounded-lg focus:outline-none transition-colors ${
                 isAccountOwner
-                  ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700'
-                  : 'text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50'
+                  ? 'text-content hover:bg-surface-sunken focus-visible:bg-surface-sunken'
+                  : 'text-content-tertiary cursor-not-allowed opacity-50'
               }`}
               title={!isAccountOwner ? 'Apenas o dono da conta pode editar' : undefined}
             >
-              <Edit className="h-4 w-4 mr-3" aria-hidden="true" />
+              <Edit className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden="true" />
               <span>{t.edit}</span>
             </button>
             <button
               onClick={handleDelete}
               disabled={!isAccountOwner}
-              className={`w-full flex items-center px-4 py-2 text-sm rounded-sm focus:outline-none ${
+              className={`w-full flex items-center gap-3 h-10 px-3 text-[15px] rounded-lg focus:outline-none transition-colors ${
                 isAccountOwner
-                  ? 'text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700'
-                  : 'text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50'
+                  ? 'text-negative-on-soft hover:bg-negative-soft focus-visible:bg-negative-soft'
+                  : 'text-content-tertiary cursor-not-allowed opacity-50'
               }`}
               title={!isAccountOwner ? 'Apenas o dono da conta pode deletar' : undefined}
             >
-              <Trash2 className="h-4 w-4 mr-3" aria-hidden="true" />
+              <Trash2 className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden="true" />
               <span>{t.delete}</span>
             </button>
           </div>

@@ -99,14 +99,14 @@ export const BudgetVsRealizedWidget = ({ selectedMonth, blurNumbers = false }: B
 
   if (budgetData.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 flex flex-col">
+      <div className="surface-card p-4 sm:p-6 flex flex-col">
         <div className="flex items-center gap-2 mb-2">
-          <Target className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-          <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100">
+          <Target className="h-5 w-5 text-brand" />
+          <h2 className="card-title">
             {t.budgets}
           </h2>
         </div>
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <p className="text-sm font-medium text-content-tertiary">
           {t.noBudgetForMonth}
         </p>
       </div>
@@ -114,10 +114,10 @@ export const BudgetVsRealizedWidget = ({ selectedMonth, blurNumbers = false }: B
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 flex flex-col">
+    <div className="surface-card p-6 flex flex-col">
       <div className="flex items-center gap-2 mb-4">
-        <Target className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100">
+        <Target className="h-5 w-5 text-brand" />
+        <h2 className="card-title">
           {t.budgetsVsRealized}
         </h2>
       </div>
@@ -131,24 +131,24 @@ export const BudgetVsRealizedWidget = ({ selectedMonth, blurNumbers = false }: B
           
           const statusColors = {
             exceeded: {
-              bg: 'bg-red-50 dark:bg-red-900/20',
-              border: 'border-red-200 dark:border-red-800',
+              bg: 'bg-negative-soft',
+              border: 'border-negative/25',
               text: 'text-red-700 dark:text-red-300',
-              icon: 'text-red-600 dark:text-red-400',
+              icon: 'text-negative',
               bar: 'bg-red-600',
             },
             warning: {
-              bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-              border: 'border-yellow-200 dark:border-yellow-800',
+              bg: 'bg-warning/10',
+              border: 'border-warning/25',
               text: 'text-yellow-700 dark:text-yellow-300',
-              icon: 'text-yellow-600 dark:text-yellow-400',
+              icon: 'text-warning',
               bar: 'bg-yellow-500',
             },
             ok: {
-              bg: 'bg-green-50 dark:bg-green-900/20',
-              border: 'border-green-200 dark:border-green-800',
+              bg: 'bg-positive-soft',
+              border: 'border-positive/25',
               text: 'text-green-700 dark:text-green-300',
-              icon: 'text-green-600 dark:text-green-400',
+              icon: 'text-positive',
               bar: 'bg-green-500',
             },
           };
@@ -163,14 +163,14 @@ export const BudgetVsRealizedWidget = ({ selectedMonth, blurNumbers = false }: B
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <StatusIcon className={`h-4 w-4 ${colors.icon}`} />
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-sm font-medium text-content">
                     {resolveCategoryName(budget.category)}
                   </span>
                   <span className={`text-xs px-2 py-0.5 rounded ${colors.bg} ${colors.text}`}>
                     {budget.type === TransactionType.EXPENSE ? t.expense : t.income}
                   </span>
                 </div>
-                <span className={`text-sm font-light tracking-tight ${colors.text} ${blurNumbers ? 'demo-blur' : ''}`}>
+                <span className={`text-sm font-rounded font-semibold tabular-nums ${colors.text} ${blurNumbers ? 'demo-blur' : ''}`}>
                   {blurNumbers ? '•••' : budget.rawPercentage > 1000 ? '1000%+' : `${budget.percentage.toFixed(1)}%`}
                 </span>
               </div>
@@ -185,21 +185,21 @@ export const BudgetVsRealizedWidget = ({ selectedMonth, blurNumbers = false }: B
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-4">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">{t.budgeted}: </span>
-                    <span className={`font-light tracking-tight text-gray-900 dark:text-gray-100 ${blurNumbers ? 'demo-blur' : ''}`}>
+                    <span className="text-content-tertiary">{t.budgeted}: </span>
+                    <span className={`font-rounded font-semibold tabular-nums text-content ${blurNumbers ? 'demo-blur' : ''}`}>
                       {blurNumbers ? '••••' : formatCurrency(budget.budget, baseCurrency)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">{t.spent}: </span>
-                    <span className={`font-light tracking-tight ${budget.status === 'exceeded' ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'} ${blurNumbers ? 'demo-blur' : ''}`}>
+                    <span className="text-content-tertiary">{t.spent}: </span>
+                    <span className={`font-rounded font-semibold tabular-nums ${budget.status === 'exceeded' ? 'text-negative' : 'text-content'} ${blurNumbers ? 'demo-blur' : ''}`}>
                       {blurNumbers ? '••••' : formatCurrency(budget.spent, baseCurrency)}
                     </span>
                   </div>
                 </div>
                 {budget.remaining !== 0 && (
                   <div>
-                    <span className={`font-medium ${budget.remaining > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} ${blurNumbers ? 'demo-blur' : ''}`}>
+                    <span className={`font-medium ${budget.remaining > 0 ? 'text-positive' : 'text-negative'} ${blurNumbers ? 'demo-blur' : ''}`}>
                       {budget.remaining > 0 ? '+' : ''}
                       {blurNumbers ? '••••' : formatCurrency(budget.remaining, baseCurrency)}
                     </span>

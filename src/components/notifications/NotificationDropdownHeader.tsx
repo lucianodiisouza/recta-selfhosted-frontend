@@ -19,14 +19,14 @@ export const NotificationDropdownHeader = ({
   const { t } = useI18n();
 
   return (
-    <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between z-10">
+    <div className="sticky top-0 bg-surface-elevated border-b border-line px-4 py-3 flex items-center justify-between z-10">
       <div className="flex items-center space-x-2">
-        <Bell className="h-4 w-4 text-primary-600 dark:text-primary-400" />
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <Bell className="h-4 w-4 text-brand" />
+        <h3 className="text-sm font-semibold text-content">
           {t.notifications || 'Notificações'}
         </h3>
         {totalCount > 0 && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-content-tertiary">
             ({unreadCount > 0 ? `${unreadCount} não lidas` : totalCount})
           </span>
         )}
@@ -36,7 +36,7 @@ export const NotificationDropdownHeader = ({
           <button
             onClick={onMarkAllAsRead}
             disabled={isMarkingAllAsRead}
-            className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="text-xs text-brand hover:text-primary-700 dark:hover:text-primary-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title={t.markAllAsRead || 'Marcar todas como lidas'}
           >
             Marcar todas como lidas

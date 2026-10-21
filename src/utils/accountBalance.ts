@@ -92,3 +92,27 @@ export function getAllocatedBalance(account: Account | null | undefined): number
   const balances = getAccountBalance(account);
   return balances.allocatedBalance;
 }
+
+export interface CreditCardUsage {
+  limit: number;
+  used: number;
+  available: number;
+  usagePercent: number;
+}
+
+/**
+ * Credit card limit usage from the backend's stored available limit, which already
+ * accounts for every purchase (paid or pending) and payment. Falls back to the debt
+ * (positive balance) only when the backend has not filled availableLimit.
+ */
+export function getCreditCardUsage(card: Account | null | undefined): CreditCardUsage {
+  const limit = card?.totalLimit || card?.creditLimit || 0;
+  if (!card) return { limit: 0, used: 0, available: 0, usagePercent: 0 };
+  const debt = Math.max(0, getAccountBalance(card).totalBalance);
+  const available = card.availableLimit !== undefined && card.availableLimit !== null
+    ? Math.max(0, card.availableLimit)
+    : Math.max(0, limit - debt);
+  const used = Math.max(0, limit - available);
+  const usagePercent = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+  return { limit, used, available, usagePercent };
+}

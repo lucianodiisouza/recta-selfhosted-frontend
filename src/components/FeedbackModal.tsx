@@ -89,19 +89,19 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
     <div className="fixed inset-0 z-[70] overflow-y-auto" onClick={handleBackdropClick}>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 transition-opacity" 
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
         aria-hidden="true"
       />
       
       {/* Scrollable Container */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
         {/* Modal Card */}
         <div 
-          className="relative w-full sm:w-96 max-w-md p-6 border shadow-2xl rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+          className="relative w-full sm:w-96 max-w-md p-6 bg-surface-elevated rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-medium text-content">
               {t.feedbackTitle}
             </h3>
             <button
@@ -116,7 +116,7 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
           <form onSubmit={handleSubmit}>
             {/* Star Rating */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              <label className="block text-sm font-medium text-content-secondary mb-3">
                 {t.feedbackRatingLabel}
               </label>
               <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
             <div className="mb-6">
               <label 
                 htmlFor="feedback-content"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                className="block text-sm font-medium text-content-secondary mb-2"
               >
                 {t.feedbackCommentLabel}
               </label>
@@ -159,10 +159,10 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
                 onChange={(e) => setFeedbackContent(e.target.value)}
                 rows={4}
                 maxLength={5000}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-line rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-surface-elevated text-content"
                 placeholder={t.feedbackPlaceholder}
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-content-tertiary">
                 {feedbackContent.length}/5000 caracteres
               </p>
             </div>
@@ -173,14 +173,14 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
               >
                 {t.cancel}
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || score === 0}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-brand-fill text-white hover:bg-brand-fill-hover"
               >
                 {isSubmitting ? t.feedbackSubmitting : t.feedbackSubmit}
               </button>

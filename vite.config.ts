@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
+import { applyMetaToHtml, JOIN_META, STATIC_PAGE_META } from './src/seo/pageMeta'
 
 const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'))
 const APP_VERSION = packageJson.version
@@ -29,9 +30,24 @@ const serviceWorkerVersionPlugin = () => {
   }
 }
 
+// Static copies of index.html with each public page's own meta tags, so link previews that don't
+// run JS (WhatsApp, Discord, iMessage) show the right card. vercel.json rewrites the routes to them.
+const staticPageMetaPlugin = () => {
+  return {
+    name: 'static-page-meta',
+    writeBundle() {
+      const indexHtml = readFileSync(resolve(__dirname, 'dist/index.html'), 'utf-8')
+      for (const [path, meta] of Object.entries(STATIC_PAGE_META)) {
+        writeFileSync(resolve(__dirname, `dist${path}.html`), applyMetaToHtml(indexHtml, meta, path), 'utf-8')
+      }
+      writeFileSync(resolve(__dirname, 'dist/join.html'), applyMetaToHtml(indexHtml, JOIN_META, '/join'), 'utf-8')
+    }
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), serviceWorkerVersionPlugin()],
+  plugins: [react(), serviceWorkerVersionPlugin(), staticPageMetaPlugin()],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(packageJson.version),
   },

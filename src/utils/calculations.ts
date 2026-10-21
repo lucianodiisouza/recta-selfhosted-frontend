@@ -1,6 +1,14 @@
 import { startOfMonth, endOfMonth, isWithinInterval, subMonths, isBefore, isAfter, isSameDay, addDays, addWeeks, addMonths, addYears } from 'date-fns';
 import { Transaction, CategoryData, MonthlyComparison, RecurringTransaction, Account } from '../types';
-import { TransactionType, AccountType } from '../lib/enums';
+import { TransactionType } from '../lib/enums';
+
+/**
+ * Invoice payment (`invoice_pay:` marker): money moving from a bank account to a card. Reports
+ * count card purchases on their own date and category, so the payment never counts as income or
+ * expense there, or the purchases would count twice (fdbk #170).
+ */
+export const isInvoicePayment = (transaction: Pick<Transaction, 'attachmentUrl'>): boolean =>
+  transaction.attachmentUrl?.startsWith('invoice_pay:') ?? false;
 
 export const getTotalIncome = (transactions: Transaction[] | undefined): number => {
   if (!transactions || !Array.isArray(transactions)) {
@@ -215,35 +223,24 @@ export const getMonthlyComparison = (
   months: number = 6, 
   baseMonth?: Date,
   recurringTransactions?: RecurringTransaction[],
-  accounts?: Account[]
+  // Não filtra mais por tipo de conta (fdbk #170); mantido para os chamadores
+  _accounts?: Account[]
 ): MonthlyComparison[] => {
   const comparisons: MonthlyComparison[] = [];
   const base = baseMonth ? startOfMonth(baseMonth) : startOfMonth(new Date());
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Função auxiliar para filtrar transações de cartão de crédito e movimentações internas
-  const filterCreditCardTransactions = (transactions: Transaction[]): Transaction[] => {
-    if (!accounts || accounts.length === 0) return transactions;
-    
+  // Só entradas e saídas: sem movimentações internas nem pagamento de fatura
+  const reportableTransactions = (transactions: Transaction[]): Transaction[] => {
     return transactions.filter(transaction => {
       // Excluir transferências e alocações (movimentações internas)
       if (transaction.type === TransactionType.TRANSFER || transaction.type === TransactionType.ALLOCATION) {
         return false;
       }
       
-      if (!transaction.accountId) return true; // Transações sem conta contam
-      
-      const account = accounts.find(a => a.id === transaction.accountId);
-      const isCreditCard = account?.type === AccountType.CREDIT;
-      
-      // Se for conta de cartão de crédito, ignoramos no cálculo de lucro/prejuízo mensal
-      // O custo real será computado quando houver a saída de caixa da conta bancária para pagar a fatura
-      if (isCreditCard) {
-        return false;
-      }
-      
-      return true; // Inclui tudo mais
+      // Compras no cartão contam na data da compra; o pagamento da fatura não (fdbk #170)
+      return !isInvoicePayment(transaction);
     });
   };
 
@@ -293,7 +290,7 @@ export const getMonthlyComparison = (
     }
     
     // Filtrar transações de cartão de crédito
-    allMonthTransactions = filterCreditCardTransactions(allMonthTransactions);
+    allMonthTransactions = reportableTransactions(allMonthTransactions);
     
     comparisons.push({
       month: monthDate.toLocaleString('pt-BR', { month: 'short', year: 'numeric' }),
@@ -319,7 +316,8 @@ export const getBalanceEvolution = (
   baseMonth?: Date,
   recurringTransactions?: RecurringTransaction[],
   initialBalance: number = 0,
-  accounts?: Account[]
+  // Não filtra mais por tipo de conta (fdbk #170); mantido para os chamadores
+  _accounts?: Account[]
 ): BalanceEvolution[] => {
   const evolution: BalanceEvolution[] = [];
   // Começar do mês atual (ou baseMonth se fornecido)
@@ -328,28 +326,16 @@ export const getBalanceEvolution = (
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Função auxiliar para filtrar transações de cartão de crédito e movimentações internas
-  const filterCreditCardTransactions = (transactions: Transaction[]): Transaction[] => {
-    if (!accounts || accounts.length === 0) return transactions;
-    
+  // Só entradas e saídas: sem movimentações internas nem pagamento de fatura
+  const reportableTransactions = (transactions: Transaction[]): Transaction[] => {
     return transactions.filter(transaction => {
       // Excluir transferências e alocações (movimentações internas)
       if (transaction.type === TransactionType.TRANSFER || transaction.type === TransactionType.ALLOCATION) {
         return false;
       }
       
-      if (!transaction.accountId) return true; // Transações sem conta contam
-      
-      const account = accounts.find(a => a.id === transaction.accountId);
-      const isCreditCard = account?.type === AccountType.CREDIT;
-      
-      // Se for conta de cartão de crédito, ignoramos no cálculo de lucro/prejuízo mensal
-      // O custo real será computado quando houver a saída de caixa da conta bancária para pagar a fatura
-      if (isCreditCard) {
-        return false;
-      }
-      
-      return true; // Inclui tudo mais
+      // Compras no cartão contam na data da compra; o pagamento da fatura não (fdbk #170)
+      return !isInvoicePayment(transaction);
     });
   };
 
@@ -402,7 +388,7 @@ export const getBalanceEvolution = (
     }
     
     // Filtrar transações de cartão de crédito
-    allMonthTransactions = filterCreditCardTransactions(allMonthTransactions);
+    allMonthTransactions = reportableTransactions(allMonthTransactions);
     
     // Calcular receitas e despesas do mês
     const monthIncome = getTotalIncome(allMonthTransactions);
@@ -418,7 +404,7 @@ export const getBalanceEvolution = (
       const pendingCurrentMonth = monthTransactions.filter(t => t.paid === false);
       
       // Apenas processar transações pendentes (não liquidadas)
-      const pendingFiltered = filterCreditCardTransactions(pendingCurrentMonth);
+      const pendingFiltered = reportableTransactions(pendingCurrentMonth);
       const pendingIncome = getTotalIncome(pendingFiltered);
       const pendingExpense = getTotalExpense(pendingFiltered);
       
@@ -443,7 +429,7 @@ export const getBalanceEvolution = (
           }
           return true;
         });
-        const projectedFiltered = filterCreditCardTransactions(newProjectedRecurring);
+        const projectedFiltered = reportableTransactions(newProjectedRecurring);
         projectedIncome = getTotalIncome(projectedFiltered);
         projectedExpense = getTotalExpense(projectedFiltered);
       }

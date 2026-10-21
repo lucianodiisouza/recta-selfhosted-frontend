@@ -16,11 +16,11 @@ export const SavingsGoalsWidget = ({ blurNumbers = false }: SavingsGoalsWidgetPr
 
   if (savingsGoals.length === 0) {
     return (
-      <div className="flex flex-col">
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100 mb-4">
+      <div className="surface-card p-4 sm:p-6 flex flex-col">
+        <h2 className="card-title mb-4">
           {t.savingsGoals}
         </h2>
-        <div className="text-center text-gray-500 dark:text-gray-400">
+        <div className="py-6 text-center text-sm text-content-tertiary">
           {t.noSavingsGoals}
         </div>
       </div>
@@ -65,8 +65,8 @@ export const SavingsGoalsWidget = ({ blurNumbers = false }: SavingsGoalsWidgetPr
   };
 
   return (
-    <div className="flex flex-col">
-      <h2 className="text-base sm:text-lg lg:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+    <div className="surface-card p-4 sm:p-6 flex flex-col">
+      <h2 className="card-title mb-3 sm:mb-4">
         {t.savingsGoals}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 auto-cols-max">
@@ -75,36 +75,36 @@ export const SavingsGoalsWidget = ({ blurNumbers = false }: SavingsGoalsWidgetPr
         const monthlySavings = calculateMonthlySavings(goal);
         
         return (
-          <div key={goal.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4">
+          <div key={goal.id} className="rounded-xl bg-surface-sunken/70 p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-light tracking-tight text-gray-900 dark:text-gray-100">{goal.name}</h3>
-              <Target className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+              <h3 className="font-semibold text-content text-[15px] truncate">{goal.name}</h3>
+              <Target className="h-4 w-4 text-brand" />
             </div>
-            <div className={`text-sm font-light tracking-tight text-gray-900 dark:text-gray-100 mb-3 ${blurNumbers ? 'demo-blur' : ''}`}>
+            <div className={`font-rounded text-[15px] font-semibold tabular-nums text-content mb-3 ${blurNumbers ? 'demo-blur' : ''}`}>
               {formatCurrency(goal.currentAmount, baseCurrency)} /{' '}
               {formatCurrency(goal.targetAmount, baseCurrency)}
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-2">
+            <div className="w-full bg-line rounded-full h-1.5 mb-2">
               <div
-                className="bg-primary-600 dark:bg-primary-500 h-1.5 rounded-full transition-all"
+                className="bg-brand h-1.5 rounded-full transition-all"
                 style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </div>
-            <div className={`text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 ${blurNumbers ? 'demo-blur' : ''}`}>
+            <div className={`text-xs font-medium text-content-tertiary mb-3 ${blurNumbers ? 'demo-blur' : ''}`}>
               {progress.toFixed(1)}% {t.completed}
             </div>
             {monthlySavings !== null && monthlySavings > 0 && (
-              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                  <span className="text-gray-900 dark:text-gray-100">
+              <div className="pt-3 border-t border-line-subtle">
+                <p className="text-xs font-medium text-content-secondary">
+                  <span className="text-content">
                     {t.monthlySavingsNeeded}
                   </span>
                   {' '}
-                  <span className={`font-light tracking-tight text-primary-600 dark:text-primary-400 ${blurNumbers ? 'demo-blur' : ''}`}>
+                  <span className={`font-rounded font-semibold tabular-nums text-brand ${blurNumbers ? 'demo-blur' : ''}`}>
                     {formatCurrency(monthlySavings, baseCurrency)}
                   </span>
                   {' '}
-                  <span className="text-gray-600 dark:text-gray-400">
+                  <span className="text-content-secondary">
                     {t.perMonth} {t.toReachGoal}
                   </span>
                 </p>

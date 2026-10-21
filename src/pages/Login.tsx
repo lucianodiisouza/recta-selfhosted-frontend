@@ -3,10 +3,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Wallet, Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import RectaMark from '../components/RectaMark';
+
+// Sign in with Apple on the web needs Apple's OAuth code flow configured in Firebase (Services ID
+// + key). Turn it on with VITE_APPLE_SIGNIN=true once that is done; iOS works without it.
+const APPLE_SIGNIN_ENABLED = import.meta.env.VITE_APPLE_SIGNIN === 'true';
+import { Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { createSchemas, LoginFormData } from '../schemas';
 import { useI18n } from '../context/I18nContext';
 import { sanitizeFirebaseError } from '../utils/errorHandler';
+import { postLoginPath } from '../utils/pendingJoin';
 
 const Login = () => {
   const location = useLocation();
@@ -22,7 +28,7 @@ const Login = () => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { login, signup, loginWithGoogle, loginWithApple } = useAuth();
   const { loginSchema } = createSchemas(t);
 
   const isObviousFakeEmail = (email: string) => {
@@ -74,7 +80,7 @@ const Login = () => {
       } else {
         await signup(data.email, data.password, referralCode);
       }
-      navigate('/app');
+      navigate(postLoginPath());
     } catch (err: any) {
       setError(sanitizeFirebaseError(err) || t.loginError);
     } finally {
@@ -87,9 +93,29 @@ const Login = () => {
     setLoading(true);
     try {
       await loginWithGoogle(referralCode);
-      navigate('/app');
+      navigate(postLoginPath());
     } catch (err: any) {
       setError(sanitizeFirebaseError(err) || t.googleLoginError);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppleLogin = async (): Promise<void> => {
+    setError('');
+    setLoading(true);
+    try {
+      await loginWithApple(referralCode);
+      navigate(postLoginPath());
+    } catch (err: any) {
+      const code = err?.code || '';
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        // Closing Apple's window is not an error.
+      } else if (code === 'auth/account-exists-with-different-credential') {
+        setError(t.socialAccountExists);
+      } else {
+        setError(t.appleLoginError);
+      }
     } finally {
       setLoading(false);
     }
@@ -116,33 +142,35 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-surface py-12 px-4 sm:px-6 lg:px-8">
+      {/* Soft brand glow behind the card */}
+      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/15 blur-3xl" aria-hidden="true" />
       {/* Back to Home Link */}
-      <div className="w-full max-w-md mb-4">
+      <div className="relative w-full max-w-md mb-4">
         <Link
           to="/home"
-          className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 text-sm font-medium transition-colors duration-200"
+          className="inline-flex items-center text-content-secondary hover:text-content text-sm font-medium transition-colors duration-200"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t.loginBackToHome}
         </Link>
       </div>
       
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl">
+      <div className="relative max-w-md w-full space-y-7 bg-surface-elevated p-7 sm:p-8 rounded-2xl shadow-floating ring-1 ring-line-subtle">
         <div className="text-center">
-          <div className="flex justify-center">
-            <Wallet className="h-12 w-12 text-primary-600 dark:text-primary-400" />
+          <div className="mark-hover mx-auto flex w-fit justify-center">
+            <RectaMark className="h-9 w-auto text-content" />
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          <h2 className="mt-5 font-rounded text-[28px] font-bold tracking-tight text-content">
             {isLogin ? t.loginTitle : t.signupTitle}
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm text-content-secondary">
             {isLogin ? (
               <>
                 {t.loginOr}{' '}
                 <button
                   onClick={toggleMode}
-                  className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
+                  className="font-semibold text-brand hover:opacity-75"
                 >
                   {t.createNewAccount}
                 </button>
@@ -152,7 +180,7 @@ const Login = () => {
                 {t.loginSignupWithGoogle}{' '}
                 <button
                   onClick={toggleMode}
-                  className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300"
+                  className="font-semibold text-brand hover:opacity-75"
                 >
                   {t.doLogin}
                 </button>
@@ -162,18 +190,31 @@ const Login = () => {
         </div>
         <div className="mt-8 space-y-6">
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded">
+            <div className="bg-negative-soft text-negative-on-soft px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
 
-          {/* Google Login Button */}
-          <div>
+          {/* Social login: Apple first, then Google */}
+          <div className="space-y-3">
+            {APPLE_SIGNIN_ENABLED && (
+            <button
+              type="button"
+              onClick={handleAppleLogin}
+              disabled={loading}
+              className="w-full inline-flex items-center justify-center gap-2 h-12 px-4 rounded-xl bg-black text-white text-[15px] font-semibold hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="h-5 w-5 -mt-0.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+              </svg>
+              {t.continueWithApple}
+            </button>
+            )}
             <button
               type="button"
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full inline-flex justify-center py-3 px-4 border-2 border-gray-800 dark:border-gray-200 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-semibold text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-900 dark:hover:border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full inline-flex items-center justify-center h-12 px-4 border border-line rounded-xl bg-surface-elevated text-[15px] font-semibold text-content hover:bg-surface-sunken transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -193,56 +234,54 @@ const Login = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              <span className="ml-2">{t.google}</span>
+              <span className="ml-2">{t.continueWithGoogle}</span>
             </button>
           </div>
 
           {/* Email/Password Form */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+              <div className="w-full border-t border-line" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+              <span className="px-2 bg-surface-elevated text-content-tertiary">
                 {t.continueWith}
               </span>
             </div>
           </div>
 
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="rounded-md shadow-sm -space-y-px">
+            <div className="space-y-3">
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                <div className="absolute inset-y-0 start-0 z-10 ps-3.5 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-content-tertiary" aria-hidden="true" />
                 </div>
                 <input
                   type="email"
                   {...register('email')}
-                  className={`appearance-none rounded-t-md relative block w-full px-10 py-3 border placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm ${
-                    errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
+                  aria-invalid={errors.email ? true : undefined}
+                  className="field-control h-12 ps-11"
                   placeholder={t.emailPlaceholder}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400 px-3">{errors.email.message}</p>
+                <p className="mt-1.5 text-sm text-negative px-1">{errors.email.message}</p>
               )}
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                <div className="absolute inset-y-0 start-0 z-10 ps-3.5 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-content-tertiary" aria-hidden="true" />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
-                  className={`appearance-none rounded-b-md relative block w-full px-10 pr-11 py-3 border placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm ${
-                    errors.password ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
+                  aria-invalid={errors.password ? true : undefined}
+                  className="field-control h-12 ps-11 pe-11"
                   placeholder={t.passwordPlaceholder}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute inset-y-0 right-0 z-20 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="absolute inset-y-0 end-0 z-20 pe-3.5 flex items-center text-content-tertiary hover:text-content-secondary transition-colors"
                   aria-label={showPassword ? t.hidePasswordAriaLabel : t.showPasswordAriaLabel}
                 >
                   {showPassword ? (
@@ -253,7 +292,7 @@ const Login = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400 px-3">{errors.password.message}</p>
+                <p className="mt-1.5 text-sm text-negative px-1">{errors.password.message}</p>
               )}
             </div>
 
@@ -261,7 +300,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading || isSubmitting}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="w-full flex items-center justify-center h-12 px-4 text-base font-semibold rounded-xl text-white bg-brand-fill hover:bg-brand-fill-hover active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-[background-color,transform] duration-150"
               >
                 {loading || isSubmitting ? t.loading : isLogin ? t.loginButton : t.signupButton}
               </button>

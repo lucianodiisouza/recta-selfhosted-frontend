@@ -5,6 +5,7 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
+  OAuthProvider,
   signInWithPopup,
   User,
   sendEmailVerification
@@ -101,6 +102,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } else {
         // Error syncing user with backend
       }
+    }
+    return result;
+  }, [syncAuth]);
+
+  // Same Firebase provider as the iOS app ("apple.com"), so the account is the same everywhere.
+  const loginWithApple = useCallback(async (referralCode?: string) => {
+    if (isMaintenanceMode()) {
+      throw new Error('O aplicativo está em manutenção. Por favor, tente novamente mais tarde.');
+    }
+    const provider = new OAuthProvider('apple.com');
+    provider.addScope('email');
+    provider.addScope('name');
+    provider.setCustomParameters({ locale: document.documentElement.lang || 'pt_BR' });
+    const result = await signInWithPopup(auth, provider);
+    analyticsHelpers.logLogin('apple');
+    try {
+      await syncAuth.mutateAsync(referralCode);
+    } catch (error) {
+      // Backend indisponível: o login no Firebase vale mesmo assim, igual ao Google.
     }
     return result;
   }, [syncAuth]);
@@ -254,8 +274,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     signup,
     login,
     loginWithGoogle,
+    loginWithApple,
     logout,
-  }), [currentUser, signup, login, loginWithGoogle, logout]);
+  }), [currentUser, signup, login, loginWithGoogle, loginWithApple, logout]);
 
   return (
     <AuthContext.Provider value={value}>

@@ -11,16 +11,16 @@ export const TransactionModalHeader = ({ title, onClose, readOnly: _readOnly }: 
   const { t } = useI18n();
 
   return (
-    <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
-      <h3 className="text-xl font-light tracking-tight text-gray-900 dark:text-white">
+    <div className="flex items-center justify-between mb-5">
+      <h3 className="font-rounded text-xl font-semibold text-content">
         {title}
       </h3>
       <button
         onClick={onClose}
         aria-label={t.close}
-        className="text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1"
+        className="-me-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-surface-sunken text-content-secondary hover:text-content transition-colors"
       >
-        <X className="h-6 w-6" aria-hidden="true" />
+        <X className="h-4 w-4" aria-hidden="true" />
       </button>
     </div>
   );

@@ -39,13 +39,13 @@ export const PageHeader = ({ title, description, children }: PageHeaderProps) =>
   }
 
   return (
-    <div className="mb-4 sm:mb-12 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+    <div className="mb-5 sm:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-4">
       <div className="min-w-0 flex-shrink">
-        <h1 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 dark:text-white">
+        <h1 className="font-rounded text-[28px] sm:text-[34px] leading-tight font-bold tracking-tight text-content">
           {title}
         </h1>
         {description && (
-          <p className="mt-1 text-sm font-medium text-gray-500 dark:text-gray-300">
+          <p className="mt-1 text-[15px] text-content-secondary">
             {description}
           </p>
         )}
@@ -68,7 +68,7 @@ export const PageHeader = ({ title, description, children }: PageHeaderProps) =>
               <Popover.Root open={menuOpen} onOpenChange={setMenuOpen}>
                 <Popover.Trigger asChild>
                   <button
-                    className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors flex-shrink-0 self-stretch"
+                    className="inline-flex items-center justify-center px-3 rounded-lg border border-line bg-surface-elevated text-content-secondary hover:bg-surface-sunken transition-colors flex-shrink-0 self-stretch"
                     aria-label={t.moreOptions}
                   >
                     <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
@@ -76,7 +76,7 @@ export const PageHeader = ({ title, description, children }: PageHeaderProps) =>
                 </Popover.Trigger>
                 <Popover.Portal>
                   <Popover.Content
-                    className="w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-[100] p-1"
+                    className="w-56 bg-surface-elevated rounded-xl shadow-floating ring-1 ring-line-subtle z-[100] p-1"
                     sideOffset={4}
                     align="end"
                   >

@@ -1,0 +1,23 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.recta.mobile",
+      "sha256_cert_fingerprints": [
+        "37:D8:24:6D:BD:8D:8D:99:BD:F2:9D:A0:52:B2:89:03:D2:3B:9F:6A:E3:2A:BC:43:33:04:CC:0B:46:5F:EF:2C",
+        "18:68:4F:5D:8A:4F:D5:53:C0:FC:5F:AC:7F:79:B2:CA:88:77:B6:10:7E:5D:A1:D2:A5:BD:12:13:53:4D:29:F0"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.recta.mobile.dev",
+      "sha256_cert_fingerprints": [
+        "36:92:3B:62:1C:41:4A:8D:E8:B7:E2:C6:AC:7B:5B:AF:32:94:07:CF:3D:29:FE:EB:FD:CD:FB:17:6D:AC:BB:79"
+      ]
+    }
+  }
+]

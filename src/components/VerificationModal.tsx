@@ -80,23 +80,23 @@ export const VerificationModal = () => {
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 border border-gray-200 dark:border-gray-700 animate-fade-in">
+      <div className="bg-surface-elevated rounded-2xl shadow-2xl max-w-md w-full p-8 border border-line animate-fade-in">
         <div className="flex flex-col items-center text-center">
-          <div className="bg-primary-100 dark:bg-primary-900/30 p-4 rounded-full mb-6">
-            <Mail className="h-12 w-12 text-primary-600 dark:text-primary-400" />
+          <div className="bg-brand-soft p-4 rounded-full mb-6">
+            <Mail className="h-12 w-12 text-brand" />
           </div>
           
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 className="text-2xl font-bold text-content mb-4">
             {t.verifyEmailTitle}
           </h2>
           
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-6 w-full">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 break-all">
+          <div className="bg-surface-sunken rounded-lg p-3 mb-6 w-full">
+            <p className="text-sm font-medium text-content break-all">
               {currentUser.email}
             </p>
           </div>
           
-          <p className="text-gray-600 dark:text-gray-400 mb-8 text-sm">
+          <p className="text-content-secondary mb-8 text-sm">
             {t.verifyEmailDescription}
           </p>
           
@@ -117,7 +117,7 @@ export const VerificationModal = () => {
             <button
               onClick={handleResendEmail}
               disabled={resendLoading || cooldown > 0}
-              className="w-full flex items-center justify-center py-3 px-4 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 disabled:opacity-50"
+              className="w-full flex items-center justify-center py-3 px-4 bg-surface-elevated border-2 border-gray-200 dark:border-gray-600 text-content-secondary font-semibold rounded-xl hover:bg-surface-sunken transition-all duration-200 disabled:opacity-50"
             >
               {resendLoading ? (
                 <RefreshCw className="h-5 w-5 animate-spin mr-2" />
@@ -129,10 +129,10 @@ export const VerificationModal = () => {
                 : t.resendVerificationEmail}
             </button>
             
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-700 w-full">
+            <div className="pt-4 border-t border-line-subtle w-full">
               <button
                 onClick={handleLogout}
-                className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 flex items-center justify-center mx-auto transition-colors"
+                className="text-sm text-content-tertiary hover:text-red-600 dark:hover:text-red-400 flex items-center justify-center mx-auto transition-colors"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 {t.logout}

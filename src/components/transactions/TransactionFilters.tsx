@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DateRangePicker, type DateRange } from '../DateRangePicker';
-import CategoryCombobox from '../CategoryCombobox';
+import CategoryMultiCombobox from '../CategoryMultiCombobox';
 import SelectCombobox from '../SelectCombobox';
 import { ChevronDown, Filter, X } from 'lucide-react';
 import { TransactionType } from '../../lib/enums';
@@ -15,8 +15,9 @@ interface TransactionFiltersProps {
   onDateRangeApply: (range: DateRange) => void;
   typeFilter: string;
   onTypeFilterChange: (value: string) => void;
-  categoryFilter: string;
-  onCategoryFilterChange: (value: string) => void;
+  /** Chosen categoryNames; empty = all (fdbk #123). */
+  categoryFilter: string[];
+  onCategoryFilterChange: (value: string[]) => void;
   paidFilter: string;
   onPaidFilterChange: (value: string) => void;
   activeTab: 'transactions' | 'scheduled';
@@ -54,13 +55,13 @@ export const TransactionFilters = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const hasNonSearchFilters =
     typeFilter !== 'todos' ||
-    categoryFilter !== 'todas' ||
+    categoryFilter.length > 0 ||
     paidFilter !== 'todos' ||
     !!tempDateRange.startDate ||
     !!tempDateRange.endDate;
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 mb-6">
+    <div className="surface-card p-4 mb-6">
       <div className="space-y-4">
         {/* Primeira linha: Busca e Data (Data oculta na aba Próximos agendamentos) */}
         <div className={`grid gap-4 ${activeTab === 'scheduled' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
@@ -78,14 +79,14 @@ export const TransactionFilters = ({
               <button
                 type="button"
                 onClick={() => setIsExpanded((prev) => !prev)}
-                className="md:hidden inline-flex items-center justify-between w-full px-4 py-2 h-10 text-sm font-medium border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 rounded-md hover:opacity-80 transition-opacity"
+                className="md:hidden inline-flex items-center justify-between w-full px-3.5 h-10 text-sm font-semibold border border-line text-content-secondary bg-surface-elevated rounded-lg hover:bg-surface-sunken transition-colors"
                 aria-expanded={isExpanded}
               >
                 <span className="inline-flex items-center gap-2">
                   <Filter className="h-4 w-4" />
                   {t.filters || t.filter || 'Filtros'}
                   {hasNonSearchFilters && (
-                    <span className="ml-1 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-medium text-white bg-primary-600 rounded-full">
+                    <span className="ml-1 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-medium text-white bg-brand-fill rounded-full">
                       •
                     </span>
                   )}
@@ -109,7 +110,7 @@ export const TransactionFilters = ({
                   type="button"
                   onClick={() => onDateRangeApply(tempDateRange)}
                   disabled={disabled || (!tempDateRange.startDate && !tempDateRange.endDate)}
-                  className="px-4 py-2 h-10 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 h-10 text-sm font-semibold text-white bg-brand-fill rounded-lg hover:bg-brand-fill-hover focus:outline-none transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {t.filter}
                 </button>
@@ -135,14 +136,14 @@ export const TransactionFilters = ({
                 type="button"
                 onClick={() => onDateRangeApply(tempDateRange)}
                 disabled={disabled || (!tempDateRange.startDate && !tempDateRange.endDate)}
-                className="px-4 py-2 h-10 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 h-10 text-sm font-semibold text-white bg-brand-fill rounded-lg hover:bg-brand-fill-hover focus:outline-none transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t.filter}
               </button>
             </div>
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-content-secondary mb-1">
                   {t.type}
                 </label>
                 <SelectCombobox
@@ -158,24 +159,18 @@ export const TransactionFilters = ({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-content-secondary mb-1">
                   {t.category}
                 </label>
-                <CategoryCombobox
-                  value={categoryFilter === 'todas' || categoryFilter === '' ? '' : categoryFilter}
-                  onValueChange={(value) => {
-                    if (!value || value === t.all) onCategoryFilterChange('todas');
-                    else onCategoryFilterChange(value);
-                  }}
-                  placeholder={t.all}
-                  showAllOption={true}
-                  allOptionLabel={t.all}
+                <CategoryMultiCombobox
+                  values={categoryFilter}
+                  onValuesChange={onCategoryFilterChange}
                   householdId={householdId}
                   disabled={disabled}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-content-secondary mb-1">
                   {t.paymentStatus}
                 </label>
                 <SelectCombobox
@@ -197,7 +192,7 @@ export const TransactionFilters = ({
         {/* Segunda linha: Filtros de Tipo, Categoria e Status (desktop) */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-content-secondary mb-1">
               {t.type}
             </label>
             <SelectCombobox
@@ -213,24 +208,18 @@ export const TransactionFilters = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-content-secondary mb-1">
               {t.category}
             </label>
-            <CategoryCombobox
-              value={categoryFilter === 'todas' || categoryFilter === '' ? '' : categoryFilter}
-              onValueChange={(value) => {
-                if (!value || value === t.all) onCategoryFilterChange('todas');
-                else onCategoryFilterChange(value);
-              }}
-              placeholder={t.all}
-              showAllOption={true}
-              allOptionLabel={t.all}
+            <CategoryMultiCombobox
+              values={categoryFilter}
+              onValuesChange={onCategoryFilterChange}
               householdId={householdId}
               disabled={disabled}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-content-secondary mb-1">
               {t.paymentStatus}
             </label>
             <SelectCombobox
@@ -252,11 +241,11 @@ export const TransactionFilters = ({
         <button
           onClick={onClearFilters}
           disabled={disabled}
-          className={`mt-3 inline-flex items-center text-sm text-gray-500 dark:text-gray-400 ${
-            disabled ? 'cursor-not-allowed opacity-50' : 'hover:text-gray-700 dark:hover:text-gray-300'
+          className={`mt-3 inline-flex items-center gap-1 rounded-full bg-brand-soft px-3 h-8 text-sm font-semibold text-brand-on-soft ${
+            disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-brand/15'
           }`}
         >
-          <X className="h-4 w-4 mr-1" />
+          <X className="h-4 w-4" aria-hidden="true" />
           {t.clearFilters}
         </button>
       )}

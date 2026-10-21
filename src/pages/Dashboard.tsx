@@ -308,7 +308,7 @@ const Dashboard = () => {
   const isCurrentMonth = selectedMonth.getTime() === currentMonth.getTime();
 
   return (
-    <div className="px-2 sm:px-6 lg:px-8 max-w-7xl mx-auto" role="main" aria-label={t.dashboard}>
+    <div className="max-w-7xl mx-auto" role="main" aria-label={t.dashboard}>
       <div className="mb-3 sm:mb-6 flex flex-col gap-2 sm:gap-4">
         <PageHeader
           title={t.dashboard}
@@ -328,10 +328,10 @@ const Dashboard = () => {
           />
           <button
             onClick={() => setIsConfigOpen(true)}
-            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors h-full"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-surface-elevated text-content-secondary hover:bg-surface-sunken hover:text-content transition-colors"
             aria-label={t.configureWidgets}
           >
-            <Settings className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+            <Settings className="h-[18px] w-[18px]" aria-hidden="true" />
           </button>
         </PageHeader>
 
@@ -354,7 +354,7 @@ const Dashboard = () => {
 
       <section 
         key={selectedMonth.toString()} 
-        className="mb-8 sm:mb-12 dashboard-fade-in"
+        className="mb-6 sm:mb-8 dashboard-fade-in"
         aria-label={t.financialSummary}
       >
         <SummaryCards

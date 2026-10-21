@@ -10,18 +10,18 @@ export const AccountModalFooter = ({ isEditing, isLoading, onCancel }: AccountMo
   const { t } = useI18n();
 
   return (
-    <div className="flex gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+    <div className="flex gap-3 pt-6 border-t border-line-subtle">
       <button
         type="button"
         onClick={onCancel}
-        className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity"
+        className="flex-1 px-4 py-2.5 border border-line-subtle rounded-md text-sm font-light tracking-tight text-content bg-surface-elevated hover:opacity-70 transition-opacity"
       >
         {t.cancel}
       </button>
       <button
         type="submit"
         disabled={isLoading}
-        className="flex-1 px-4 py-2.5 border border-primary-600 dark:border-primary-500 rounded-md text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="flex-1 px-4 py-2.5 border border-brand rounded-md text-sm font-light tracking-tight text-white bg-brand-fill hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {isLoading ? (
           <>

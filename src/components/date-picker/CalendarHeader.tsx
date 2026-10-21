@@ -24,18 +24,18 @@ export const CalendarHeader = ({
       <button
         type="button"
         onClick={onPreviousMonth}
-        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+        className="p-1 hover:bg-surface-sunken rounded"
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
       <div className="flex items-center gap-2">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-sm font-semibold text-content">
           {format(currentMonth, 'MMMM yyyy', { locale: currentLocale })}
         </h3>
         <button
           type="button"
           onClick={onGoToToday}
-          className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+          className="text-xs text-brand hover:underline"
         >
           {locale === 'pt-BR' ? 'Hoje' : 'Today'}
         </button>
@@ -43,7 +43,7 @@ export const CalendarHeader = ({
       <button
         type="button"
         onClick={onNextMonth}
-        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+        className="p-1 hover:bg-surface-sunken rounded"
       >
         <ChevronRight className="h-5 w-5" />
       </button>

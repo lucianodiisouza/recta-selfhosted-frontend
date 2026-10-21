@@ -11,19 +11,26 @@ import { CurrencyProvider } from './context/CurrencyContext';
 import { I18nProvider } from './context/I18nContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DemoBlurProvider } from './context/DemoBlurContext';
+import { AppLockProvider } from './context/AppLockContext';
+import { AppLockGate } from './components/AppLockScreen';
 import { queryClient } from './lib/queryClient';
 import Layout from './components/Layout';
 import { AnalyticsTracker } from './components/AnalyticsTracker';
+import { RouteMeta } from './seo/RouteMeta';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { VersionUpdatePrompt } from './components/VersionUpdatePrompt';
 // import { InstallPrompt } from './components/InstallPrompt'; // Desativado temporariamente
 import { MaintenanceModal } from './components/MaintenanceModal';
 import { useMaintenanceMode } from './hooks/useMaintenanceMode';
+import { postLoginPath } from './utils/pendingJoin';
 
 // Lazy load pages for better code splitting and initial bundle size
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Login = lazy(() => import('./pages/Login'));
+const JoinHousehold = lazy(() => import('./pages/JoinHousehold'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+// Design system catalog, development builds only.
+const UiGallery = import.meta.env.DEV ? lazy(() => import('./pages/dev/UiGallery')) : null;
 const Transactions = lazy(() => import('./pages/Transactions'));
 const Reports = lazy(() => import('./pages/Reports'));
 const Budgets = lazy(() => import('./pages/Budgets'));
@@ -47,7 +54,7 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
 
 const PublicRoute = ({ children }: PrivateRouteProps) => {
   const { currentUser } = useAuth();
-  return !currentUser ? <>{children}</> : <Navigate to="/app" />;
+  return !currentUser ? <>{children}</> : <Navigate to={postLoginPath()} />;
 };
 
 // Loading fallback component
@@ -68,11 +75,11 @@ const LazyLoadErrorFallback = ({ error, retry }: { error: Error; retry: () => vo
   if (isChunkError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+        <div className="max-w-md w-full bg-surface-elevated rounded-lg shadow-lg p-6 text-center">
+          <h2 className="text-xl font-bold text-content mb-4">
             Nova versão disponível
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-content-secondary mb-6">
             Uma nova versão do aplicativo está disponível. Por favor, recarregue a página para continuar.
           </p>
           <button
@@ -88,11 +95,11 @@ const LazyLoadErrorFallback = ({ error, retry }: { error: Error; retry: () => vo
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+      <div className="max-w-md w-full bg-surface-elevated rounded-lg shadow-lg p-6 text-center">
+        <h2 className="text-xl font-bold text-content mb-4">
           Erro ao carregar página
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-content-secondary mb-6">
           Ocorreu um erro ao carregar esta página. Tente novamente.
         </p>
         <button
@@ -177,6 +184,7 @@ function AppRoutes() {
   return (
     <>
       <AnalyticsTracker />
+      <RouteMeta />
       <VersionUpdatePrompt />
       {/* InstallPrompt desativado temporariamente */}
       {/* <InstallPrompt /> */}
@@ -184,6 +192,7 @@ function AppRoutes() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/join/:code" element={<JoinHousehold />} />
           {/* Landing page route - always accessible, even when logged in */}
           <Route path="/home" element={<LandingPage />} />
           <Route path="/" element={<LandingRoute />} />
@@ -203,9 +212,12 @@ function AppRoutes() {
             path="/app"
             element={
               <PrivateRoute>
-                <PrivateRoutesWrapper>
-                  <Layout />
-                </PrivateRoutesWrapper>
+                {/* App lock (fdbk #110): while locked, nothing below mounts */}
+                <AppLockGate>
+                  <PrivateRoutesWrapper>
+                    <Layout />
+                  </PrivateRoutesWrapper>
+                </AppLockGate>
               </PrivateRoute>
             }
           >
@@ -218,6 +230,7 @@ function AppRoutes() {
             <Route path="goals" element={<SavingsGoals />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
+            {UiGallery && <Route path="dev/ui" element={<UiGallery />} />}
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -232,21 +245,23 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <AuthProvider>
-          <ThemeProvider>
-            <ToastProvider>
-              <I18nProvider>
-                <CurrencyProvider>
-                  <DemoBlurProvider>
-                    <CommandMenuProvider>
-                      <ConfettiProvider>
-                        <AppRoutes />
-                      </ConfettiProvider>
-                    </CommandMenuProvider>
-                  </DemoBlurProvider>
-                </CurrencyProvider>
-              </I18nProvider>
-            </ToastProvider>
-          </ThemeProvider>
+          <AppLockProvider>
+            <ThemeProvider>
+              <ToastProvider>
+                <I18nProvider>
+                  <CurrencyProvider>
+                    <DemoBlurProvider>
+                      <CommandMenuProvider>
+                        <ConfettiProvider>
+                          <AppRoutes />
+                        </ConfettiProvider>
+                      </CommandMenuProvider>
+                    </DemoBlurProvider>
+                  </CurrencyProvider>
+                </I18nProvider>
+              </ToastProvider>
+            </ThemeProvider>
+          </AppLockProvider>
         </AuthProvider>
       </Router>
       {/* React Query DevTools - só aparece em desenvolvimento */}

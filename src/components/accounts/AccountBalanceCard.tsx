@@ -24,36 +24,36 @@ export const AccountBalanceCard = ({
   const isPositive = balance >= 0;
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
+    <div className={`bg-surface-elevated rounded-lg border border-line p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <Wallet className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          <Wallet className="h-5 w-5 text-content-secondary" />
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-content">
               {account.name}
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-content-tertiary">
               {account.type}
             </p>
           </div>
         </div>
         {isPositive ? (
-          <TrendingUp className="h-5 w-5 text-green-500" />
+          <TrendingUp className="h-5 w-5 text-positive" />
         ) : (
-          <TrendingDown className="h-5 w-5 text-red-500" />
+          <TrendingDown className="h-5 w-5 text-negative" />
         )}
       </div>
 
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-4 border-t border-line">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-content-secondary">
             Saldo Atual
           </span>
           <span
             className={`text-2xl font-bold ${
               isPositive
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-red-600 dark:text-red-400'
+                ? 'text-positive'
+                : 'text-negative'
             }`}
           >
             {formatCurrency(balance, baseCurrency)}

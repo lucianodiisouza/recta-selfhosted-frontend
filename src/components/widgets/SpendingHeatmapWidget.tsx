@@ -167,7 +167,7 @@ export const SpendingHeatmapWidget = ({
   const getColorClass = (intensity: number): string => {
     // Cores para gastos - gradiente vermelho/laranja (quanto mais escuro, mais gasto)
     const colors = [
-      'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700', // 0 - nenhum gasto
+      'bg-surface-sunken border border-line', // 0 - nenhum gasto
       'bg-[#ffc1cc] dark:bg-[#4a1a1a]', // 1 - baixo (rosa claro)
       'bg-[#ff8a95] dark:bg-[#6b1f1f]', // 2 - médio-baixo (rosa médio)
       'bg-[#ff6b7a] dark:bg-[#8b2525]', // 3 - médio (vermelho claro)
@@ -204,11 +204,11 @@ export const SpendingHeatmapWidget = ({
   }, [currentLocale]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 flex flex-col">
+    <div className="surface-card p-4 sm:p-6 flex flex-col">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-primary-600 dark:text-primary-400" />
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+          <Calendar className="h-5 w-5 text-brand" aria-hidden="true" />
+          <h3 className="card-title">
             {t.spendingByDayOfMonth}
           </h3>
         </div>
@@ -220,7 +220,7 @@ export const SpendingHeatmapWidget = ({
             disabled={!canGoBack}
             className={`p-1 rounded-md transition-colors ${
               canGoBack
-                ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400'
+                ? 'text-content-secondary hover:bg-surface-sunken hover:text-brand'
                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
             }`}
             aria-label={t.previousMonth}
@@ -228,7 +228,7 @@ export const SpendingHeatmapWidget = ({
             <ChevronLeft className="h-4 w-4" />
           </button>
           
-          <div className="text-xs text-gray-700 dark:text-gray-300 font-medium min-w-[80px] text-center">
+          <div className="text-xs text-content-secondary font-medium min-w-[80px] text-center">
             {format(currentMonth, 'MMM yyyy', { locale: currentLocale })}
           </div>
           
@@ -237,7 +237,7 @@ export const SpendingHeatmapWidget = ({
             disabled={!canGoForward}
             className={`p-1 rounded-md transition-colors ${
               canGoForward
-                ? 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary-600 dark:hover:text-primary-400'
+                ? 'text-content-secondary hover:bg-surface-sunken hover:text-brand'
                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
             }`}
             aria-label={t.nextMonth}
@@ -248,26 +248,26 @@ export const SpendingHeatmapWidget = ({
       </div>
 
       {/* Legenda - cores para gastos */}
-      <div className="flex items-center justify-end gap-2.5 mb-4 text-[10px] text-gray-500 dark:text-gray-400">
-        <span className="text-gray-400 dark:text-gray-500">{t.less}</span>
+      <div className="flex items-center justify-end gap-2.5 mb-4 text-[10px] text-content-tertiary">
+        <span className="text-content-tertiary">{t.less}</span>
         <div className="flex items-center gap-1">
-          <div className="w-2.5 h-2.5 rounded-sm bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700" />
+          <div className="w-2.5 h-2.5 rounded-sm bg-surface-sunken border border-line" />
           <div className="w-2.5 h-2.5 rounded-sm bg-[#ffc1cc] dark:bg-[#4a1a1a]" />
           <div className="w-2.5 h-2.5 rounded-sm bg-[#ff8a95] dark:bg-[#6b1f1f]" />
           <div className="w-2.5 h-2.5 rounded-sm bg-[#ff6b7a] dark:bg-[#8b2525]" />
           <div className="w-2.5 h-2.5 rounded-sm bg-[#ff4757] dark:bg-[#b82e2e]" />
         </div>
-        <span className="text-gray-400 dark:text-gray-500">{t.more}</span>
+        <span className="text-content-tertiary">{t.more}</span>
       </div>
 
       {/* Calendário Heatmap - layout tradicional */}
       <div className="mb-5">
         {/* Cabeçalho dos dias da semana */}
-        <div className="grid grid-cols-7 gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-1.5 mb-2">
           {daysOfWeek.map((day, index) => (
             <div 
               key={`${day}-${index}`} 
-              className="text-xs text-center text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide"
+              className="text-xs text-center text-content-secondary font-semibold uppercase tracking-wide"
             >
               {day.substring(0, 3)}
             </div>
@@ -275,14 +275,13 @@ export const SpendingHeatmapWidget = ({
         </div>
 
         {/* Grid do calendário - 7 colunas, sempre 6 semanas para altura fixa */}
-        <div className="grid grid-cols-7 gap-2 min-h-[240px]" style={{ gridTemplateRows: 'repeat(6, 1fr)' }}>
+        <div className="grid grid-cols-7 gap-1.5">
           {isLoading ? (
             // Loading skeleton
             Array.from({ length: 42 }).map((_, i) => (
               <div
                 key={`skeleton-${i}`}
-                className="w-full rounded-md bg-gray-100 dark:bg-gray-800 animate-pulse"
-                style={{ aspectRatio: '1 / 1' }}
+                className="w-full h-10 sm:h-12 rounded-lg bg-surface-sunken animate-pulse"
               />
             ))
           ) : (
@@ -292,8 +291,7 @@ export const SpendingHeatmapWidget = ({
                   return (
                     <div 
                       key={`empty-${weekIndex}-${dayIndex}`} 
-                      className="w-full"
-                      style={{ aspectRatio: '1 / 1' }}
+                      className="w-full h-10 sm:h-12"
                     />
                   );
                 }
@@ -305,17 +303,16 @@ export const SpendingHeatmapWidget = ({
                   <div
                     key={`${dayData.day}-${weekIndex}-${dayIndex}`}
                     onClick={() => handleDayClick(dayData.date)}
-                    className={`${colorClass} w-full rounded-md relative group cursor-pointer transition-all duration-200 hover:ring-2 hover:ring-primary-500 dark:hover:ring-primary-400 hover:scale-105 hover:shadow-lg flex items-center justify-center`}
-                    style={{ aspectRatio: '1 / 1' }}
+                    className={`${colorClass} w-full h-10 sm:h-12 rounded-lg relative group cursor-pointer transition-[transform,box-shadow] duration-150 hover:ring-2 hover:ring-brand hover:scale-[1.04] flex items-center justify-center motion-reduce:hover:scale-100`}
                     title={`${dayData.day} ${format(dayData.date, 'MMM', { locale: currentLocale })}: ${formatCurrency(dayData.amount, baseCurrency)}`}
                   >
                     {/* Número do dia */}
                     <span className={`text-[11px] font-semibold ${
                       intensity === 0
-                        ? 'text-gray-600 dark:text-gray-400'
+                        ? 'text-content-secondary'
                         : intensity >= 3
                         ? 'text-white dark:text-gray-100'
-                        : 'text-gray-700 dark:text-gray-200'
+                        : 'text-content-secondary'
                     }`}>
                       {dayData.day}
                     </span>
@@ -323,7 +320,7 @@ export const SpendingHeatmapWidget = ({
                     {/* Tooltip - apenas no hover */}
                     {dayData.amount > 0 && (
                       <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[9999]">
-                        <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs px-3 py-2 rounded-md shadow-2xl whitespace-nowrap border border-gray-700 dark:border-gray-300">
+                        <div className="bg-surface-elevated text-content text-xs px-3 py-2 rounded-lg shadow-floating ring-1 ring-line-subtle whitespace-nowrap">
                           <div className="font-semibold mb-1 text-center">
                             {dayData.day} {format(dayData.date, 'MMM', { locale: currentLocale })}
                           </div>
@@ -345,11 +342,11 @@ export const SpendingHeatmapWidget = ({
         </div>
       </div>
 
-      <div className="pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-        <span className="text-xs text-gray-500 dark:text-gray-400">
+      <div className="pt-3 border-t border-line flex items-center justify-between">
+        <span className="text-xs text-content-tertiary">
           {t.monthlyTotal}:
         </span>
-        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+        <span className="text-sm font-semibold text-content">
           {formatCurrency(totalSpending, baseCurrency)}
         </span>
       </div>

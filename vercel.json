@@ -90,19 +90,22 @@
           "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://browser.sentry-cdn.com https://*.sentry.io https://www.gstatic.com https://apis.google.com https://www.googletagmanager.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.google.com https://*.google-analytics.com https://www.google-analytics.com https://*.firebaseio.com https://*.firebaseapp.com https://*.sentry.io https://www.googleapis.com https://recta-backend-app-production.up.railway.app https://*.up.railway.app wss://*.firebaseio.com; frame-src 'self' https://*.google.com https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self';"
         }
       ]
+    },
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
     }
   ],
   "rewrites": [
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "recta.app"
-        }
-      ],
-      "destination": "/coming-soon.html"
-    },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/support", "destination": "/support.html" },
+    { "source": "/join/:code", "destination": "/join.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"

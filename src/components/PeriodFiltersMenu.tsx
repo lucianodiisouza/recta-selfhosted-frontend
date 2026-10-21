@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Check } from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
 import { useI18n } from '../context/I18nContext';
 
@@ -26,7 +26,7 @@ export const PeriodFiltersMenu = ({
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
-          className="inline-flex items-center justify-center px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          className="inline-flex items-center justify-center gap-2 h-10 px-3 rounded-lg border border-line bg-surface-elevated text-sm font-semibold text-content-secondary hover:bg-surface-sunken data-[state=open]:bg-surface-sunken transition-colors"
           aria-label={t.periodFilters}
         >
           <Calendar className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
@@ -35,11 +35,11 @@ export const PeriodFiltersMenu = ({
 
       <Popover.Portal>
         <Popover.Content
-          className="w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-[100] p-1"
+          className="min-w-[14rem] bg-surface-elevated rounded-xl shadow-floating ring-1 ring-line-subtle z-[100] p-1.5 animate-menu-in"
           sideOffset={4}
           align="end"
         >
-          <div className="py-1">
+          <div>
             {periods.map((period) => (
               <button
                 key={period.id}
@@ -47,15 +47,15 @@ export const PeriodFiltersMenu = ({
                   onPeriodFilter(period.id);
                   setOpen(false);
                 }}
-                className={`w-full flex items-center px-4 py-2 text-sm text-left rounded-sm focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700 ${
+                className={`w-full flex items-center gap-3 h-10 px-3 text-[15px] text-start rounded-lg focus:outline-none focus-visible:bg-surface-sunken transition-colors ${
                   periodFilter === period.id
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    ? 'bg-brand-soft text-brand-on-soft font-semibold'
+                    : 'text-content hover:bg-surface-sunken'
                 }`}
               >
                 <span>{period.label}</span>
                 {periodFilter === period.id && (
-                  <span className="ml-auto text-primary-600 dark:text-primary-400">✓</span>
+                  <Check className="ms-auto h-4 w-4 text-brand" strokeWidth={2.5} aria-hidden="true" />
                 )}
               </button>
             ))}

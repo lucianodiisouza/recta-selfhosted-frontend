@@ -69,7 +69,7 @@ export const RecurringTransactionFields = ({
   return (
     <div className="space-y-4 border-t pt-4 mt-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.frequency}
         </label>
         <SelectCombobox
@@ -88,7 +88,7 @@ export const RecurringTransactionFields = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.startDate}
         </label>
         <DatePicker
@@ -101,7 +101,7 @@ export const RecurringTransactionFields = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.endDate} ({t.optional})
         </label>
         <DatePicker
@@ -115,7 +115,7 @@ export const RecurringTransactionFields = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.nextDueDate}
         </label>
         <DatePicker
@@ -126,7 +126,7 @@ export const RecurringTransactionFields = ({
           useModal={true}
           disabled={disabled}
         />
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs text-content-tertiary">
           {t.optional}
         </p>
       </div>

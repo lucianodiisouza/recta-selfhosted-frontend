@@ -34,7 +34,7 @@ export const BudgetActionsMenu = ({
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
-          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 rounded p-1 transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-content-tertiary hover:bg-surface-sunken hover:text-content data-[state=open]:bg-surface-sunken data-[state=open]:text-content transition-colors"
           aria-label={t.moreOptions || 'Mais opções'}
         >
           <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
@@ -43,23 +43,23 @@ export const BudgetActionsMenu = ({
 
       <Popover.Portal>
         <Popover.Content
-          className="w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 p-1"
+          className="min-w-[14rem] bg-surface-elevated rounded-xl shadow-floating ring-1 ring-line-subtle z-50 p-1.5 animate-menu-in"
           sideOffset={4}
           align="end"
         >
-          <div className="py-1">
+          <div>
             <button
               onClick={handleEdit}
-              className="w-full flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="w-full flex items-center gap-3 h-10 px-3 text-[15px] text-content rounded-lg hover:bg-surface-sunken focus:outline-none focus-visible:bg-surface-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <Edit className="h-4 w-4 mr-3" aria-hidden="true" />
+              <Edit className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden="true" />
               <span>{t.edit}</span>
             </button>
             <button
               onClick={handleDelete}
-              className="w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-sm focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="w-full flex items-center gap-3 h-10 px-3 text-[15px] text-negative-on-soft rounded-lg hover:bg-negative-soft focus:outline-none focus-visible:bg-negative-soft transition-colors"
             >
-              <Trash2 className="h-4 w-4 mr-3" aria-hidden="true" />
+              <Trash2 className="h-[18px] w-[18px] shrink-0 opacity-80" aria-hidden="true" />
               <span>{t.delete}</span>
             </button>
           </div>

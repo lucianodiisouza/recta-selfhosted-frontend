@@ -23,16 +23,15 @@ export const PageButton = ({
   mobileLabel,
   disabled = false,
 }: PageButtonProps) => {
-  const baseClasses = `inline-flex items-center justify-center px-3 sm:px-4 py-2.5 border text-xs sm:text-sm font-light tracking-tight rounded-md focus:outline-none transition-opacity whitespace-nowrap ${
-    disabled
-      ? 'opacity-50 cursor-not-allowed'
-      : 'hover:opacity-80'
+  const baseClasses = `inline-flex items-center justify-center h-10 px-3.5 sm:px-4 text-sm font-semibold rounded-lg whitespace-nowrap transition-[transform,background-color,opacity] duration-150 active:scale-[0.97] motion-reduce:active:scale-100 ${
+    disabled ? 'opacity-50 cursor-not-allowed active:scale-100' : ''
   }`;
 
+  // Same variants as components/ui/Button (primary, tertiary, destructive).
   const variantClasses = {
-    primary: 'border-primary-600 dark:border-primary-500 text-white bg-primary-600 dark:bg-primary-500',
-    secondary: 'border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-900',
-    danger: 'border-red-500 dark:border-red-500 text-white bg-red-500 dark:bg-red-500',
+    primary: 'bg-brand-fill text-white shadow-sm hover:bg-brand-fill-hover',
+    secondary: 'bg-surface-elevated text-content border border-line hover:bg-surface-sunken',
+    danger: 'bg-negative-fill text-white shadow-sm hover:opacity-90',
   };
 
   return (
@@ -42,7 +41,7 @@ export const PageButton = ({
       className={`${baseClasses} ${variantClasses[variant]} w-full sm:w-auto ${className}`}
       aria-label={ariaLabel}
     >
-      {Icon && <Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" aria-hidden="true" />}
+      {Icon && <Icon className="h-[18px] w-[18px] me-2 flex-shrink-0" strokeWidth={2.25} aria-hidden="true" />}
       <span className="hidden sm:inline whitespace-nowrap">{children}</span>
       <span className="sm:hidden whitespace-nowrap">
         {mobileLabel ?? (typeof children === 'string' ? children : children)}

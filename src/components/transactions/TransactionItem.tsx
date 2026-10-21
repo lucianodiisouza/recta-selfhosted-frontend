@@ -1,8 +1,8 @@
 import { Transaction } from '../../types';
-import { formatCurrency } from '../../utils/format';
 import { TransactionActionsMenu } from '../TransactionActionsMenu';
-import { TransactionType, getCategoryDisplayName, getCategoryNameFromDisplay } from '../../lib/enums';
-import { CreditCard } from 'lucide-react';
+import { TransactionType, getCategoryColor, getCategoryDisplayName, getCategoryNameFromDisplay, type CustomCategoryInfo } from '../../lib/enums';
+import { Clock, CreditCard, type LucideIcon } from 'lucide-react';
+import { Badge, IconBadge, MoneyText } from '../ui';
 import type React from 'react';
 
 interface TransactionItemProps {
@@ -52,81 +52,55 @@ export const TransactionItem = ({
     return transDate.getTime() <= today.getTime();
   })();
 
+  const account = accounts.find((acc) => acc.id === transaction.accountId);
+  const color = getCategoryColor(categoryName || '', customCategories as CustomCategoryInfo[] | undefined);
+  const isNeutral = transaction.type === TransactionType.TRANSFER || transaction.type === TransactionType.ALLOCATION;
+  const signedAmount = transaction.type === TransactionType.INCOME
+    ? Math.abs(transaction.amount || 0)
+    : -Math.abs(transaction.amount || 0);
+
   return (
-    <li 
-      key={transaction.id} 
-      className="px-4 sm:px-6 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors"
-    >
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <p className="text-base font-light text-gray-900 dark:text-white">
-                  {formatTransactionDescription(transaction)}
-                </p>
-                {transaction.paid === false && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-light text-yellow-600 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-700 rounded-full">
-                    {t.pending}
-                  </span>
-                )}
-                {isOverdue && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-light text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 rounded-full">
-                    {t.overdue || 'Atrasado'}
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                <div className="flex items-center">
-                  <IconComponent className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500 mr-1.5" />
-                  <span className="text-sm font-light text-gray-500 dark:text-gray-400">
-                    {categoryDisplay}
-                  </span>
-                </div>
-                {(() => {
-                  const account = accounts.find((acc) => acc.id === transaction.accountId);
-                  if (account) {
-                    return (
-                      <span className="text-xs font-light text-gray-400 dark:text-gray-500">
-                        {account.name}
-                      </span>
-                    );
-                  }
-                  return null;
-                })()}
-                {isInvoicePayment && (
-                  <div className="flex items-center gap-1.5" title="Pagamento de fatura de cartão de crédito">
-                    <CreditCard className="h-3.5 w-3.5 text-primary-600 dark:text-primary-400" />
-                    <span className="text-xs font-light text-primary-600 dark:text-primary-400">Fatura</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between sm:justify-end gap-3 sm:ml-4">
-            <span className={`text-lg font-light ${
-              transaction.type === TransactionType.INCOME 
-                ? 'text-green-500' 
-                : transaction.type === TransactionType.TRANSFER || transaction.type === TransactionType.ALLOCATION
-                ? 'text-blue-500'
-                : 'text-red-500'
-            }`}>
-              {transaction.type === TransactionType.INCOME 
-                ? '+' 
-                : transaction.type === TransactionType.TRANSFER || transaction.type === TransactionType.ALLOCATION
-                ? ''
-                : '-'}
-              {formatCurrency(Math.abs(transaction.amount || 0), baseCurrency)}
-            </span>
-            <TransactionActionsMenu
-              transaction={transaction}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onMarkAsPaid={onMarkAsPaid}
-              onView={onView}
-              readOnly={readOnly}
-            />
-          </div>
+    <li className="flex items-center gap-3 px-4 py-3 min-h-[64px]">
+      <IconBadge icon={IconComponent as LucideIcon} color={color} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <p className="truncate text-[15px] font-medium text-content">
+            {formatTransactionDescription(transaction)}
+          </p>
+          {isOverdue ? (
+            <Badge tone="negative">{t.overdue || 'Atrasado'}</Badge>
+          ) : transaction.paid === false ? (
+            <Badge tone="warning">{t.pending}</Badge>
+          ) : null}
         </div>
+        <p className="mt-0.5 flex items-center gap-1.5 truncate text-[13px] text-content-secondary">
+          {isInvoicePayment && (
+            <span className="inline-flex items-center gap-1 text-brand font-medium" title="Pagamento de fatura de cartão de crédito">
+              <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
+              Fatura ·
+            </span>
+          )}
+          <span className="truncate">{[account?.name, categoryDisplay].filter(Boolean).join(' · ')}</span>
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        {transaction.paid === false && (
+          <Clock className={`h-3.5 w-3.5 ${isOverdue ? 'text-negative' : 'text-warning'}`} aria-hidden="true" />
+        )}
+        {isNeutral ? (
+          <MoneyText value={Math.abs(transaction.amount || 0)} currency={baseCurrency} sign="none" className="text-content-secondary" />
+        ) : (
+          <MoneyText value={signedAmount} currency={baseCurrency} sign="always" tone="semantic" />
+        )}
+        <TransactionActionsMenu
+          transaction={transaction}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onMarkAsPaid={onMarkAsPaid}
+          onView={onView}
+          readOnly={readOnly}
+        />
+      </div>
     </li>
   );
 };

@@ -48,8 +48,8 @@ export const TransactionSearchBar = ({
         onChange={(e) => setInputValue(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className={`block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-          disabled ? 'bg-gray-100 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 cursor-not-allowed' : ''
+        className={`block w-full pl-10 pr-10 py-2 border border-line rounded-lg bg-surface-elevated text-content placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+          disabled ? 'bg-gray-100 dark:bg-gray-900/50 text-content-tertiary cursor-not-allowed' : ''
         }`}
       />
       {inputValue && (
@@ -58,7 +58,7 @@ export const TransactionSearchBar = ({
           className="absolute inset-y-0 right-0 pr-3 flex items-center"
           aria-label="Limpar busca"
         >
-          <X className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+          <X className="h-5 w-5 text-gray-400 hover:text-content-secondary" />
         </button>
       )}
     </div>

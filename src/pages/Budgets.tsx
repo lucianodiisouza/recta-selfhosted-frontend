@@ -7,18 +7,18 @@ import { Plus } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 import { BudgetModal } from '../components/BudgetModal';
 import { Budget } from '../types';
-import { startOfMonth } from 'date-fns';
-import { getTransactionsByMonth, getTransactionsByCategory, getTotalExpense, getTotalIncome } from '../utils/calculations';
+import { startOfMonth, format } from 'date-fns';
 import { PageHeader } from '../components/PageHeader';
 import { PageButton } from '../components/PageButton';
 import { BudgetsSkeleton } from '../components/PageSkeletons';
 import { DatePicker } from '../components/DatePicker';
-import { TransactionType } from '../lib/enums';
 import { BudgetList } from '../components/budgets';
-import { isGeneralBudget } from '../utils/categories';
+import { useDefaultHousehold } from '../hooks/useDefaultHousehold';
+import { useBudgetSummary } from '../hooks/api/useBudgets';
 
 const Budgets = () => {
-  const { budgets, transactions, deleteBudget, loading } = useTransactions();
+  const { budgets, deleteBudget, loading } = useTransactions();
+  const { householdId } = useDefaultHousehold();
   const { baseCurrency } = useCurrency();
   const { t } = useI18n();
   const { registerHandler, unregisterHandler } = useCommandMenu();
@@ -69,35 +69,20 @@ const Budgets = () => {
     return filtered;
   }, [budgets, selectedMonth]);
 
-  const monthTransactions = useMemo(
-    () => getTransactionsByMonth(transactions, selectedMonth),
-    [transactions, selectedMonth]
-  );
-
-  const categoryData = useMemo(
-    () => getTransactionsByCategory(monthTransactions),
-    [monthTransactions]
+  // Spending comes from the backend so it covers the whole month, not only the
+  // transactions this page happens to have loaded.
+  const { data: summary } = useBudgetSummary({
+    householdId: householdId ?? '',
+    month: format(selectedMonth, 'yyyy-MM'),
+  });
+  const spendingByBudget = useMemo(
+    () => new Map((summary?.budgets ?? []).map(b => [b.budgetId, Number(b.spending)])),
+    [summary]
   );
 
   const budgetStatus = useMemo(() => {
     return monthBudgets.map(budget => {
-      let spent = 0;
-
-      // Treat the "GENERAL" pseudo-category as the "total spending/income of
-      // the month" budget. Detection uses categoryName, since `category` holds
-      // the localized display name (e.g. "Geral (Todas as categorias)").
-      if (isGeneralBudget(budget)) {
-        if (budget.type === TransactionType.EXPENSE) {
-          spent = getTotalExpense(monthTransactions);
-        } else {
-          spent = getTotalIncome(monthTransactions);
-        }
-      } else {
-        const categoryTransactions = categoryData.find(c => c.name === budget.category);
-        spent = budget.type === TransactionType.EXPENSE
-          ? (categoryTransactions?.despesa || 0)
-          : (categoryTransactions?.receita || 0);
-      }
+      const spent = (budget.id && spendingByBudget.get(budget.id)) || 0;
 
       const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
       const remaining = budget.amount - spent;
@@ -113,7 +98,7 @@ const Budgets = () => {
         status,
       };
     });
-  }, [monthBudgets, categoryData, monthTransactions]);
+  }, [monthBudgets, spendingByBudget]);
 
   const handleDelete = (id: string) => {
     setConfirmModal({ isOpen: true, budgetId: id });
@@ -136,7 +121,7 @@ const Budgets = () => {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 dashboard-fade-in">
+    <div className="dashboard-fade-in">
       <PageHeader
         title={t.budgets}
         description={t.budgetsDescription}

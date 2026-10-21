@@ -98,7 +98,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
 
   if (isLoading) {
     return (
-      <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+      <div className="px-4 py-2 text-sm text-content-tertiary">
         {t.loading}
       </div>
     );
@@ -110,7 +110,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full flex items-center justify-center p-2 text-sm font-light text-gray-900 dark:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg hover:opacity-70 transition-opacity"
+            className="w-full flex items-center justify-center p-2 text-sm font-light text-content bg-surface-elevated border border-line-subtle rounded-lg hover:opacity-70 transition-opacity"
             title={currentHousehold?.name || households?.find(h => h?.id === currentHouseholdId)?.name || t.myFinances}
           >
             <Users className="h-5 w-5" />
@@ -123,7 +123,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
                 onClick={() => setIsDropdownOpen(false)}
               />
               <div 
-                className="absolute z-[60] left-full ml-2 bottom-full mb-2 w-64 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg max-h-[calc(100vh-200px)] overflow-y-auto"
+                className="absolute z-[60] left-full ml-2 bottom-full mb-2 w-64 bg-surface-elevated border border-line-subtle rounded-lg max-h-[calc(100vh-200px)] overflow-y-auto"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
@@ -132,7 +132,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
                 {/* Personal Household */}
                 {personalHouseholds.length > 0 && (
                   <div className="p-2">
-                    <div className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-300 uppercase mb-1">
+                    <div className="px-3 py-1.5 text-xs font-medium text-content-secondary uppercase mb-1">
                       {t.householdTypeIndividual}
                     </div>
                     {personalHouseholds.map((household) => {
@@ -147,14 +147,14 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
                           }}
                           className={`w-full text-left px-3 py-2.5 text-sm rounded-md transition-colors cursor-pointer relative z-50 my-1 ${
                             household.id === currentHouseholdId
-                              ? 'bg-white dark:bg-gray-900 text-primary-600 dark:text-primary-400 font-light border border-primary-500 dark:border-primary-500'
-                              : 'text-gray-900 dark:text-white hover:bg-gray-50/50 dark:hover:bg-gray-900/50 font-light'
+                              ? 'bg-surface-elevated text-brand font-light border border-primary-500 dark:border-primary-500'
+                              : 'text-content hover:bg-surface-sunken font-light'
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <span className="truncate">{household.name || `Household ${household.id?.slice(0, 8) || 'N/A'}`}</span>
                             {household.id === currentHouseholdId && (
-                              <span className="ml-2 text-xs text-primary-600 dark:text-primary-400 flex-shrink-0">✓</span>
+                              <span className="ml-2 text-xs text-brand flex-shrink-0">✓</span>
                             )}
                           </div>
                         </button>
@@ -165,8 +165,8 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
 
                 {/* Shared Households */}
                 {sharedHouseholds.length > 0 && (
-                  <div className="p-2 border-t border-gray-100 dark:border-gray-800">
-                    <div className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-300 uppercase mb-1">
+                  <div className="p-2 border-t border-line-subtle">
+                    <div className="px-3 py-1.5 text-xs font-medium text-content-secondary uppercase mb-1">
                       {t.householdTypeShared}
                     </div>
                     {sharedHouseholds.map((household) => {
@@ -176,8 +176,8 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
                           <div
                             className={`w-full text-left px-3 py-2.5 text-sm rounded-md transition-colors cursor-pointer relative z-50 my-1 flex items-center justify-between ${
                               household.id === currentHouseholdId
-                                ? 'bg-white dark:bg-gray-900 text-primary-600 dark:text-primary-400 font-light border border-primary-500 dark:border-primary-500'
-                                : 'text-gray-900 dark:text-white hover:bg-gray-50/50 dark:hover:bg-gray-900/50 font-light'
+                                ? 'bg-surface-elevated text-brand font-light border border-primary-500 dark:border-primary-500'
+                                : 'text-content hover:bg-surface-sunken font-light'
                             }`}
                           >
                             <button
@@ -193,7 +193,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
                             </button>
                             <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
                               {household.id === currentHouseholdId && (
-                                <span className="text-xs text-primary-600 dark:text-primary-400">✓</span>
+                                <span className="text-xs text-brand">✓</span>
                               )}
                               <button
                                 type="button"
@@ -218,13 +218,13 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
 
                 {/* Create Shared Household Button */}
                 {canCreateShared && (
-                  <div className="p-2 border-t border-gray-100 dark:border-gray-800">
+                  <div className="p-2 border-t border-line-subtle">
                     <button
                       onClick={() => {
                         setIsDropdownOpen(false);
                         setIsCreateModalOpen(true);
                       }}
-                      className="w-full flex items-center justify-center px-3 py-2 text-sm font-light text-primary-600 dark:text-primary-400 hover:opacity-70 transition-opacity rounded-md"
+                      className="w-full flex items-center justify-center px-3 py-2 text-sm font-light text-brand hover:opacity-70 transition-opacity rounded-md"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       {t.createSharedHousehold}
@@ -261,7 +261,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
       <div className="relative">
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="w-full flex items-center justify-between px-4 py-2 text-sm font-light text-gray-900 dark:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg hover:opacity-70 transition-opacity"
+          className="w-full flex items-center justify-between px-4 py-2 text-sm font-light text-content bg-surface-elevated border border-line-subtle rounded-lg hover:opacity-70 transition-opacity"
         >
           <div className="flex items-center space-x-2 min-w-0 flex-1">
             <Users className="h-4 w-4 flex-shrink-0" />
@@ -279,7 +279,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
               onClick={() => setIsDropdownOpen(false)}
             />
             <div 
-              className="absolute z-[60] w-full bottom-full mb-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg max-h-[calc(100vh-200px)] overflow-y-auto"
+              className="absolute z-[60] w-full bottom-full mb-2 bg-surface-elevated border border-line-subtle rounded-lg max-h-[calc(100vh-200px)] overflow-y-auto"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -288,7 +288,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
               {/* Personal Household */}
               {personalHouseholds.length > 0 && (
                 <div className="p-2">
-                  <div className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-300 uppercase mb-1">
+                  <div className="px-3 py-1.5 text-xs font-medium text-content-secondary uppercase mb-1">
                     {t.householdTypeIndividual}
                   </div>
                   {personalHouseholds.map((household) => {
@@ -303,14 +303,14 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
                         }}
                         className={`w-full text-left px-3 py-2.5 text-sm rounded-md transition-colors cursor-pointer relative z-50 my-1 ${
                           household.id === currentHouseholdId
-                            ? 'bg-white dark:bg-gray-900 text-primary-600 dark:text-primary-400 font-light border border-primary-500 dark:border-primary-500'
-                            : 'text-gray-900 dark:text-white hover:bg-gray-50/50 dark:hover:bg-gray-900/50 font-light'
+                            ? 'bg-surface-elevated text-brand font-light border border-primary-500 dark:border-primary-500'
+                            : 'text-content hover:bg-surface-sunken font-light'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="truncate">{household.name || `Household ${household.id?.slice(0, 8) || 'N/A'}`}</span>
                           {household.id === currentHouseholdId && (
-                            <span className="ml-2 text-xs text-primary-600 dark:text-primary-400 flex-shrink-0">✓</span>
+                            <span className="ml-2 text-xs text-brand flex-shrink-0">✓</span>
                           )}
                         </div>
                       </button>
@@ -321,8 +321,8 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
 
               {/* Shared Households */}
               {sharedHouseholds.length > 0 && (
-                <div className="p-2 border-t border-gray-100 dark:border-gray-800">
-                  <div className="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-300 uppercase mb-1">
+                <div className="p-2 border-t border-line-subtle">
+                  <div className="px-3 py-1.5 text-xs font-medium text-content-secondary uppercase mb-1">
                     {t.householdTypeShared}
                   </div>
                   {sharedHouseholds.map((household) => {
@@ -332,8 +332,8 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
                         <div
                           className={`w-full text-left px-3 py-2.5 text-sm rounded-md transition-colors cursor-pointer relative z-50 my-1 flex items-center justify-between ${
                             household.id === currentHouseholdId
-                              ? 'bg-white dark:bg-gray-900 text-primary-600 dark:text-primary-400 font-light border border-primary-500 dark:border-primary-500'
-                              : 'text-gray-900 dark:text-white hover:bg-gray-50/50 dark:hover:bg-gray-900/50 font-light'
+                              ? 'bg-surface-elevated text-brand font-light border border-primary-500 dark:border-primary-500'
+                              : 'text-content hover:bg-surface-sunken font-light'
                           }`}
                         >
                           <button
@@ -349,7 +349,7 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
                           </button>
                           <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
                             {household.id === currentHouseholdId && (
-                              <span className="text-xs text-primary-600 dark:text-primary-400">✓</span>
+                              <span className="text-xs text-brand">✓</span>
                             )}
                             {/* Allow all members (OWNER, EDITOR, VIEWER) to open members modal to manage their own account sharing */}
                             <button
@@ -375,13 +375,13 @@ export function HouseholdSelector({ collapsed = false }: HouseholdSelectorProps)
 
               {/* Create Shared Household Button */}
               {canCreateShared && (
-                <div className="p-2 border-t border-gray-100 dark:border-gray-800">
+                <div className="p-2 border-t border-line-subtle">
                   <button
                     onClick={() => {
                       setIsDropdownOpen(false);
                       setIsCreateModalOpen(true);
                     }}
-                    className="w-full flex items-center justify-center px-3 py-2 text-sm font-light text-primary-600 dark:text-primary-400 hover:opacity-70 transition-opacity rounded-md"
+                    className="w-full flex items-center justify-center px-3 py-2 text-sm font-light text-brand hover:opacity-70 transition-opacity rounded-md"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     {t.createSharedHousehold}

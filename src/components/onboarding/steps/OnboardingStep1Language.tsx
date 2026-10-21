@@ -14,10 +14,10 @@ export const OnboardingStep1Language = ({ locale, onLocaleChange, errors }: Onbo
   return (
     <form className="space-y-6">
       <div className="animate-fade-in-up">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        <h3 className="text-xl font-semibold text-content mb-2">
           {t.onboardingStep1Title}
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4 animate-fade-in-up animate-delay-100">
+        <p className="text-content-secondary mb-4 animate-fade-in-up animate-delay-100">
           {t.onboardingStep1Description}
         </p>
         <div className="animate-fade-in-up animate-delay-200">
@@ -29,7 +29,7 @@ export const OnboardingStep1Language = ({ locale, onLocaleChange, errors }: Onbo
             searchable={true}
           />
           {errors?.locale && (
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
+            <p className="mt-2 text-sm text-negative" role="alert">
               {errors.locale.message}
             </p>
           )}

@@ -93,7 +93,8 @@ export interface Account {
   // Campos específicos para cartões de crédito
   creditLimit?: number; // Limite do cartão
   totalLimit?: number; // Limite total (creditLimit + allocatedBalance)
-  availableLimit?: number; // Limite disponível (totalLimit - dívida atual)
+  availableLimit?: number; // Limite disponível (totalLimit - dívida atual - limitAdjustment)
+  limitAdjustment?: number; // Ajuste manual do valor usado (só afeta o disponível)
   dueDay?: number; // Dia de vencimento da fatura (1-31)
   closingDay?: number; // Dia de fechamento da fatura (1-31)
   bestDayOffset?: number; // Dias antes do vencimento para o melhor dia de compra (1-30)
@@ -120,6 +121,7 @@ export interface AuthContextType {
   signup: (email: string, password: string, referralCode?: string) => Promise<{ user: User }>;
   login: (email: string, password: string) => Promise<{ user: User }>;
   loginWithGoogle: (referralCode?: string) => Promise<{ user: User }>;
+  loginWithApple: (referralCode?: string) => Promise<{ user: User }>;
   logout: () => Promise<void>;
 }
 
@@ -169,7 +171,7 @@ export interface TransactionsContextType {
     date: Date;
     notes?: string;
   }) => Promise<void>;
-  exportToCSV: () => void;
+  exportToCSV: (filters?: Record<string, unknown>) => Promise<void>;
   processRecurringTransactions: () => Promise<void>;
 }
 

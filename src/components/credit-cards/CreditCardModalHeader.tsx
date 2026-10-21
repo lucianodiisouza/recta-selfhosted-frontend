@@ -10,8 +10,8 @@ export const CreditCardModalHeader = ({ isEditing, onClose }: CreditCardModalHea
   const { t } = useI18n();
 
   return (
-    <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+    <div className="flex items-center justify-between border-b border-line px-6 py-4">
+      <h2 className="text-xl font-bold text-content">
         {isEditing ? (t.editCreditCard || 'Editar Cartão de Crédito') : (t.newCreditCard || 'Novo Cartão de Crédito')}
       </h2>
       <button

@@ -3,6 +3,7 @@ import { PeriodFiltersMenu } from '../PeriodFiltersMenu';
 import { Tooltip } from '../Tooltip';
 import { RotateCcw } from 'lucide-react';
 import { startOfMonth } from 'date-fns';
+import { SegmentedControl } from '../ui';
 
 interface DashboardFiltersProps {
   selectedMonth: Date;
@@ -24,59 +25,22 @@ export const DashboardFilters = ({
   t,
 }: DashboardFiltersProps) => {
   return (
-    <div className="flex flex-row gap-2 items-center w-full sm:w-auto" role="group" aria-label={t.periodFilters}>
-      {/* Desktop: mostra todos os botões */}
-      <div className="hidden sm:flex flex-wrap gap-2" role="group" aria-label={t.quickPeriods}>
-        <button
-          onClick={() => onPeriodFilter('thisMonth')}
-          className={`px-3 py-2.5 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-            periodFilter === 'thisMonth'
-              ? 'bg-primary-600 text-white'
-              : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-          }`}
-          aria-pressed={periodFilter === 'thisMonth'}
-          aria-label={`${t.filter} ${t.thisMonth}`}
-        >
-          {t.thisMonth}
-        </button>
-        <button
-          onClick={() => onPeriodFilter('lastMonth')}
-          className={`px-3 py-2.5 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-            periodFilter === 'lastMonth'
-              ? 'bg-primary-600 text-white'
-              : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-          }`}
-          aria-pressed={periodFilter === 'lastMonth'}
-          aria-label={`${t.filter} ${t.lastMonth}`}
-        >
-          {t.lastMonth}
-        </button>
-        <button
-          onClick={() => onPeriodFilter('thisQuarter')}
-          className={`px-3 py-2.5 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-            periodFilter === 'thisQuarter'
-              ? 'bg-primary-600 text-white'
-              : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-          }`}
-          aria-pressed={periodFilter === 'thisQuarter'}
-          aria-label={`${t.filter} ${t.thisQuarter}`}
-        >
-          {t.thisQuarter}
-        </button>
-        <button
-          onClick={() => onPeriodFilter('thisYear')}
-          className={`px-3 py-2.5 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-            periodFilter === 'thisYear'
-              ? 'bg-primary-600 text-white'
-              : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-          }`}
-          aria-pressed={periodFilter === 'thisYear'}
-          aria-label={`${t.filter} ${t.thisYear}`}
-        >
-          {t.thisYear}
-        </button>
+    <div className="flex flex-row flex-wrap gap-2 items-center w-full sm:w-auto" role="group" aria-label={t.periodFilters}>
+      {/* Desktop: segmented control with the quick periods */}
+      <div className="hidden sm:block" role="group" aria-label={t.quickPeriods}>
+        <SegmentedControl
+          label={t.quickPeriods}
+          value={periodFilter}
+          onChange={onPeriodFilter}
+          options={[
+            { value: 'thisMonth', label: t.thisMonth },
+            { value: 'lastMonth', label: t.lastMonth },
+            { value: 'thisQuarter', label: t.thisQuarter },
+            { value: 'thisYear', label: t.thisYear },
+          ]}
+        />
       </div>
-      
+
       {/* Mobile: mostra apenas o menu de filtros */}
       <div className="sm:hidden flex-shrink-0">
         <PeriodFiltersMenu
@@ -104,10 +68,10 @@ export const DashboardFilters = ({
           <Tooltip content={t.backToCurrentMonth}>
             <button
               onClick={onBackToCurrentMonth}
-              className="inline-flex items-center justify-center px-2 sm:px-3 py-2 sm:py-2.5 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 flex-shrink-0"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-surface-elevated text-content-secondary hover:bg-surface-sunken hover:text-content transition-colors flex-shrink-0"
               aria-label={t.backToCurrentMonth}
             >
-              <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+              <RotateCcw className="h-[18px] w-[18px]" aria-hidden="true" />
             </button>
           </Tooltip>
         )}

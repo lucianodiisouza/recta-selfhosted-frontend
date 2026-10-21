@@ -40,9 +40,9 @@ export const MonthlyComparisonWidget = ({
   const { t } = useI18n();
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 flex flex-col">
+    <div className="surface-card p-4 sm:p-6 flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
-        <h2 className="text-base sm:text-lg lg:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100">
+        <h2 className="card-title">
           {t.monthlyComparison}
         </h2>
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -51,8 +51,8 @@ export const MonthlyComparisonWidget = ({
             disabled={!canGoBack}
             className={`p-1.5 sm:p-2 rounded-md border transition-colors ${
               canGoBack
-                ? 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                : 'border-gray-200 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50'
+                ? 'border-line hover:bg-surface-sunken text-content-secondary'
+                : 'border-line text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50'
             }`}
             title={t.previousMonths}
             aria-label={t.previousMonths}
@@ -61,7 +61,7 @@ export const MonthlyComparisonWidget = ({
           </button>
           <button
             onClick={onResetToCurrent}
-            className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-medium border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors whitespace-nowrap"
+            className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-medium border border-line rounded-md hover:bg-surface-sunken text-content-secondary transition-colors whitespace-nowrap"
             title={t.currentMonth}
             aria-label={t.currentMonth}
           >
@@ -72,8 +72,8 @@ export const MonthlyComparisonWidget = ({
             disabled={!canGoForward}
             className={`p-1.5 sm:p-2 rounded-md border transition-colors ${
               canGoForward
-                ? 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                : 'border-gray-200 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50'
+                ? 'border-line hover:bg-surface-sunken text-content-secondary'
+                : 'border-line text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50'
             }`}
             title={t.nextMonths}
             aria-label={t.nextMonths}
@@ -90,20 +90,20 @@ export const MonthlyComparisonWidget = ({
         <BarChart data={monthlyComparison}>
           <CartesianGrid 
             strokeDasharray="0" 
-            stroke="#e5e7eb" 
+            stroke="#E6E6EE" 
             strokeOpacity={0.3}
             vertical={false}
           />
           <XAxis 
             dataKey="month" 
-            stroke="#9ca3af"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            stroke="#7F7F8D"
+            tick={{ fill: '#6B6B78', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis 
-            stroke="#9ca3af"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            stroke="#7F7F8D"
+            tick={{ fill: '#6B6B78', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
@@ -119,7 +119,7 @@ export const MonthlyComparisonWidget = ({
               padding: '12px',
             }}
             labelStyle={{
-              color: '#374151',
+              color: '#2C2C38',
               fontWeight: 600,
               marginBottom: '8px',
             }}
@@ -130,13 +130,13 @@ export const MonthlyComparisonWidget = ({
           />
           <Bar 
             dataKey="receita" 
-            fill="#10b981" 
+            fill="#12B76A" 
             name={t.totalIncome}
             radius={[8, 8, 0, 0]}
           />
           <Bar 
             dataKey="despesa" 
-            fill="#ef4444" 
+            fill="#F04438" 
             name={t.totalExpense}
             radius={[8, 8, 0, 0]}
           />

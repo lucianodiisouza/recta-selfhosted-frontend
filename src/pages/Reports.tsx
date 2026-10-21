@@ -8,14 +8,15 @@ import {
   getBalance,
   getTransactionsByMonth,
   getMonthlyComparison,
-  getTransactionsByCategory
+  getTransactionsByCategory,
+  isInvoicePayment,
 } from '../utils/calculations';
 import { formatCurrency, parseDateFromAPI } from '../utils/format';
 import { format, startOfYear, endOfYear, startOfMonth, endOfMonth, subMonths, getDay, eachDayOfInterval, isSameDay } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { ExpensesByCategoryWidget, IncomeByCategoryWidget } from '../components/widgets';
 import { MonthlyComparison, Transaction } from '../types';
-import { AccountType, TransactionType, CategoryName, getCategoryDisplayName, getCategoriesByType, CategoryType } from '../lib/enums';
+import { TransactionType, CategoryName, getCategoryDisplayName, getCategoriesByType, CategoryType } from '../lib/enums';
 import { useAllTransactions } from '../hooks/api/useTransactions';
 import { useDefaultHousehold } from '../hooks/useDefaultHousehold';
 import { useCategories } from '../hooks/api/useCategories';
@@ -182,12 +183,13 @@ const Reports = () => {
     return transactions.filter(t => {
       if (!t.date) return false;
       const transactionDate = typeof t.date === 'string' ? new Date(t.date) : t.date;
-      return transactionDate >= start && transactionDate <= end;
+      return transactionDate >= start && transactionDate <= end && !isInvoicePayment(t);
     });
   }, [transactions, selectedYear]);
 
+  // Relatórios: o pagamento da fatura não é gasto, as compras no cartão já são (fdbk #170)
   const monthTransactions = useMemo(
-    () => getTransactionsByMonth(transactions, selectedMonth),
+    () => getTransactionsByMonth(transactions, selectedMonth).filter(t => !isInvoicePayment(t)),
     [transactions, selectedMonth]
   );
 
@@ -213,24 +215,8 @@ const Reports = () => {
         t.date >= monthStart && t.date <= monthEnd
       );
       
-      // Filtrar transações de cartão de crédito (excluir despesas em cartão)
-      if (accounts && accounts.length > 0) {
-        monthTrans = monthTrans.filter(transaction => {
-          if (!transaction.accountId) return true; // Transações sem conta contam
-          
-          const account = accounts.find(a => a.id === transaction.accountId);
-          const isCreditCard = account?.type === AccountType.CREDIT;
-          
-          // Se for cartão de crédito:
-          // - Despesas NÃO contam (não debitaram dinheiro ainda)
-          // - Receitas contam (são pagamentos de fatura que reduziram dívida)
-          if (isCreditCard && transaction.type === TransactionType.EXPENSE) {
-            return false; // Exclui despesas no cartão
-          }
-          
-          return true; // Inclui tudo mais
-        });
-      }
+      // Compras no cartão contam na data da compra; o pagamento da fatura não (fdbk #170)
+      monthTrans = monthTrans.filter(transaction => !isInvoicePayment(transaction));
       
       monthly.push({
         month: format(monthStart, 'MMM'),
@@ -240,7 +226,7 @@ const Reports = () => {
       });
     }
     return monthly;
-  }, [reportType, selectedYear, transactions, accounts]);
+  }, [reportType, selectedYear, transactions]);
 
   const currentData = reportType === 'mensal' ? monthTransactions : yearTransactions;
   const totalIncome = getTotalIncome(currentData);
@@ -329,10 +315,7 @@ const Reports = () => {
     const expenses = monthTransactions.filter(t => {
       if (t.type !== TransactionType.EXPENSE) return false;
       if (t.type === TransactionType.TRANSFER || t.type === TransactionType.ALLOCATION) return false;
-      if (!t.accountId) return true;
-      const account = accounts.find(a => a.id === t.accountId);
-      if (account?.type === AccountType.CREDIT) return false;
-      return true;
+      return !isInvoicePayment(t);
     });
 
     const daysOfWeek = [t.daySunday, t.dayMonday, t.dayTuesday, t.dayWednesday, t.dayThursday, t.dayFriday, t.daySaturday];
@@ -348,7 +331,7 @@ const Reports = () => {
       day,
       amount: spendingByDay[index],
     }));
-  }, [reportType, selectedMonth, transactions, accounts, t.daySunday, t.dayMonday, t.dayTuesday, t.dayWednesday, t.dayThursday, t.dayFriday, t.daySaturday]);
+  }, [reportType, selectedMonth, transactions, t.daySunday, t.dayMonday, t.dayTuesday, t.dayWednesday, t.dayThursday, t.dayFriday, t.daySaturday]);
 
   // Heatmap de gastos por dia do mês
   const spendingByDayOfMonth = useMemo(() => {
@@ -363,10 +346,7 @@ const Reports = () => {
       if (!t.date) return false;
       if (t.type !== TransactionType.EXPENSE) return false;
       if (t.type === TransactionType.TRANSFER || t.type === TransactionType.ALLOCATION) return false;
-      if (!t.accountId) return true;
-      const account = accounts.find(a => a.id === t.accountId);
-      if (account?.type === AccountType.CREDIT) return false;
-      return true;
+      return !isInvoicePayment(t);
     });
 
     const spendingByDay: Record<number, number> = {};
@@ -388,7 +368,7 @@ const Reports = () => {
       day: parseInt(day),
       amount,
     }));
-  }, [reportType, selectedMonth, transactions, accounts]);
+  }, [reportType, selectedMonth, transactions]);
 
   // Análise de tendências de categorias (últimos 6 meses)
   const categoryTrends = useMemo(() => {
@@ -560,14 +540,14 @@ const Reports = () => {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 dashboard-fade-in">
+    <div className="dashboard-fade-in">
       <PageHeader
         title={t.reports}
         description={t.overview}
       >
         <button
           onClick={handleExportReport}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-line rounded-md shadow-sm text-sm font-medium text-content-secondary bg-surface-elevated hover:bg-surface-sunken focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
         >
           <Download className="h-4 w-4" />
           {t.exportReport}
@@ -575,10 +555,10 @@ const Reports = () => {
       </PageHeader>
 
       {/* Filtros */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
+      <div className="surface-card p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-w-0">
           <div>
-            <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-light text-content-tertiary mb-2">
               {t.reportType}
             </label>
             <SelectCombobox
@@ -594,7 +574,7 @@ const Reports = () => {
 
           {reportType === 'mensal' ? (
             <div className="min-w-0 flex-1">
-              <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+              <label className="block text-sm font-light text-content-tertiary mb-2">
                 {t.month}
               </label>
               <DatePicker
@@ -609,7 +589,7 @@ const Reports = () => {
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+              <label className="block text-sm font-light text-content-tertiary mb-2">
                 {t.year}
               </label>
               <SelectCombobox
@@ -628,15 +608,15 @@ const Reports = () => {
 
       {/* Resumo Melhorado */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <div className="surface-card p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <ArrowUpCircle className="h-5 w-5 text-green-500" />
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{t.totalIncomeLabel}</div>
+              <ArrowUpCircle className="h-5 w-5 text-positive" />
+              <div className="text-sm font-medium text-content-tertiary">{t.totalIncomeLabel}</div>
             </div>
             {incomeChange !== 0 && (
               <div className={`flex items-center gap-1 text-xs ${
-                incomeChange > 0 ? 'text-green-500' : 'text-red-500'
+                incomeChange > 0 ? 'text-positive' : 'text-negative'
               }`}>
                 {incomeChange > 0 ? (
                   <TrendingUp className="h-3.5 w-3.5" />
@@ -647,25 +627,25 @@ const Reports = () => {
               </div>
             )}
           </div>
-          <div className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 dark:text-white mb-1">
+          <div className="text-2xl sm:text-3xl font-rounded font-semibold tabular-nums text-content mb-1">
             {formatCurrency(totalIncome, baseCurrency)}
           </div>
           {previousIncome > 0 && (
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div className="text-xs font-medium text-content-tertiary">
               {reportType === 'mensal' ? t.reportPreviousMonth : t.reportPreviousYear}: {formatCurrency(previousIncome, baseCurrency)}
             </div>
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <div className="surface-card p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <ArrowDownCircle className="h-5 w-5 text-red-500" />
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{t.totalExpenseLabel}</div>
+              <ArrowDownCircle className="h-5 w-5 text-negative" />
+              <div className="text-sm font-medium text-content-tertiary">{t.totalExpenseLabel}</div>
             </div>
             {expenseChange !== 0 && (
               <div className={`flex items-center gap-1 text-xs ${
-                expenseChange > 0 ? 'text-red-500' : 'text-green-500'
+                expenseChange > 0 ? 'text-negative' : 'text-positive'
               }`}>
                 {expenseChange > 0 ? (
                   <TrendingUp className="h-3.5 w-3.5" />
@@ -676,22 +656,22 @@ const Reports = () => {
               </div>
             )}
           </div>
-          <div className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 dark:text-white mb-1">
+          <div className="text-2xl sm:text-3xl font-rounded font-semibold tabular-nums text-content mb-1">
             {formatCurrency(totalExpense, baseCurrency)}
           </div>
           {previousExpense > 0 && (
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div className="text-xs font-medium text-content-tertiary">
               {reportType === 'mensal' ? t.reportPreviousMonth : t.reportPreviousYear}: {formatCurrency(previousExpense, baseCurrency)}
             </div>
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <div className="surface-card p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{t.balanceLabel}</div>
+            <div className="text-sm font-medium text-content-tertiary">{t.balanceLabel}</div>
             {balanceChange !== 0 && (
               <div className={`flex items-center gap-1 text-xs ${
-                balanceChange > 0 ? 'text-green-500' : 'text-red-500'
+                balanceChange > 0 ? 'text-positive' : 'text-negative'
               }`}>
                 {balanceChange > 0 ? (
                   <TrendingUp className="h-3.5 w-3.5" />
@@ -702,21 +682,21 @@ const Reports = () => {
               </div>
             )}
           </div>
-          <div className={`text-2xl sm:text-3xl font-light tracking-tight mb-1 ${
-            balance >= 0 ? 'text-green-500' : 'text-red-500'
+          <div className={`text-2xl sm:text-3xl font-rounded font-semibold tabular-nums mb-1 ${
+            balance >= 0 ? 'text-positive' : 'text-negative'
           }`}>
             {formatCurrency(balance, baseCurrency)}
           </div>
           {totalIncome > 0 && (
             <div className="flex items-center gap-2 mt-2">
               <PiggyBank className="h-3.5 w-3.5 text-gray-400" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <span className="text-xs font-medium text-content-tertiary">
                 {t.reportSavingsRateLabel} {savingsRate.toFixed(1)}%
               </span>
             </div>
           )}
           {monthlyAverage && (
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">
+            <div className="text-xs font-medium text-content-tertiary mt-1">
               {t.reportMonthlyAverage} {formatCurrency(monthlyAverage.balance, baseCurrency)}
             </div>
           )}
@@ -729,9 +709,9 @@ const Reports = () => {
           {insights.map((insight, idx) => {
             const Icon = insight.icon;
             const bgColors = {
-              success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
-              warning: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
-              info: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+              success: 'bg-positive-soft border-positive/25',
+              warning: 'bg-warning/10 border-warning/25',
+              info: 'bg-info/10 border-info/25',
             };
             const textColors = {
               success: 'text-green-700 dark:text-green-300',
@@ -760,8 +740,8 @@ const Reports = () => {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
         {/* Comparativo */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-          <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4">
+        <div className="surface-card p-6">
+          <h2 className="card-title mb-4">
             {reportType === 'mensal' ? t.annualComparison : t.monthlyComparisonOfYear}
           </h2>
           <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
@@ -769,20 +749,20 @@ const Reports = () => {
               <BarChart data={monthlyComparison}>
                 <CartesianGrid 
                   strokeDasharray="0" 
-                  stroke="#e5e7eb" 
+                  stroke="#E6E6EE" 
                   strokeOpacity={0.3}
                   vertical={false}
                 />
                 <XAxis 
                   dataKey="month" 
-                  stroke="#9ca3af"
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                  stroke="#7F7F8D"
+                  tick={{ fill: '#6B6B78', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis 
-                  stroke="#9ca3af"
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                  stroke="#7F7F8D"
+                  tick={{ fill: '#6B6B78', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -796,7 +776,7 @@ const Reports = () => {
                     padding: '12px',
                   }}
                   labelStyle={{
-                    color: '#374151',
+                    color: '#2C2C38',
                     fontWeight: 600,
                     marginBottom: '8px',
                   }}
@@ -805,27 +785,27 @@ const Reports = () => {
                   wrapperStyle={{ paddingTop: '20px' }}
                   iconType="circle"
                 />
-                <Bar dataKey="receita" fill="#10b981" name={t.totalIncome} radius={[8, 8, 0, 0]} />
-                <Bar dataKey="despesa" fill="#ef4444" name={t.totalExpense} radius={[8, 8, 0, 0]} />
+                <Bar dataKey="receita" fill="#12B76A" name={t.totalIncome} radius={[8, 8, 0, 0]} />
+                <Bar dataKey="despesa" fill="#F04438" name={t.totalExpense} radius={[8, 8, 0, 0]} />
               </BarChart>
             ) : (
               <BarChart data={monthlyData}>
                 <CartesianGrid 
                   strokeDasharray="0" 
-                  stroke="#e5e7eb" 
+                  stroke="#E6E6EE" 
                   strokeOpacity={0.3}
                   vertical={false}
                 />
                 <XAxis 
                   dataKey="month" 
-                  stroke="#9ca3af"
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                  stroke="#7F7F8D"
+                  tick={{ fill: '#6B6B78', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis 
-                  stroke="#9ca3af"
-                  tick={{ fill: '#6b7280', fontSize: 12 }}
+                  stroke="#7F7F8D"
+                  tick={{ fill: '#6B6B78', fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -839,7 +819,7 @@ const Reports = () => {
                     padding: '12px',
                   }}
                   labelStyle={{
-                    color: '#374151',
+                    color: '#2C2C38',
                     fontWeight: 600,
                     marginBottom: '8px',
                   }}
@@ -848,43 +828,43 @@ const Reports = () => {
                   wrapperStyle={{ paddingTop: '20px' }}
                   iconType="circle"
                 />
-                <Bar dataKey="receita" fill="#10b981" name={t.totalIncome} radius={[8, 8, 0, 0]} />
-                <Bar dataKey="despesa" fill="#ef4444" name={t.totalExpense} radius={[8, 8, 0, 0]} />
+                <Bar dataKey="receita" fill="#12B76A" name={t.totalIncome} radius={[8, 8, 0, 0]} />
+                <Bar dataKey="despesa" fill="#F04438" name={t.totalExpense} radius={[8, 8, 0, 0]} />
               </BarChart>
             )}
           </ResponsiveContainer>
         </div>
 
         {/* Gráfico de área - Saldo */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-          <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4">
+        <div className="surface-card p-6">
+          <h2 className="card-title mb-4">
             {t.balanceEvolution}
           </h2>
           <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
             <AreaChart data={reportType === 'mensal' ? monthlyComparison : monthlyData}>
               <defs>
                 <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.4} />
-                  <stop offset="50%" stopColor="#0ea5e9" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#5B3DF5" stopOpacity={0.4} />
+                  <stop offset="50%" stopColor="#5B3DF5" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#5B3DF5" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid 
                 strokeDasharray="0" 
-                stroke="#e5e7eb" 
+                stroke="#E6E6EE" 
                 strokeOpacity={0.3}
                 vertical={false}
               />
               <XAxis 
                 dataKey="month" 
-                stroke="#9ca3af"
-                tick={{ fill: '#6b7280', fontSize: 12 }}
+                stroke="#7F7F8D"
+                tick={{ fill: '#6B6B78', fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis 
-                stroke="#9ca3af"
-                tick={{ fill: '#6b7280', fontSize: 12 }}
+                stroke="#7F7F8D"
+                tick={{ fill: '#6B6B78', fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -898,7 +878,7 @@ const Reports = () => {
                   padding: '12px',
                 }}
                 labelStyle={{
-                  color: '#374151',
+                  color: '#2C2C38',
                   fontWeight: 600,
                   marginBottom: '8px',
                 }}
@@ -910,7 +890,7 @@ const Reports = () => {
               <Area 
                 type="monotone" 
                 dataKey="saldo" 
-                stroke="#0ea5e9" 
+                stroke="#5B3DF5" 
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorBalance)"
@@ -937,49 +917,49 @@ const Reports = () => {
 
       {/* Comparação com Média Histórica */}
       {historicalAverage && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8">
-          <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4">
+        <div className="surface-card p-6 mb-8">
+          <h2 className="card-title mb-4">
             {t.historicalAverageComparison}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t.averageIncome}</div>
-              <div className="text-lg font-light tracking-tight text-gray-900 dark:text-white mb-1">
+            <div className="p-4 rounded-lg bg-surface-sunken">
+              <div className="text-xs font-medium text-content-tertiary mb-1">{t.averageIncome}</div>
+              <div className="text-lg font-light tracking-tight text-content mb-1">
                 {formatCurrency(historicalAverage.income, baseCurrency)}
               </div>
               <div className={`text-xs font-medium ${
-                totalIncome >= historicalAverage.income ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                totalIncome >= historicalAverage.income ? 'text-positive' : 'text-negative'
               }`}>
                 {totalIncome >= historicalAverage.income ? '+' : ''}
                 {((totalIncome - historicalAverage.income) / historicalAverage.income * 100).toFixed(1)}% {t.vsAverage}
               </div>
             </div>
-            <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t.averageExpense}</div>
-              <div className="text-lg font-light tracking-tight text-gray-900 dark:text-white mb-1">
+            <div className="p-4 rounded-lg bg-surface-sunken">
+              <div className="text-xs font-medium text-content-tertiary mb-1">{t.averageExpense}</div>
+              <div className="text-lg font-light tracking-tight text-content mb-1">
                 {formatCurrency(historicalAverage.expense, baseCurrency)}
               </div>
               <div className={`text-xs font-medium ${
-                totalExpense <= historicalAverage.expense ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                totalExpense <= historicalAverage.expense ? 'text-positive' : 'text-negative'
               }`}>
                 {totalExpense <= historicalAverage.expense ? '-' : '+'}
                 {Math.abs((totalExpense - historicalAverage.expense) / historicalAverage.expense * 100).toFixed(1)}% {t.vsAverage}
               </div>
             </div>
-            <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t.averageBalance}</div>
-              <div className="text-lg font-light tracking-tight text-gray-900 dark:text-white mb-1">
+            <div className="p-4 rounded-lg bg-surface-sunken">
+              <div className="text-xs font-medium text-content-tertiary mb-1">{t.averageBalance}</div>
+              <div className="text-lg font-light tracking-tight text-content mb-1">
                 {formatCurrency(historicalAverage.balance, baseCurrency)}
               </div>
               <div className={`text-xs font-medium ${
-                balance >= historicalAverage.balance ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                balance >= historicalAverage.balance ? 'text-positive' : 'text-negative'
               }`}>
                 {balance >= historicalAverage.balance ? '+' : ''}
                 {((balance - historicalAverage.balance) / Math.abs(historicalAverage.balance || 1) * 100).toFixed(1)}% {t.vsAverage}
               </div>
             </div>
           </div>
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-3">
+          <p className="text-xs font-medium text-content-tertiary mt-3">
             {t.basedOnLastMonths?.replace('{months}', historicalAverage.months.toString()) || `Baseado na média dos últimos ${historicalAverage.months} meses`}
           </p>
         </div>
@@ -987,28 +967,28 @@ const Reports = () => {
 
       {/* Heatmap de Gastos por Dia da Semana */}
       {spendingByDayOfWeek && reportType === 'mensal' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8">
-          <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4">
+        <div className="surface-card p-6 mb-8">
+          <h2 className="card-title mb-4">
             {t.spendingByDayOfWeek}
           </h2>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={spendingByDayOfWeek}>
               <CartesianGrid 
                 strokeDasharray="0" 
-                stroke="#e5e7eb" 
+                stroke="#E6E6EE" 
                 strokeOpacity={0.3}
                 vertical={false}
               />
               <XAxis 
                 dataKey="day" 
-                stroke="#9ca3af"
-                tick={{ fill: '#6b7280', fontSize: 12 }}
+                stroke="#7F7F8D"
+                tick={{ fill: '#6B6B78', fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis 
-                stroke="#9ca3af"
-                tick={{ fill: '#6b7280', fontSize: 12 }}
+                stroke="#7F7F8D"
+                tick={{ fill: '#6B6B78', fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -1022,12 +1002,12 @@ const Reports = () => {
                   padding: '12px',
                 }}
                 labelStyle={{
-                  color: '#374151',
+                  color: '#2C2C38',
                   fontWeight: 600,
                   marginBottom: '8px',
                 }}
               />
-              <Bar dataKey="amount" fill="#ef4444" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="amount" fill="#F04438" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -1035,8 +1015,8 @@ const Reports = () => {
 
       {/* Heatmap de Gastos por Dia do Mês */}
       {spendingByDayOfMonth && reportType === 'mensal' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8">
-          <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4">
+        <div className="surface-card p-6 mb-8">
+          <h2 className="card-title mb-4">
             {t.spendingByDayOfMonth}
           </h2>
           <div className="grid grid-cols-7 gap-1">
@@ -1045,8 +1025,8 @@ const Reports = () => {
               const intensity = maxAmount > 0 ? (amount / maxAmount) : 0;
               const bgIntensity = Math.floor(intensity * 5); // 0-5 levels
               const bgColors = [
-                'bg-gray-100 dark:bg-gray-800',
-                'bg-red-100 dark:bg-red-900/30',
+                'bg-surface-sunken',
+                'bg-negative-soft',
                 'bg-red-200 dark:bg-red-900/50',
                 'bg-red-300 dark:bg-red-800/60',
                 'bg-red-400 dark:bg-red-700/70',
@@ -1059,11 +1039,11 @@ const Reports = () => {
                   className={`${bgColors[bgIntensity]} p-2 rounded text-center relative group`}
                   title={`${t.reportDay} ${day}: ${formatCurrency(amount, baseCurrency)}`}
                 >
-                  <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="text-xs font-medium text-content-secondary mb-1">
                     {day}
                   </div>
                   {amount > 0 && (
-                    <div className="text-xs font-light text-gray-900 dark:text-gray-100">
+                    <div className="text-xs font-light text-content">
                       {formatCurrency(amount, baseCurrency)}
                     </div>
                   )}
@@ -1076,29 +1056,29 @@ const Reports = () => {
 
       {/* Análise de Tendências de Categorias */}
       {categoryTrends && categoryTrends.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8">
-            <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4">
+        <div className="surface-card p-6 mb-8">
+            <h2 className="card-title mb-4">
               {t.categoryTrends}
             </h2>
           <div className="space-y-3">
             {categoryTrends.map((trend) => (
-              <div key={trend.category} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+              <div key={trend.category} className="flex items-center justify-between p-3 rounded-lg bg-surface-sunken">
                 <div className="flex items-center gap-3">
-                  {trend.trend === 'up' && <TrendingUp className="h-4 w-4 text-red-500" />}
-                  {trend.trend === 'down' && <TrendingDown className="h-4 w-4 text-green-500" />}
+                  {trend.trend === 'up' && <TrendingUp className="h-4 w-4 text-negative" />}
+                  {trend.trend === 'down' && <TrendingDown className="h-4 w-4 text-positive" />}
                   {trend.trend === 'stable' && <div className="h-4 w-4 rounded-full bg-gray-400" />}
-                  <span className="text-sm font-light text-gray-900 dark:text-gray-100">
+                  <span className="text-sm font-light text-content">
                     {trend.category}
                   </span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <span className="text-xs font-medium text-content-tertiary">
                     {t.recentAverage}: {formatCurrency(trend.recent, baseCurrency)}
                   </span>
                   <span className={`text-sm font-light tracking-tight ${
-                    trend.change > 0 ? 'text-red-600 dark:text-red-400' : 
-                    trend.change < 0 ? 'text-green-600 dark:text-green-400' : 
-                    'text-gray-600 dark:text-gray-400'
+                    trend.change > 0 ? 'text-negative' : 
+                    trend.change < 0 ? 'text-positive' : 
+                    'text-content-secondary'
                   }`}>
                     {trend.change > 0 ? '+' : ''}{trend.change.toFixed(1)}%
                   </span>
@@ -1106,7 +1086,7 @@ const Reports = () => {
               </div>
             ))}
           </div>
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-4">
+          <p className="text-xs font-medium text-content-tertiary mt-4">
             {t.comparisonLastMonths}
           </p>
         </div>
@@ -1114,12 +1094,12 @@ const Reports = () => {
 
       {/* Top Categorias */}
       {topCategories.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-8">
+        <div className="surface-card p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white">
+            <h2 className="card-title">
               {t.topCategories}
             </h2>
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div className="text-xs font-medium text-content-tertiary">
               {t.reportTopCategories.replace('{count}', topCategories.length.toString())}
             </div>
           </div>
@@ -1130,14 +1110,14 @@ const Reports = () => {
             >
               <CartesianGrid 
                 strokeDasharray="0" 
-                stroke="#e5e7eb" 
+                stroke="#E6E6EE" 
                 strokeOpacity={0.3}
                 horizontal={false}
               />
               <XAxis 
                 type="number" 
-                stroke="#9ca3af"
-                tick={{ fill: '#6b7280', fontSize: 12 }}
+                stroke="#7F7F8D"
+                tick={{ fill: '#6B6B78', fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -1145,8 +1125,8 @@ const Reports = () => {
                 dataKey="name" 
                 type="category" 
                 width={120} 
-                stroke="#9ca3af"
-                tick={{ fill: '#6b7280', fontSize: 12 }}
+                stroke="#7F7F8D"
+                tick={{ fill: '#6B6B78', fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -1160,7 +1140,7 @@ const Reports = () => {
                   padding: '12px',
                 }}
                 labelStyle={{
-                  color: '#374151',
+                  color: '#2C2C38',
                   fontWeight: 600,
                   marginBottom: '8px',
                 }}
@@ -1169,8 +1149,8 @@ const Reports = () => {
                 wrapperStyle={{ paddingTop: '20px' }}
                 iconType="circle"
               />
-              <Bar dataKey="receita" fill="#10b981" name={t.totalIncome} radius={[0, 8, 8, 0]} />
-              <Bar dataKey="despesa" fill="#ef4444" name={t.totalExpense} radius={[0, 8, 8, 0]} />
+              <Bar dataKey="receita" fill="#12B76A" name={t.totalIncome} radius={[0, 8, 8, 0]} />
+              <Bar dataKey="despesa" fill="#F04438" name={t.totalExpense} radius={[0, 8, 8, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -1178,42 +1158,42 @@ const Reports = () => {
 
       {/* Tabela de categorias */}
       {categoryData.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="surface-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-line">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-white">
+              <h2 className="card-title">
                 {t.categoryDetails}
               </h2>
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              <div className="text-xs font-medium text-content-tertiary">
                 {categoryData.length} {categoryData.length === 1 ? t.reportCategory : t.reportCategoriesPlural}
               </div>
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <table className="min-w-full divide-y divide-line-subtle">
               <thead className="bg-gray-50 dark:bg-gray-800/50">
                 <tr>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-content-tertiary uppercase tracking-wider">
                     {t.category}
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-content-tertiary uppercase tracking-wider">
                     {t.totalIncome}
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-content-tertiary uppercase tracking-wider">
                     {t.totalExpense}
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-content-tertiary uppercase tracking-wider">
                     {t.balance}
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-content-tertiary uppercase tracking-wider">
                     % {t.totalIncome}
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-content-tertiary uppercase tracking-wider">
                     % {t.totalExpense}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-surface-elevated divide-y divide-line-subtle">
                 {categoryData
                   .sort((a, b) => Math.abs(b.total) - Math.abs(a.total))
                   .map((cat, index) => {
@@ -1229,24 +1209,24 @@ const Reports = () => {
                     
                     return (
                       <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-light text-gray-900 dark:text-white">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-light text-content">
                           {resolveCategoryName(cat.name)}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-light tracking-tight text-green-600 dark:text-green-400">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-light tracking-tight text-positive">
                           {cat.receita > 0 ? formatCurrency(cat.receita, baseCurrency) : '-'}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-light tracking-tight text-red-600 dark:text-red-400">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-light tracking-tight text-negative">
                           {cat.despesa > 0 ? formatCurrency(cat.despesa, baseCurrency) : '-'}
                         </td>
                         <td className={`px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-light tracking-tight ${
-                          cat.total >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                          cat.total >= 0 ? 'text-positive' : 'text-negative'
                         }`}>
                           {formatCurrency(cat.total, baseCurrency)}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-green-600 dark:text-green-400">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-positive">
                           {incomePercentage > 0 ? `${incomePercentage.toFixed(1)}%` : '-'}
                         </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-red-600 dark:text-red-400">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-negative">
                           {expensePercentage > 0 ? `${expensePercentage.toFixed(1)}%` : '-'}
                         </td>
                       </tr>

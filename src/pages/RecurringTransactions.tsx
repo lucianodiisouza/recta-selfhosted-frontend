@@ -1,3 +1,5 @@
+import { ArrowDownLeft, ArrowUpRight, Repeat as RepeatIcon } from 'lucide-react';
+import { Badge, EmptyState, IconBadge, MoneyText } from '../components/ui';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -8,7 +10,7 @@ import { useCommandMenu } from '../context/CommandMenuContext';
 import { useDefaultHousehold } from '../hooks/useDefaultHousehold';
 import { useAsyncOperation } from '../hooks/useAsyncOperation';
 import { useCurrencyMask } from '../hooks/useCurrencyMask';
-import { formatCurrency, formatDate } from '../utils/format';
+import { formatDate } from '../utils/format';
 import { parseCurrencyValue } from '../utils/currency';
 import { Plus, Info, X } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
@@ -117,7 +119,10 @@ const RecurringTransactions = () => {
     },
   });
 
+  // Reseta sempre que o modal abre: após criar, editingRecurring segue null e o
+  // formulário reabria com os valores do cadastro anterior.
   useEffect(() => {
+    if (!isModalOpen) return;
     if (editingRecurring) {
       reset({
         description: editingRecurring.description,
@@ -150,7 +155,7 @@ const RecurringTransactions = () => {
       setValue('amount', 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingRecurring?.id, reset, setValue]);
+  }, [isModalOpen, editingRecurring?.id, reset, setValue]);
 
   // Limpar categoria quando o tipo mudar para evitar incompatibilidade
   const currentType = watch('type');
@@ -270,7 +275,7 @@ const RecurringTransactions = () => {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 dashboard-fade-in">
+    <div className="dashboard-fade-in">
       <PageHeader
         title={t.recurring}
         description={
@@ -301,47 +306,42 @@ const RecurringTransactions = () => {
       </PageHeader>
 
       {/* Lista de transações recorrentes */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 overflow-hidden sm:rounded-md">
+      <div className="surface-card overflow-hidden">
         {recurringTransactions.length === 0 ? (
-          <div className="px-6 py-8 text-center font-light text-gray-500 dark:text-gray-400">
-            {t.recurring} {t.none}
-          </div>
+          <EmptyState icon={RepeatIcon} title={`${t.recurring} ${t.none}`} />
         ) : (
-          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+          <ul className="divide-y divide-line-subtle">
             {recurringTransactions.map((recurring) => (
-              <li key={recurring.id} className="px-4 sm:px-6 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <h3 className="text-base sm:text-lg font-light tracking-tight text-gray-900 dark:text-white">{recurring.description}</h3>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-light border ${
-                        recurring.type === TransactionType.INCOME
-                          ? 'border-green-300 dark:border-green-700 text-green-600 dark:text-green-400'
-                          : 'border-red-300 dark:border-red-700 text-red-600 dark:text-red-400'
-                      }`}>
-                        {recurring.type === TransactionType.INCOME ? t.income : t.expense}
-                      </span>
-                      {!recurring.isActive && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-light border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400">
-                          {t.pause}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm font-light text-gray-500 dark:text-gray-400">
-                      <span>{formatCurrency(recurring.amount, baseCurrency)}</span>
-                      <span className="hidden sm:inline">•</span>
-                      <span>{recurring.category}</span>
-                      <span className="hidden sm:inline">•</span>
-                      <span>
-                        {recurring.frequency === 'daily' ? t.daily :
-                         recurring.frequency === 'weekly' ? t.weekly :
-                         recurring.frequency === 'biweekly' ? t.biweekly :
-                         recurring.frequency === 'monthly' ? t.monthly : t.yearly}
-                      </span>
-                      <span className="hidden sm:inline">•</span>
-                      <span>{t.next} {formatDate(recurring.nextDueDate)}</span>
-                    </div>
+              <li key={recurring.id} className={`flex items-center gap-3 px-4 py-3 min-h-[64px] ${recurring.isActive ? '' : 'opacity-60'}`}>
+                {recurring.type === TransactionType.INCOME ? (
+                  <IconBadge icon={ArrowDownLeft} color="#12B76A" />
+                ) : (
+                  <IconBadge icon={ArrowUpRight} color="#F04438" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h3 className="truncate text-[15px] font-medium text-content">{recurring.description}</h3>
+                    {!recurring.isActive && <Badge>{t.pause}</Badge>}
                   </div>
+                  <p className="mt-0.5 truncate text-[13px] text-content-secondary">
+                    {[
+                      recurring.category,
+                      recurring.frequency === 'daily' ? t.daily :
+                      recurring.frequency === 'weekly' ? t.weekly :
+                      recurring.frequency === 'biweekly' ? t.biweekly :
+                      recurring.frequency === 'monthly' ? t.monthly : t.yearly,
+                      `${t.next} ${formatDate(recurring.nextDueDate)}`,
+                    ].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <span className="sr-only">{recurring.type === TransactionType.INCOME ? t.income : t.expense}</span>
+                  <MoneyText
+                    value={recurring.type === TransactionType.INCOME ? Math.abs(recurring.amount) : -Math.abs(recurring.amount)}
+                    currency={baseCurrency}
+                    sign="always"
+                    tone="semantic"
+                  />
                   <RecurringTransactionsActionsMenu
                     recurring={recurring}
                     onEdit={(recurring) => {
@@ -362,19 +362,19 @@ const RecurringTransactions = () => {
       {/* Modal de Ajuda */}
       {isHelpModalOpen && createPortal(
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed inset-0 bg-black/40 animate-fade-in transition-opacity duration-300 ease-out" onClick={handleCloseHelpModal} aria-hidden="true" />
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full sm:w-96 max-w-md p-4 sm:p-5 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 max-h-[90vh] overflow-y-auto animate-slide-in-bottom">
-            <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" onClick={handleCloseHelpModal} aria-hidden="true" />
+          <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
+            <div className="relative w-full sm:w-96 max-w-md p-4 sm:p-5 bg-surface-elevated max-h-[90vh] overflow-y-auto rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
+            <div className="flex items-center justify-between mb-6 pb-6 border-b border-line-subtle">
               <div className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                <h3 className="text-lg font-light tracking-tight text-gray-900 dark:text-white">
+                <Info className="h-5 w-5 text-brand" />
+                <h3 className="font-rounded text-lg font-semibold text-content">
                   {t.recurringHelperTitle}
                 </h3>
               </div>
               <button
                 onClick={handleCloseHelpModal}
-                className="text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1"
+                className="text-content-tertiary hover:opacity-70 transition-opacity p-1"
                 aria-label={t.close}
               >
                 <X className="h-5 w-5" />
@@ -382,7 +382,7 @@ const RecurringTransactions = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="space-y-2 text-sm font-light text-gray-600 dark:text-gray-400 leading-relaxed">
+              <div className="space-y-2 text-sm font-light text-content-secondary leading-relaxed">
                 {t.recurringHelperText.split('. ').filter(sentence => sentence.trim()).map((sentence, index, array) => {
                   const trimmedSentence = sentence.trim();
                   // Adicionar ponto final se não tiver (exceto no último item se já tiver)
@@ -398,7 +398,7 @@ const RecurringTransactions = () => {
               </div>
               <button
                 onClick={handleCloseHelpModal}
-                className="w-full px-4 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity"
+                className="w-full px-4 py-2.5 text-sm font-light tracking-tight text-white bg-brand-fill border border-brand rounded-md hover:opacity-80 transition-opacity"
               >
                 {t.close}
               </button>
@@ -413,14 +413,14 @@ const RecurringTransactions = () => {
       {isModalOpen && createPortal(
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div 
-            className="fixed inset-0 bg-black/40 animate-fade-in transition-opacity duration-300 ease-out" 
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
             onClick={() => setIsModalOpen(false)} 
             aria-hidden="true"
           />
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full sm:w-96 max-w-md p-4 sm:p-5 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 max-h-[90vh] overflow-y-auto min-w-0 animate-slide-in-bottom">
-            <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
-              <h3 className="text-lg font-light tracking-tight text-gray-900 dark:text-white">
+          <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
+            <div className="relative w-full sm:w-96 max-w-md p-4 sm:p-5 bg-surface-elevated max-h-[90vh] overflow-y-auto min-w-0 rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
+            <div className="flex items-center justify-between mb-6 pb-6 border-b border-line-subtle">
+              <h3 className="font-rounded text-lg font-semibold text-content">
                 {editingRecurring ? t.editRecurring : t.newRecurring}
               </h3>
               <button
@@ -428,7 +428,7 @@ const RecurringTransactions = () => {
                   setIsModalOpen(false);
                   setEditingRecurring(null);
                 }}
-                className="text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1"
+                className="text-content-tertiary hover:opacity-70 transition-opacity p-1"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -436,7 +436,7 @@ const RecurringTransactions = () => {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 min-w-0">
               <div>
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.type}
                 </label>
                 <Controller
@@ -455,19 +455,19 @@ const RecurringTransactions = () => {
                   )}
                 />
                 {errors.type && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.type.message}</p>
+                  <p className="mt-1 text-sm text-negative">{errors.type.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.description}
                 </label>
                 <input
                   type="text"
                   {...register('description')}
-                  className={`block w-full px-3 py-2.5 border rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 sm:text-sm font-light tracking-tight ${
-                    errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-800'
+                  className={`field-control ${
+                    errors.description ? 'border-negative/60' : 'border-line-subtle'
                   }`}
                 />
                 {errors.description && (
@@ -476,7 +476,7 @@ const RecurringTransactions = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.amount}
                 </label>
                 <input
@@ -488,8 +488,8 @@ const RecurringTransactions = () => {
                     setValue('amount', numericValue, { shouldValidate: true });
                   }}
                   placeholder={t.currencyPlaceholder}
-                  className={`block w-full px-3 py-2.5 border rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 sm:text-sm font-light tracking-tight ${
-                    errors.amount ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-800'
+                  className={`field-control ${
+                    errors.amount ? 'border-negative/60' : 'border-line-subtle'
                   }`}
                 />
                 <input
@@ -504,7 +504,7 @@ const RecurringTransactions = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.category}
                 </label>
                 <CategoryCombobox
@@ -519,7 +519,7 @@ const RecurringTransactions = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.frequency}
                 </label>
                 <Controller
@@ -546,7 +546,7 @@ const RecurringTransactions = () => {
               </div>
 
               <div className="min-w-0">
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.startDate}
                 </label>
                 <DatePicker
@@ -555,7 +555,7 @@ const RecurringTransactions = () => {
                     setValue('startDate', date || new Date(), { shouldValidate: true, shouldDirty: true });
                   }}
                   placeholder={t.startDate}
-                  className={errors.startDate ? 'border-red-300 dark:border-red-600' : ''}
+                  className={errors.startDate ? 'border-negative/60' : ''}
                 />
                 <input
                   type="hidden"
@@ -569,7 +569,7 @@ const RecurringTransactions = () => {
               </div>
 
               <div className="min-w-0">
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.endDate}
                 </label>
                 <DatePicker
@@ -587,7 +587,7 @@ const RecurringTransactions = () => {
               </div>
 
               <div className="min-w-0">
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.nextDueDate}
                 </label>
                 <DatePicker
@@ -597,7 +597,7 @@ const RecurringTransactions = () => {
                   }}
                   placeholder={t.nextDueDate}
                   minDate={watch('startDate') || undefined}
-                  className={errors.nextDueDate ? 'border-red-300 dark:border-red-600' : ''}
+                  className={errors.nextDueDate ? 'border-negative/60' : ''}
                 />
                 <input
                   type="hidden"
@@ -611,7 +611,7 @@ const RecurringTransactions = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                <label className="block text-sm font-light text-content-tertiary mb-2">
                   {t.account} ({t.optional})
                 </label>
                 <Controller
@@ -643,26 +643,26 @@ const RecurringTransactions = () => {
                   {...register('isActive')}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
-                <label className="ml-2 block text-sm font-light text-gray-900 dark:text-white">
+                <label className="ml-2 block text-sm font-light text-content">
                   {t.activate}
                 </label>
               </div>
 
-              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex justify-end space-x-3 pt-6 border-t border-line-subtle">
                 <button
                   type="button"
                   onClick={() => {
                     setIsModalOpen(false);
                     setEditingRecurring(null);
                   }}
-                  className="px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity"
+                  className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
                 >
                   {t.cancel}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-brand-fill text-white hover:bg-brand-fill-hover"
                 >
                   {isSubmitting ? t.loading : editingRecurring ? t.update : t.create}
                 </button>

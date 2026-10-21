@@ -3,7 +3,7 @@ interface WidgetSkeletonProps {
 }
 
 export const WidgetSkeleton = ({ className = '' }: WidgetSkeletonProps) => (
-  <div className={`bg-white dark:bg-gray-800 shadow rounded-lg p-6 ${className}`}>
+  <div className={`surface-card p-6 ${className}`}>
     <div className="animate-pulse">
       <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
       <div className="space-y-3">

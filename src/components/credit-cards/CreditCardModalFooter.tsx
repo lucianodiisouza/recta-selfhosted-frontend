@@ -14,7 +14,7 @@ export const CreditCardModalFooter = ({ isEditing, isLoading, onCancel }: Credit
       <button
         type="button"
         onClick={onCancel}
-        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        className="flex-1 px-4 py-2 border border-line rounded-md text-sm font-medium text-content-secondary hover:bg-surface-sunken transition-colors"
       >
         {t.cancel}
       </button>

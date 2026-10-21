@@ -42,21 +42,21 @@ const InstallmentDeleteModal = ({
     <div className="fixed inset-0 z-[70] overflow-y-auto">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 transition-opacity" 
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
         onClick={onClose}
         aria-hidden="true"
       />
       
       {/* Scrollable Container */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
         {/* Modal Card */}
-        <div className="relative w-full sm:w-[450px] max-w-lg p-6 border shadow-2xl rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in duration-200">
+        <div className="relative w-full sm:w-[450px] max-w-lg p-6 bg-surface-elevated rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0 bg-red-100 dark:bg-red-900/30 rounded-full p-2 mr-3">
-                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <div className="flex-shrink-0 bg-negative-soft rounded-full p-2 mr-3">
+                <AlertTriangle className="h-6 w-6 text-negative" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              <h3 className="text-xl font-bold text-content">
                 {t.installmentDeleteTitle}
               </h3>
             </div>
@@ -84,12 +84,12 @@ const InstallmentDeleteModal = ({
               className="w-full flex items-center justify-between p-4 border-2 border-red-100 dark:border-red-900/20 bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">
+                <div className="p-2 rounded-lg bg-negative-soft text-negative-on-soft group-hover:scale-110 transition-transform">
                   <Layers className="h-5 w-5" />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-gray-900 dark:text-gray-100">{t.deleteAllSubsequentInstallments}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{t.deleteAllSubsequentHint}</div>
+                  <div className="font-bold text-content">{t.deleteAllSubsequentInstallments}</div>
+                  <div className="text-xs text-content-tertiary">{t.deleteAllSubsequentHint}</div>
                 </div>
               </div>
             </button>
@@ -99,22 +99,22 @@ const InstallmentDeleteModal = ({
                 onDeleteOnly();
                 onClose();
               }}
-              className="w-full flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all group"
+              className="w-full flex items-center justify-between p-4 border border-line hover:bg-surface-sunken rounded-xl transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 group-hover:scale-110 transition-transform">
+                <div className="p-2 rounded-lg bg-surface-sunken text-content-secondary group-hover:scale-110 transition-transform">
                   <Trash2 className="h-5 w-5" />
                 </div>
                 <div className="text-left">
-                  <div className="font-bold text-gray-900 dark:text-gray-100">{t.deleteOnlyThisInstallment}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{t.deleteOnlyThisHint}</div>
+                  <div className="font-bold text-content">{t.deleteOnlyThisInstallment}</div>
+                  <div className="text-xs text-content-tertiary">{t.deleteOnlyThisHint}</div>
                 </div>
               </div>
             </button>
 
             <button
               onClick={onClose}
-              className="w-full py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              className="w-full py-3 text-sm font-medium text-content-tertiary hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
             >
               {t.cancel}
             </button>

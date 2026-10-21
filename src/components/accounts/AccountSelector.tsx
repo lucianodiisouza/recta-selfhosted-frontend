@@ -1,7 +1,8 @@
 import { Account } from '../../types';
-import { formatCurrency } from '../../utils/format';
 import { getAccountBalance } from '../../utils/accountBalance';
-import { CreditCard, Wallet, PiggyBank, Banknote, Plus, Share2, TrendingUp } from 'lucide-react';
+import { Plus, Share2 } from 'lucide-react';
+import { AccountType } from '../../lib/enums';
+import { MoneyText, PaymentCard } from '../ui';
 import { getAccountTypeLabel } from '../../constants/accountTypes';
 
 interface AccountSelectorProps {
@@ -16,21 +17,6 @@ interface AccountSelectorProps {
   t: Record<string, string>;
 }
 
-const getAccountIcon = (type: string) => {
-  switch (type) {
-    case "CHECKING":
-      return CreditCard;
-    case "SAVINGS":
-      return PiggyBank;
-    case "CASH":
-      return Banknote;
-    case "INVESTMENT":
-      return TrendingUp;
-    default:
-      return Wallet;
-  }
-};
-
 export const AccountSelector = ({
   accounts,
   selectedAccountId,
@@ -43,74 +29,50 @@ export const AccountSelector = ({
   t,
 }: AccountSelectorProps) => {
   return (
-    <div className="flex overflow-x-auto pb-2 gap-4 scrollbar-hide">
+    // Carousel of account cards, like the app's Home and Cards screens.
+    <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-3 pt-1 scrollbar-hide sm:mx-0 sm:px-1">
       {accounts.map((account) => {
         const balances = getAccountBalance(account);
         const isSharedAccount = (account as any).isPersonal && (account as any).accountOwnerId;
         const accountOwnerMember = isSharedAccount && householdMembers
           ? householdMembers.find(m => m.userId === (account as any).accountOwnerId)
           : null;
-        
-        const IconComponent = getAccountIcon(account.type);
-        
+        const ownerName = accountOwnerMember
+          ? accountOwnerMember.user?.displayName || accountOwnerMember.user?.email?.split('@')[0] || 'Compartilhada'
+          : null;
+        const isSelected = selectedAccountId === account.id;
+
         return (
-          <button
-            key={account.id}
-            onClick={() => onSelectAccount(account.id || null)}
-            className={`flex-shrink-0 w-[200px] flex items-center p-4 rounded-lg border transition-all relative ${
-              selectedAccountId === account.id
-                ? "border-primary-500 dark:border-primary-500 bg-white dark:bg-gray-900"
-                : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:opacity-80"
-            }`}
-          >
-            {isSharedAccount && (
-              <div className="absolute top-2 right-2 flex items-center">
-                <Share2 className="h-3 w-3 text-blue-500 dark:text-blue-400" title="Conta compartilhada" />
-              </div>
-            )}
-            <div
-              className="p-2 rounded-lg mr-3"
-              style={{
-                backgroundColor: `${account.color || "#3b82f6"}20`,
-                color: account.color || "#3b82f6",
-              }}
-            >
-              <IconComponent className="h-5 w-5" />
-            </div>
-            <div className="text-left flex-1 min-w-0">
-              <div className="text-sm font-light text-gray-900 dark:text-white truncate">
-                {account.name}
-              </div>
-              <div className="text-xs font-light text-gray-500 dark:text-gray-400">
-                {formatCurrency(balances.totalBalance, baseCurrency)}
-              </div>
-              <div className="text-[10px] font-light text-gray-400 dark:text-gray-500 mt-0.5">
-                {getAccountTypeLabel(account.type as any, t)}
-                {isSharedAccount && accountOwnerMember && (
-                  <span className="ml-1 text-blue-500">
-                    • {accountOwnerMember.user?.displayName || accountOwnerMember.user?.email?.split('@')[0] || 'Compartilhada'}
-                  </span>
-                )}
-              </div>
-            </div>
-          </button>
+          <div key={account.id} className="w-[220px] flex-shrink-0 snap-start">
+            <PaymentCard
+              compact
+              type={account.type as AccountType}
+              color={account.color}
+              onClick={() => onSelectAccount(account.id || null)}
+              selected={isSelected}
+              className={isSelected ? undefined : 'opacity-75 hover:opacity-100'}
+              title={
+                <span className="flex items-center gap-1.5">
+                  <span className="truncate">{account.name}</span>
+                  {isSharedAccount && <Share2 className="h-3 w-3 shrink-0" aria-label="Conta compartilhada" />}
+                </span>
+              }
+              subtitle={`${getAccountTypeLabel(account.type as any, t)}${ownerName ? ` · ${ownerName}` : ''}`}
+              amount={<MoneyText value={balances.totalBalance} currency={baseCurrency} size="md" className="text-white" />}
+            />
+          </div>
         );
       })}
 
       {/* Botão para Adicionar Nova Conta */}
       <button
         onClick={onAddAccount}
-        className="flex-shrink-0 w-[200px] flex items-center p-4 rounded-lg border border-dashed border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:opacity-80 transition-opacity group"
+        className="group flex h-[120px] w-[220px] flex-shrink-0 snap-start flex-col items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-line text-content-tertiary transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand"
       >
-        <div className="p-2 rounded-lg mr-3 bg-gray-50 dark:bg-gray-900 text-gray-400 group-hover:text-primary-500 transition-colors">
-          <Plus className="h-5 w-5" />
-        </div>
-        <div className="text-left">
-          <div className="text-sm font-light text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">
-            {t.account}
-          </div>
-          <div className="text-xs font-light text-gray-400 dark:text-gray-500">{t.newAccount}</div>
-        </div>
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-sunken group-hover:bg-brand group-hover:text-white transition-colors">
+          <Plus className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <span className="text-sm font-semibold">{t.newAccount}</span>
       </button>
     </div>
   );

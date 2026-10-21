@@ -2,7 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /app/
 Disallow: /login
+Disallow: /join/
 Disallow: /api/
 
-Sitemap: https://recta.app/sitemap.xml
+Sitemap: https://www.recta.app/sitemap.xml
 

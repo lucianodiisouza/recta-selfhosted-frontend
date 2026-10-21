@@ -1,3 +1,4 @@
+import { MoneyText, PaymentCard, buttonClasses } from '../components/ui';
 import { useMemo, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTransactions } from "../context/TransactionsContext";
@@ -15,14 +16,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { AccountActionsMenu } from "../components/AccountActionsMenu";
-import {
-  isSameMonth,
-  format,
-  isBefore,
-  startOfMonth,
-  subMonths,
-  addMonths,
-} from "date-fns";
+import { format, addMonths } from "date-fns";
 import { ptBR as ptBRLocale } from "date-fns/locale/pt-BR";
 import { enUS as enUSLocale } from "date-fns/locale/en-US";
 import { es as esLocale } from "date-fns/locale/es";
@@ -44,14 +38,15 @@ import { AccountType, CategoryName, getCategoryDisplayName, TransactionType } fr
 import { CreditCardsSummary } from "../components/CreditCardsSummary";
 import { TransactionActionsMenu } from "../components/TransactionActionsMenu";
 import SelectCombobox from "../components/SelectCombobox";
-import { MonthNavigator } from "../components/shared";
+import { MonthNavigator, TransactionSearchBar } from "../components/shared";
 import {
   useCreditCardInvoice,
-  useLoadMoreCreditCardInvoice,
+  useCreditCardInvoiceTotals,
   usePayCreditCardInvoice, 
   useUndoCreditCardPayment 
 } from "../hooks/api/useTransactions";
 import { useDefaultHousehold } from "../hooks/useDefaultHousehold";
+import { getCreditCardUsage } from "../utils/accountBalance";
 
 const CreditCards = () => {
   const {
@@ -78,18 +73,13 @@ const CreditCards = () => {
   // Format month for API: "YYYY-MM"
   const selectedMonthKey = format(selectedMonth, "yyyy-MM");
   
-  // Get invoice data from backend with pagination
-  const { data: invoiceResponse, isLoading: invoiceLoading } = useCreditCardInvoice({
+  // Whole invoice from the backend (every page)
+  const { data: invoiceData, isLoading: invoiceLoading } = useCreditCardInvoice({
     accountId: selectedAccountId,
     month: selectedMonthKey,
     householdId,
-    limit: 25,
   });
-  
-  const invoiceData = invoiceResponse?.data;
-  const invoicePagination = invoiceResponse?.pagination;
-  
-  const loadMoreInvoiceMutation = useLoadMoreCreditCardInvoice();
+  const [invoiceSearch, setInvoiceSearch] = useState("");
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isUndoModalOpen, setIsUndoModalOpen] = useState(false);
   const [paymentSourceAccountId, setPaymentAccountSourceId] =
@@ -214,6 +204,16 @@ const CreditCards = () => {
       .filter((t): t is Transaction => t !== null); // Filter out null (invalid) transactions
   }, [invoiceData, convertTransaction]);
 
+  // Search over the whole invoice: description, category, notes or amount (fdbk #175)
+  const visibleInvoiceTransactions = useMemo(() => {
+    const query = invoiceSearch.trim().toLocaleLowerCase();
+    if (!query) return invoiceTransactions;
+    return invoiceTransactions.filter((item: Transaction) =>
+      [item.description, item.category, formatCurrency(item.amount, baseCurrency), String(item.amount)]
+        .some((field) => !!field && String(field).toLocaleLowerCase().includes(query))
+    );
+  }, [invoiceTransactions, invoiceSearch, baseCurrency]);
+
   // Use invoice stats from backend
   const invoiceStats = useMemo(() => {
     if (!invoiceData) {
@@ -242,156 +242,20 @@ const CreditCards = () => {
     };
   }, [invoiceData, convertTransaction]);
 
-  // Calcular fatura atual de cada cartão (para exibir nos cards de seleção)
-  const creditCardsInvoices = useMemo(() => {
-    const invoices: Record<string, number> = {};
-    
-    creditCards.forEach((card) => {
-      const monthKey = `${selectedMonth.getFullYear()}-${selectedMonth.getMonth()}`;
-      const technicalIdentifier = `invoice_pay:${card.id}:${monthKey}`;
-      
-      // Buscar transações do cartão no mês selecionado
-      const cardTransactions = transactions.filter((t_item) => {
-        // Validate date before using
-        if (!t_item.date) return false;
-        const transactionDate = t_item.date instanceof Date ? t_item.date : parseDateFromAPI(String(t_item.date));
-        if (isNaN(transactionDate.getTime())) return false;
-        
-        const isCardTransaction =
-          t_item.accountId === card.id &&
-          isSameMonth(transactionDate, selectedMonth);
-        const isPaymentTransaction =
-          t_item.attachmentUrl === technicalIdentifier;
-        return isCardTransaction || isPaymentTransaction;
-      });
-      
-      // Calcular saldo anterior (dívida herdada do mês anterior)
-      const previousMonth = subMonths(selectedMonth, 1);
-      const previousMonthKey = `${previousMonth.getFullYear()}-${previousMonth.getMonth()}`;
-      const previousMonthTechnicalIdentifier = `invoice_pay:${card.id}:${previousMonthKey}`;
-      
-      const previousMonthPayment = transactions.find(
-        (t) => t.attachmentUrl === previousMonthTechnicalIdentifier
-      );
-      
-      let previousBalance = 0;
-      
-      if (previousMonthPayment) {
-        const monthStart = startOfMonth(selectedMonth);
-        const previousMonthTransactions = transactions.filter((t_prev) => {
-          if (!t_prev.date) return false;
-          const transactionDate = t_prev.date instanceof Date ? t_prev.date : parseDateFromAPI(String(t_prev.date));
-          if (isNaN(transactionDate.getTime())) return false;
-          return t_prev.accountId === card.id && isBefore(transactionDate, monthStart);
-        });
-        
-        const prevExpenses = previousMonthTransactions
-          .filter((t_prev) => t_prev.type === TransactionType.EXPENSE)
-          .reduce((sum, t_prev) => sum + t_prev.amount, 0);
-        
-        const prevIncomes = previousMonthTransactions
-          .filter((t_prev) => t_prev.type === TransactionType.INCOME)
-          .reduce((sum, t_prev) => sum + t_prev.amount, 0);
-        
-        const previousMonthInvoiceTotal = prevExpenses - prevIncomes;
-        
-        if (previousMonthPayment.amount < previousMonthInvoiceTotal) {
-          previousBalance = Number((previousMonthInvoiceTotal - previousMonthPayment.amount).toFixed(2));
-        }
-      } else {
-        const monthStart = startOfMonth(selectedMonth);
-        const previousCardTransactions = transactions.filter((t_prev) => {
-          if (!t_prev.date) return false;
-          const transactionDate = t_prev.date instanceof Date ? t_prev.date : parseDateFromAPI(String(t_prev.date));
-          if (isNaN(transactionDate.getTime())) return false;
-          return t_prev.accountId === card.id && isBefore(transactionDate, monthStart);
-        });
-
-        const prevExpenses = previousCardTransactions
-          .filter((t_prev) => t_prev.type === TransactionType.EXPENSE)
-          .reduce((sum, t_prev) => sum + t_prev.amount, 0);
-
-        const prevIncomes = previousCardTransactions
-          .filter((t_prev) => t_prev.type === TransactionType.INCOME)
-          .reduce((sum, t_prev) => sum + t_prev.amount, 0);
-
-        previousBalance = Number((prevExpenses - prevIncomes).toFixed(2));
-      }
-      
-      // Calcular despesas do mês atual (apenas compras no cartão, não pagamentos)
-      const currentExpenses = cardTransactions
-        .filter(
-          (t_item) =>
-            t_item.accountId === card.id && 
-            t_item.type === TransactionType.EXPENSE &&
-            !t_item.attachmentUrl // Excluir transações de pagamento
-        )
-        .reduce((sum, t_item) => sum + t_item.amount, 0);
-      
-      // Calcular pagamentos do mês atual
-      const currentPayments = cardTransactions
-        .filter((t_item) => t_item.attachmentUrl === technicalIdentifier)
-        .reduce((sum, t_item) => sum + t_item.amount, 0);
-      
-      // Fatura total = saldo anterior + despesas do mês - pagamentos do mês
-      const total = Number(
-        (previousBalance + currentExpenses - currentPayments).toFixed(2)
-      );
-      
-      invoices[card.id || ""] = Math.max(0, total);
-    });
-    
-    return invoices;
-  }, [creditCards, transactions, selectedMonth]);
+  // Invoice of each card in the selected month (shown on the card picker tiles)
+  const creditCardsInvoices = useCreditCardInvoiceTotals(
+    creditCards.map((card) => card.id || "").filter(Boolean),
+    selectedMonthKey,
+    householdId
+  );
 
   const cardDetails = useMemo(() => {
     if (!selectedAccountId) return null;
-
-    // Buscar conta atualizada diretamente do array de accounts
     const currentAccount = accounts.find(acc => acc.id === selectedAccountId);
     if (!currentAccount) return null;
-
-    // Para cartões de crédito, o limite usado deve considerar:
-    // 1. Saldo atual (account.balance) - que reflete transações pagas
-    // 2. Transações não pagas - que também consomem o limite
-    const paidDebt = typeof currentAccount.balance === 'number' ? currentAccount.balance : 0;
-    
-      // Adicionar transações não pagas deste cartão
-      // Excluir transações de pagamento de fatura (elas têm attachmentUrl e são da conta bancária)
-      const unpaidTransactions = transactions.filter((trans) => {
-        if (!trans.accountId || trans.accountId !== selectedAccountId) return false;
-        if (trans.type === TransactionType.TRANSFER || trans.type === TransactionType.ALLOCATION) return false;
-        if (trans.attachmentUrl) return false; // Excluir pagamentos de fatura
-        return trans.paid === false;
-      });
-    
-    // Calculate unpaid debt: EXPENSE increases debt, INCOME decreases debt
-    const unpaidAmount = unpaidTransactions.reduce((acc, trans) => {
-      const amount = trans.amount || 0;
-      if (trans.type === TransactionType.EXPENSE) {
-        return acc + Math.abs(amount); // Expenses increase debt
-      } else if (trans.type === TransactionType.INCOME) {
-        return acc - Math.abs(amount); // Income decreases debt
-      }
-      return acc;
-    }, 0);
-    
-    // Dívida total = saldo atual (transações pagas) + transações não pagas
-    // Garantir que totalDebt nunca seja negativo
-    const totalDebt = Math.max(0, paidDebt + unpaidAmount);
-    
-    const limit = currentAccount.totalLimit || currentAccount.creditLimit || 0;
-    const available = Math.max(0, limit - totalDebt);
-    // Garantir que a porcentagem de uso não seja negativa (caso de pagamento antecipado/crédito)
-    const usagePercent = limit > 0 ? Math.max(0, Math.min(100, (totalDebt / limit) * 100)) : 0;
-
-    return {
-      totalDebt,
-      limit,
-      available,
-      usagePercent,
-    };
-  }, [selectedAccountId, accounts, transactions]);
+    const { limit, used, available, usagePercent } = getCreditCardUsage(currentAccount);
+    return { totalDebt: used, limit, available, usagePercent };
+  }, [selectedAccountId, accounts]);
 
   const handleMonthChange = (month: Date) => setSelectedMonth(month);
 
@@ -606,7 +470,7 @@ const CreditCards = () => {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 space-y-6 dashboard-fade-in">
+    <div className="space-y-6 dashboard-fade-in">
       <PageHeader title={t.creditCards} description={t.creditCardsDescription}>
         <PageButton
           onClick={handleNewTransaction}
@@ -617,42 +481,22 @@ const CreditCards = () => {
         </PageButton>
       </PageHeader>
 
-      {/* Seletor de Cartões */}
-      <div className="flex overflow-x-auto pb-2 gap-4 scrollbar-hide">
+      {/* Seletor de Cartões: carrossel de cartões, como no app */}
+      <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-3 pt-1 scrollbar-hide sm:mx-0 sm:px-1">
         {creditCards.map((card) => (
-          <button
-            key={card.id}
-            onClick={() => setSelectedAccountId(card.id || null)}
-            className={`flex-shrink-0 w-[200px] flex items-center p-4 rounded-lg border transition-all ${
-              selectedAccountId === card.id
-                ? "border-primary-500 dark:border-primary-500 bg-white dark:bg-gray-900"
-                : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:opacity-80"
-            }`}
-          >
-            <div
-              className="p-2 rounded-lg mr-3"
-              style={{
-                backgroundColor: `${card.color || "#3b82f6"}20`,
-                color: card.color || "#3b82f6",
-              }}
-            >
-              <CreditCard className="h-5 w-5" />
-            </div>
-            <div className="text-left">
-              <div className="text-sm font-light text-gray-900 dark:text-white">
-                {card.name}
-              </div>
-              <div className="text-xs font-light text-gray-500 dark:text-gray-400">
-                {formatCurrency(
-                  creditCardsInvoices[card.id || ""] || 0,
-                  baseCurrency
-                )}
-              </div>
-              <div className="text-[10px] font-light text-gray-400 dark:text-gray-500 mt-0.5">
-                {t.invoice} {format(selectedMonth, "MMM", { locale: currentLocale })}
-              </div>
-            </div>
-          </button>
+          <div key={card.id} className="w-[220px] flex-shrink-0 snap-start">
+            <PaymentCard
+              compact
+              type={AccountType.CREDIT}
+              color={card.color}
+              selected={selectedAccountId === card.id}
+              onClick={() => setSelectedAccountId(card.id || null)}
+              className={selectedAccountId === card.id ? undefined : 'opacity-75 hover:opacity-100'}
+              title={card.name}
+              subtitle={`${t.invoice} ${format(selectedMonth, "MMM", { locale: currentLocale })}`}
+              amount={<MoneyText value={creditCardsInvoices[card.id || ""] || 0} currency={baseCurrency} className="text-white" />}
+            />
+          </div>
         ))}
 
         {/* Botão para Adicionar Novo Cartão */}
@@ -661,17 +505,12 @@ const CreditCards = () => {
             setEditingAccount(null);
             setIsAccountModalOpen(true);
           }}
-          className="flex-shrink-0 w-[200px] flex items-center p-4 rounded-lg border border-dashed border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:opacity-80 transition-opacity group"
+          className="group flex h-[120px] w-[220px] flex-shrink-0 snap-start flex-col items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-line text-content-tertiary transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand"
         >
-          <div className="p-2 rounded-lg mr-3 bg-gray-50 dark:bg-gray-900 text-gray-400 group-hover:text-primary-500 transition-colors">
-            <Plus className="h-5 w-5" />
-          </div>
-          <div className="text-left">
-            <div className="text-sm font-light text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">
-              {t.creditCard}
-            </div>
-            <div className="text-xs font-light text-gray-400 dark:text-gray-500">{t.newCreditCard}</div>
-          </div>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-sunken group-hover:bg-brand group-hover:text-white transition-colors">
+            <Plus className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="text-sm font-semibold">{t.newCreditCard}</span>
         </button>
       </div>
 
@@ -682,9 +521,9 @@ const CreditCards = () => {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Sidebar Stats (Limit Usage) - Agora primeiro no mobile (até 1280px) */}
           <div className="space-y-6 order-1 xl:order-2">
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
-                <h3 className="text-lg font-light tracking-tight text-gray-900 dark:text-white">
+            <div className="surface-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="card-title">
                   {t.limitUsage}
                 </h3>
                 <AccountActionsMenu
@@ -694,24 +533,34 @@ const CreditCards = () => {
                 />
               </div>
 
+              <PaymentCard
+                showChip
+                type={AccountType.CREDIT}
+                color={selectedAccount.color}
+                title={selectedAccount.name}
+                subtitle={t.invoice}
+                amount={<MoneyText value={invoiceStats.total} currency={baseCurrency} size="xl" className="text-white" />}
+                className="mb-6"
+              />
+
               <div className="space-y-6">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="font-medium text-gray-500 dark:text-gray-300">
+                    <span className="font-medium text-content-secondary">
                       {t.usedLimit}
                     </span>
-                    <span className="font-light text-gray-900 dark:text-white">
+                    <span className="font-rounded font-semibold tabular-nums text-content">
                       {cardDetails.usagePercent.toFixed(1)}%
                     </span>
                   </div>
-                  <div className="h-1 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-line rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         cardDetails.usagePercent > 90
-                          ? "bg-red-500"
+                          ? "bg-negative"
                           : cardDetails.usagePercent > 70
-                          ? "bg-yellow-500"
-                          : "bg-primary-500"
+                          ? "bg-[#F79009]"
+                          : "bg-brand"
                       }`}
                       style={{
                         width: `${Math.min(100, cardDetails.usagePercent)}%`,
@@ -721,42 +570,51 @@ const CreditCards = () => {
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                  <div className="p-4 border border-gray-100 dark:border-gray-800 rounded-lg">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-300 mb-2">
+                  <div className="p-4 rounded-xl bg-surface-sunken/70">
+                    <div className="text-xs font-medium text-content-secondary mb-2">
                       {t.availableLimit}
                     </div>
-                    <div className="text-sm font-light text-green-500">
+                    <div className="text-[15px] font-rounded font-semibold tabular-nums text-positive">
                       {formatCurrency(cardDetails.available, baseCurrency)}
                     </div>
                   </div>
-                  <div className="p-4 border border-gray-100 dark:border-gray-800 rounded-lg">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-300 mb-2">
+                  <div className="p-4 rounded-xl bg-surface-sunken/70">
+                    <div className="text-xs font-medium text-content-secondary mb-2">
                       {t.totalLimit}
                     </div>
-                    <div className="text-sm font-light text-gray-900 dark:text-white">
+                    <div className="text-[15px] font-rounded font-semibold tabular-nums text-content">
                       {formatCurrency(cardDetails.limit, baseCurrency)}
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                {!!selectedAccount.limitAdjustment && Math.round(selectedAccount.limitAdjustment * 100) !== 0 && (
+                  <p className="-mt-3 text-xs font-light text-content-tertiary">
+                    {t.limitAdjustmentNote.replace(
+                      '{{amount}}',
+                      formatCurrency(Math.abs(selectedAccount.limitAdjustment), baseCurrency),
+                    )}
+                  </p>
+                )}
+
+                <div className="pt-6 border-t border-line-subtle space-y-4">
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-300">
+                    <div className="flex items-center gap-2 text-sm font-medium text-content-secondary">
                       <Clock className="h-4 w-4" />
                       {t.dueDay}
                     </div>
-                    <span className="text-sm font-light text-gray-900 dark:text-white">
+                    <span className="text-[15px] font-semibold tabular-nums text-content">
                       {selectedAccount.dueDay || "--"}
                     </span>
                   </div>
 
                   {selectedAccount.closingDay && (
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-300">
+                      <div className="flex items-center gap-2 text-sm font-medium text-content-secondary">
                         <Calendar className="h-4 w-4" />
                         {t.closingDay}
                       </div>
-                      <span className="text-sm font-light text-gray-900 dark:text-white">
+                      <span className="text-[15px] font-semibold tabular-nums text-content">
                         {selectedAccount.closingDay}
                       </span>
                     </div>
@@ -764,11 +622,11 @@ const CreditCards = () => {
 
                   {selectedAccount.dueDay && (
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-300">
+                      <div className="flex items-center gap-2 text-sm font-medium text-content-secondary">
                         <CheckCircle2 className="h-4 w-4" />
                         {t.bestDayToBuy}
                       </div>
-                      <span className="text-sm font-light text-green-500">
+                      <span className="text-[15px] font-semibold tabular-nums text-positive">
                         {(() => {
                           const offset = selectedAccount.bestDayOffset ?? 10;
                           const baseDay = selectedAccount.closingDay ?? selectedAccount.dueDay ?? 1;
@@ -781,22 +639,22 @@ const CreditCards = () => {
                 </div>
 
                 {/* Botão de Pagamento agora dentro do card */}
-                <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                <div className="pt-6 border-t border-line-subtle">
                   {invoiceStats.isPaid ? (
                     <button
                       onClick={() => setIsUndoModalOpen(true)}
-                      className="w-full py-2.5 px-6 text-sm font-light tracking-tight text-red-500 border border-red-300 dark:border-red-700 rounded-md hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+                      className={buttonClasses({ variant: 'tertiary', fullWidth: true }) + ' !text-negative'}
                     >
-                      <AlertCircle className="h-5 w-5" />
+                      <AlertCircle className="h-[18px] w-[18px]" aria-hidden="true" />
                       {t.undoInvoicePayment}
                     </button>
                   ) : (
                     <button
                       onClick={handlePayInvoiceClick}
                       disabled={invoiceStats.total <= 0}
-                      className="w-full py-2.5 px-6 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className={buttonClasses({ variant: 'primary', fullWidth: true })}
                     >
-                      <CheckCircle2 className="h-5 w-5" />
+                      <CheckCircle2 className="h-[18px] w-[18px]" aria-hidden="true" />
                       {t.payInvoice}
                     </button>
                   )}
@@ -807,61 +665,80 @@ const CreditCards = () => {
 
           {/* Card Summary (Lista de Transações) - Segundo no mobile (até 1280px) */}
           <div className="xl:col-span-2 space-y-6 order-2 xl:order-1">
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden">
-              <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                      <Calendar className="h-5 w-5" />
-                      <span className="font-light capitalize text-lg">
-                        {format(selectedMonth, "MMMM yyyy", {
-                          locale: currentLocale,
-                        })}
-                      </span>
-                    </div>
-                    {selectedAccount.dueDay && (
-                      <span className="text-xs text-primary-600 dark:text-primary-400 font-light mt-1">
-                        {t.bestDayToBuy}:{" "}
-                        {(() => {
-                          const offset = selectedAccount.bestDayOffset ?? 10;
-                          const baseDay = selectedAccount.closingDay ?? selectedAccount.dueDay ?? 1;
-                          const result = baseDay - offset;
-                          return result <= 0 ? 30 + result : result;
-                        })()}
-                      </span>
-                    )}
-                  </div>
+            <div className="surface-card overflow-hidden">
+              <div className="p-5 sm:p-6 border-b border-line-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col gap-2">
                   <MonthNavigator
                     selectedMonth={selectedMonth}
                     onMonthChange={handleMonthChange}
                     locale={locale}
                   />
+                  {selectedAccount.dueDay && (
+                    <span className="ps-1 text-xs font-medium text-brand">
+                      {t.bestDayToBuy}:{" "}
+                      {(() => {
+                        const offset = selectedAccount.bestDayOffset ?? 10;
+                        const baseDay = selectedAccount.closingDay ?? selectedAccount.dueDay ?? 1;
+                        const result = baseDay - offset;
+                        return result <= 0 ? 30 + result : result;
+                      })()}
+                    </span>
+                  )}
                 </div>
 
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-300">
+                <div className="sm:text-end">
+                  <div className="text-sm font-medium text-content-secondary">
                     {t.invoice} (
                     {format(selectedMonth, "MMMM", { locale: currentLocale })})
                   </div>
-                  <div className="text-2xl font-light tracking-tight text-gray-900 dark:text-white">
+                  <div className="text-2xl font-rounded font-semibold tabular-nums text-content">
                     {formatCurrency(invoiceStats.total, baseCurrency)}
                   </div>
-                  <div className="text-[10px] font-light text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                  {/* What this month alone added, without the carried-over balance (fdbk #176) */}
+                  {invoiceStats.previousBalance !== 0 && (
+                    <div className="text-xs text-content-secondary">
+                      {t.invoiceMonthSpend}:{" "}
+                      <span className="font-rounded font-semibold tabular-nums text-content">
+                        {formatCurrency(invoiceStats.expenses, baseCurrency)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="text-xs text-content-tertiary">
                     {t.dueDay} {selectedAccount.dueDay}/
-                    {format(addMonths(selectedMonth, 1), "MM")}
+                    {/* The invoice month is the month it closes in: due later that month, or in the next one. */}
+                    {format(
+                      addMonths(
+                        selectedMonth,
+                        selectedAccount.closingDay && selectedAccount.dueDay && selectedAccount.dueDay > selectedAccount.closingDay ? 0 : 1
+                      ),
+                      "MM"
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-light text-gray-500 dark:text-gray-400">
+                  <h3 className="text-[13px] font-semibold text-content-secondary">
                     {t.creditCardTransactions}
                   </h3>
-                  <span className="text-xs text-gray-500">
-                    {invoiceTransactions.length} {t.items}
+                  <span className="text-xs text-content-tertiary">
+                    {invoiceSearch.trim()
+                      ? `${visibleInvoiceTransactions.length} / ${invoiceTransactions.length}`
+                      : invoiceTransactions.length}{" "}
+                    {t.items}
                   </span>
                 </div>
+
+                {invoiceTransactions.length > 0 && (
+                  <TransactionSearchBar
+                    value={invoiceSearch}
+                    onChange={setInvoiceSearch}
+                    placeholder={t.invoiceSearchPlaceholder}
+                    debounceMs={150}
+                    className="mb-2"
+                  />
+                )}
 
                 <div className="space-y-4">
                   {invoiceLoading ? (
@@ -882,15 +759,15 @@ const CreditCards = () => {
                   ) : (
                     <>
                       {/* Saldo Anterior */}
-                      {invoiceStats.previousBalance !== 0 && (
-                        <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800">
+                      {invoiceStats.previousBalance !== 0 && !invoiceSearch.trim() && (
+                        <div className="flex items-center justify-between py-3 border-b border-line-subtle">
                           <div className="flex items-center gap-3">
-                            <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                            <Clock className="h-4 w-4 text-content-tertiary" />
                             <div>
-                              <div className="text-sm font-light text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                              <div className="text-[15px] text-content-secondary flex items-center gap-1.5">
                                 {t.previousBalance}
                                 <span
-                                  className="inline-flex text-gray-400 dark:text-gray-500 cursor-help"
+                                  className="inline-flex text-content-tertiary cursor-help"
                                   title={t.previousBalanceTooltip}
                                   aria-label={t.previousBalanceTooltip}
                                 >
@@ -899,7 +776,7 @@ const CreditCards = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="text-sm font-light text-gray-900 dark:text-white">
+                          <div className="font-rounded text-[15px] font-semibold tabular-nums text-content">
                             {formatCurrency(
                               invoiceStats.previousBalance,
                               baseCurrency
@@ -910,26 +787,31 @@ const CreditCards = () => {
 
                       {invoiceTransactions.length === 0 &&
                       invoiceStats.previousBalance === 0 ? (
-                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <div className="text-center py-8 text-content-tertiary">
                           {t.noInvoiceTransactions}
                         </div>
                       ) : (
                         <>
-                          {invoiceTransactions.map((t_item: Transaction) => {
+                          {invoiceSearch.trim() && visibleInvoiceTransactions.length === 0 && (
+                            <div className="text-center py-8 text-content-tertiary">
+                              {t.invoiceSearchNoResults}
+                            </div>
+                          )}
+                          {visibleInvoiceTransactions.map((t_item: Transaction) => {
                       // Identificar transação de pagamento de fatura
                       // Verificar se tem attachmentUrl que indica pagamento
                       const isPayment = !!t_item.attachmentUrl && t_item.attachmentUrl.startsWith('invoice_pay:');
                       return (
                         <div
                           key={t_item.id}
-                          className="flex items-center justify-between group hover:bg-gray-50/50 dark:hover:bg-gray-900/50 p-3 xl:p-2 -mx-2 transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0"
+                          className="flex items-center justify-between gap-3 group rounded-lg px-2 py-3 -mx-2 transition-colors hover:bg-surface-sunken/70 border-b border-line-subtle last:border-0"
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="min-w-0 flex-1">
-                              <div className="text-sm font-light text-gray-900 dark:text-white truncate mb-1">
+                              <div className="text-[15px] font-medium text-content truncate mb-0.5">
                                 {t_item.description}
                               </div>
-                              <div className="text-xs font-light text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                              <div className="text-[13px] text-content-secondary flex items-center gap-2">
                                 {(() => {
                                   try {
                                     const transactionDate = t_item.date instanceof Date ? t_item.date : parseDateFromAPI(String(t_item.date));
@@ -941,7 +823,7 @@ const CreditCards = () => {
                                 })()} •{" "}
                                 {t_item.category}
                                 {t_item.installmentNumber && (
-                                  <span className="text-gray-400 dark:text-gray-500">
+                                  <span className="text-content-tertiary">
                                     {t_item.installmentNumber}/{t_item.totalInstallments}
                                   </span>
                                 )}
@@ -950,10 +832,10 @@ const CreditCards = () => {
                           </div>
                           <div className="flex items-center gap-1 xl:gap-2 ml-4">
                             <div
-                              className={`text-base font-light whitespace-nowrap ${
+                              className={`font-rounded text-[15px] font-semibold tabular-nums whitespace-nowrap ${
                                 isPayment
-                                  ? "text-green-500"
-                                  : "text-red-500"
+                                  ? "text-positive"
+                                  : "text-negative"
                               }`}
                             >
                               {isPayment ? "-" : ""}
@@ -980,34 +862,6 @@ const CreditCards = () => {
                         </div>
                       );
                     })}
-
-                    {/* Load More Button */}
-                    {invoicePagination?.hasMore && (
-                      <div className="mt-6 text-center">
-                        <PageButton
-                          onClick={async () => {
-                            if (invoicePagination.nextCursor && selectedAccountId) {
-                              await loadMoreInvoiceMutation.mutateAsync({
-                                accountId: selectedAccountId,
-                                month: selectedMonthKey,
-                                householdId,
-                                limit: 25,
-                                cursor: invoicePagination.nextCursor,
-                              });
-                            }
-                          }}
-                          variant="secondary"
-                          disabled={loadMoreInvoiceMutation.isPending}
-                        >
-                          {loadMoreInvoiceMutation.isPending ? t.loading : "Carregar mais"}
-                        </PageButton>
-                        {invoicePagination.total && (
-                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            Mostrando {invoiceTransactions.length} de {invoicePagination.total} transações
-                          </p>
-                        )}
-                      </div>
-                    )}
                       </>
                     )}
                     </>
@@ -1022,19 +876,19 @@ const CreditCards = () => {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Sidebar Stats skeleton */}
           <div className="space-y-6 order-1 xl:order-2">
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-6 animate-pulse">
+            <div className="surface-card p-6 animate-pulse">
               <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-6"></div>
               <div className="space-y-6">
                 <div>
                   <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
                   <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-line-subtle">
+                  <div className="p-4 rounded-lg bg-surface-sunken">
                     <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-2"></div>
                     <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
                   </div>
-                  <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                  <div className="p-4 rounded-lg bg-surface-sunken">
                     <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-2"></div>
                     <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
                   </div>
@@ -1045,8 +899,8 @@ const CreditCards = () => {
 
           {/* Lista de transações skeleton */}
           <div className="xl:col-span-2 space-y-6 order-2 xl:order-1">
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden">
-              <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+            <div className="surface-card overflow-hidden">
+              <div className="p-6 border-b border-line-subtle">
                 <div className="flex items-center gap-4">
                   <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
                   <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
@@ -1081,18 +935,18 @@ const CreditCards = () => {
       {isPayModalOpen && createPortal(
         <div className="fixed inset-0 z-[60] overflow-y-auto">
           <div
-            className="fixed inset-0 bg-black/40 transition-opacity"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop"
             onClick={() => setIsPayModalOpen(false)}
             aria-hidden="true"
           />
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full sm:w-96 max-w-md p-6 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800">
-              <h3 className="text-xl font-light tracking-tight text-gray-900 dark:text-white mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
+            <div className="relative w-full sm:w-96 max-w-md p-6 bg-surface-elevated rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
+              <h3 className="font-rounded text-lg font-semibold text-content mb-4 pb-4 border-b border-line-subtle">
                 {t.payInvoice}
               </h3>
-              <p className="text-sm font-light text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-sm font-light text-content-secondary mb-6">
                 {t.payInvoiceDescription}{" "}
-                <span className="font-light text-gray-900 dark:text-white">
+                <span className="font-light text-content">
                   {formatCurrency(invoiceStats.total, baseCurrency)}
                 </span>
                 .
@@ -1100,7 +954,7 @@ const CreditCards = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                  <label className="block text-sm font-light text-content-tertiary mb-2">
                     {t.paymentAccount}
                   </label>
                   <SelectCombobox
@@ -1120,7 +974,7 @@ const CreditCards = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                  <label className="block text-sm font-light text-content-tertiary mb-2">
                     {t.amount}
                   </label>
                   <div className="relative">
@@ -1141,25 +995,25 @@ const CreditCards = () => {
                         invoiceStats.total,
                         baseCurrency
                       )}
-                      className="block w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 sm:text-sm font-light tracking-tight"
+                      className="field-control"
                     />
                   </div>
-                  <p className="mt-1 text-[10px] font-light text-gray-400 dark:text-gray-500">
+                  <p className="mt-1 text-[10px] font-light text-content-tertiary">
                     {t.paymentAmountHint}
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <div className="flex flex-col gap-3 pt-6 border-t border-line-subtle">
                   <button
                     onClick={handlePayInvoice}
                     disabled={!paymentSourceAccountId || paymentAmount <= 0}
-                    className="w-full px-4 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed order-1"
+                    className="w-full px-4 py-2.5 text-sm font-light tracking-tight text-white bg-brand-fill border border-brand rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed order-1"
                   >
                     {t.confirmInvoicePayment}
                   </button>
                   <button
                     onClick={() => setIsPayModalOpen(false)}
-                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity order-2"
+                    className="w-full px-4 py-2.5 border border-line-subtle rounded-md text-sm font-light tracking-tight text-content bg-surface-elevated hover:opacity-70 transition-opacity order-2"
                   >
                     {t.cancel}
                   </button>
@@ -1174,12 +1028,12 @@ const CreditCards = () => {
       {/* Modal de Desfazer Pagamento */}
       {isUndoModalOpen && createPortal(
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg w-full max-w-md p-6">
-            <div className="flex items-center gap-3 text-red-500 mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+          <div className="bg-surface-elevated border border-line-subtle rounded-lg w-full max-w-md p-6">
+            <div className="flex items-center gap-3 text-negative mb-6 pb-6 border-b border-line-subtle">
               <AlertCircle className="h-6 w-6" />
-              <h3 className="text-xl font-light tracking-tight text-gray-900 dark:text-white">{t.undoInvoicePayment}</h3>
+              <h3 className="font-rounded text-lg font-semibold text-content">{t.undoInvoicePayment}</h3>
             </div>
-            <p className="text-sm font-light text-gray-600 dark:text-gray-400 mb-8">
+            <p className="text-sm font-light text-content-secondary mb-8">
               {t.undoInvoicePaymentDescription}
             </p>
 
@@ -1192,7 +1046,7 @@ const CreditCards = () => {
               </button>
               <button
                 onClick={() => setIsUndoModalOpen(false)}
-                className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-md text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:opacity-70 transition-opacity order-2"
+                className="w-full px-4 py-2.5 border border-line-subtle rounded-md text-sm font-light tracking-tight text-content bg-surface-elevated hover:opacity-70 transition-opacity order-2"
               >
                 {t.cancel}
               </button>

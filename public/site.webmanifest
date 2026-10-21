@@ -4,8 +4,8 @@
   "description": "Controle suas finanças em um só lugar. Gerencie contas, cartões, orçamentos e metas de economia.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#3b82f6",
+  "background_color": "#F6F3EC",
+  "theme_color": "#5B3DF5",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [

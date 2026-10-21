@@ -38,17 +38,17 @@ export const OnboardingStep7Budgets = ({
         <h3 
           ref={stepHeadingRef}
           tabIndex={-1}
-          className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 focus:outline-none"
+          className="text-xl font-semibold text-content mb-2 focus:outline-none"
         >
           {t.onboardingStep7Title}
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4 animate-fade-in-up animate-delay-100">
+        <p className="text-content-secondary mb-4 animate-fade-in-up animate-delay-100">
           {t.onboardingStep7Description}
         </p>
         
         {/* Mostrar orçamentos existentes */}
         {hasExistingBudgets && (
-          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="mb-6 p-4 bg-info/10 border border-info/25 rounded-lg">
             <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-3">
               {t.youAlreadyHaveBudgets}
             </p>
@@ -75,7 +75,7 @@ export const OnboardingStep7Budgets = ({
         
         <div className="space-y-4">
           <div className="animate-fade-in-up animate-delay-200">
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="category" className="block text-sm font-medium text-content-secondary mb-2">
               {t.categoryLabel}
             </label>
             <SelectCombobox
@@ -86,14 +86,14 @@ export const OnboardingStep7Budgets = ({
               searchable={true}
             />
             {budgetForm.formState.errors.category && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
+              <p className="mt-2 text-sm text-negative" role="alert">
                 {budgetForm.formState.errors.category.message}
               </p>
             )}
           </div>
           
           <div className="animate-fade-in-up animate-delay-300">
-            <label htmlFor="budgetAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="budgetAmount" className="block text-sm font-medium text-content-secondary mb-2">
               {t.budgetAmountLabel}
             </label>
             <input
@@ -106,8 +106,8 @@ export const OnboardingStep7Budgets = ({
                 budgetForm.setValue('amount', numericValue, { shouldValidate: true });
               }}
               placeholder="0,00"
-              className={`block w-full px-4 py-3 border rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 hover:shadow-md ${
-                budgetForm.formState.errors.amount ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+              className={`block w-full px-4 py-3 border rounded-lg shadow-sm bg-surface-elevated text-content focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 hover:shadow-md ${
+                budgetForm.formState.errors.amount ? 'border-negative/60' : 'border-line'
               }`}
             />
             <input
@@ -115,7 +115,7 @@ export const OnboardingStep7Budgets = ({
               {...budgetForm.register('amount', { valueAsNumber: true })}
             />
             {budgetForm.formState.errors.amount && (
-              <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
+              <p className="mt-2 text-sm text-negative" role="alert">
                 {budgetForm.formState.errors.amount.message}
               </p>
             )}

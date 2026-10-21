@@ -92,25 +92,25 @@ export function CreateHouseholdModal({ isOpen, onClose }: CreateHouseholdModalPr
     <div className="fixed inset-0 z-[60] overflow-y-auto" onClick={handleBackdropClick}>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/40 animate-fade-in transition-opacity duration-300 ease-out" 
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop" 
             aria-hidden="true"
           />
 
           {/* Scrollable Container */}
-          <div className="flex min-h-full items-center justify-center p-4">
+          <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
             {/* Modal Card */}
             <div 
-              className="relative w-full sm:w-[500px] max-w-lg p-6 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 animate-slide-in-bottom"
+              className="relative w-full sm:w-[500px] max-w-lg p-6 bg-surface-elevated rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
-                <h3 className="text-lg font-light tracking-tight text-gray-900 dark:text-white">
+              <div className="flex items-center justify-between mb-6 pb-6 border-b border-line-subtle">
+                <h3 className="font-rounded text-lg font-semibold text-content">
                   {t.createSharedHousehold}
                 </h3>
                 <button
                   onClick={onClose}
-                  className="text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1"
+                  className="text-content-tertiary hover:opacity-70 transition-opacity p-1"
                   aria-label="Fechar modal"
                 >
                   <X className="h-5 w-5" aria-hidden="true" />
@@ -120,40 +120,40 @@ export function CreateHouseholdModal({ isOpen, onClose }: CreateHouseholdModalPr
               {/* Content */}
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-light text-gray-500 dark:text-gray-400 mb-2">
+                  <label htmlFor="name" className="block text-sm font-light text-content-tertiary mb-2">
                     {t.householdNameLabel}
                   </label>
                   <input
                     {...register('name')}
                     type="text"
                     id="name"
-                    className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 dark:focus:border-primary-500 font-light tracking-tight"
+                    className="w-full px-3 py-2.5 border border-line-subtle rounded-lg bg-surface-elevated text-content focus:outline-none focus:border-brand font-light tracking-tight"
                     placeholder={t.householdNamePlaceholder}
                     autoFocus
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm font-light text-red-500 dark:text-red-400">{errors.name.message}</p>
+                    <p className="mt-1 text-sm font-light text-negative">{errors.name.message}</p>
                   )}
                 </div>
 
-                <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                  <p className="text-sm font-light text-blue-600 dark:text-blue-400">
+                <div className="border border-info/25 rounded-lg p-3">
+                  <p className="text-sm font-light text-info">
                     {t.youCanInviteAnotherPerson}
                   </p>
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <div className="flex justify-end space-x-3 pt-6 border-t border-line-subtle">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2.5 text-sm font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg hover:opacity-70 transition-opacity"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-surface-elevated text-content border border-line hover:bg-surface-sunken"
                   >
                     {t.cancel}
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-4 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-lg hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-2 h-11 px-5 text-[15px] font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-brand-fill text-white hover:bg-brand-fill-hover"
                   >
                     {isSubmitting ? t.creating : t.create}
                   </button>

@@ -10,3 +10,5 @@ export { AccountField } from './AccountField';
 export { TransactionFilters } from './TransactionFilters';
 export { TransactionList } from './TransactionList';
 export { TransactionItem } from './TransactionItem';
+export { ProjectedTransactionItem } from './ProjectedTransactionItem';
+export { ProjectedTransactionModal } from './ProjectedTransactionModal';

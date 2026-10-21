@@ -76,14 +76,14 @@ export const CalendarGrid = ({
               ${
                 isDisabled
                   ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer'
+                  : 'hover:bg-surface-sunken cursor-pointer'
               }
               ${
                 isSelected
                   ? 'bg-primary-600 text-white hover:bg-primary-700'
                   : isCurrentMonth
-                  ? 'text-gray-900 dark:text-gray-100'
-                  : 'text-gray-400 dark:text-gray-500'
+                  ? 'text-content'
+                  : 'text-content-tertiary'
               }
               ${isTodayDate && !isSelected ? 'ring-2 ring-primary-500' : ''}
             `}

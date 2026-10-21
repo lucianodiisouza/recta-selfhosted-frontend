@@ -24,16 +24,16 @@ export const OnboardingStep3CountryCurrency = ({
   return (
     <form className="space-y-6">
       <div className="animate-fade-in-up">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        <h3 className="text-xl font-semibold text-content mb-2">
           {t.onboardingStep3Title}
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4 animate-fade-in-up animate-delay-100">
+        <p className="text-content-secondary mb-4 animate-fade-in-up animate-delay-100">
           {t.onboardingStep3Description}
         </p>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-content-secondary mb-2">
               {t.countryLabel}
             </label>
             <div className="animate-fade-in-up animate-delay-200">
@@ -45,7 +45,7 @@ export const OnboardingStep3CountryCurrency = ({
                 searchable={true}
               />
               {errors?.country && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
+                <p className="mt-2 text-sm text-negative" role="alert">
                   {errors.country.message}
                 </p>
               )}
@@ -53,7 +53,7 @@ export const OnboardingStep3CountryCurrency = ({
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-content-secondary mb-2">
               {t.currencyLabel}
             </label>
             <div className="animate-fade-in-up animate-delay-300">
@@ -65,7 +65,7 @@ export const OnboardingStep3CountryCurrency = ({
                 searchable={true}
               />
               {errors?.currency && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
+                <p className="mt-2 text-sm text-negative" role="alert">
                   {errors.currency.message}
                 </p>
               )}

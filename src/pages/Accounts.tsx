@@ -1,10 +1,11 @@
+import { MoneyText } from '../components/ui';
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTransactions } from "../context/TransactionsContext";
 import { useCurrency } from "../context/CurrencyContext";
 import { useI18n } from "../context/I18nContext";
 import { useCommandMenu } from "../context/CommandMenuContext";
-import { formatCurrency, parseDateFromAPI } from "../utils/format";
+import { parseDateFromAPI } from "../utils/format";
 import { useTransactions as useTransactionsQuery, useLoadMoreTransactions } from "../hooks/api/useTransactions";
 import { useDefaultHousehold } from "../hooks/useDefaultHousehold";
 import { useAuthUser } from "../hooks/api/useAuth";
@@ -12,7 +13,6 @@ import { useHouseholdMembers } from "../hooks/api/useHouseholds";
 import {
   Plus,
   Wallet,
-  Calendar,
   Info,
   X,
   Circle,
@@ -51,15 +51,6 @@ import { AccountsSkeleton } from "../components/PageSkeletons";
 import { getAccountBalance } from "../utils/accountBalance";
 import TransactionModal from "../components/TransactionModal";
 import ConfirmModal from "../components/ConfirmModal";
-import { format } from "date-fns";
-import { ptBR as ptBRLocale } from "date-fns/locale/pt-BR";
-import { enUS as enUSLocale } from "date-fns/locale/en-US";
-import { es as esLocale } from "date-fns/locale/es";
-import { fr as frLocale } from "date-fns/locale/fr";
-import { ru as ruLocale } from "date-fns/locale/ru";
-import { ja as jaLocale } from "date-fns/locale/ja";
-import { zhCN as zhCNLocale } from "date-fns/locale/zh-CN";
-import { arSA as arSALocale } from "date-fns/locale/ar-SA";
 import { CategoryName, getCategoryDisplayName, TransactionType, getCategoryIconName } from "../lib/enums";
 import { EmptyState } from "../components/EmptyState";
 import type React from "react";
@@ -116,27 +107,6 @@ const Accounts = () => {
     mode: "allocate",
   });
   const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
-
-  const currentLocale = useMemo(() => {
-    switch (locale) {
-      case "pt-BR":
-        return ptBRLocale;
-      case "es-ES":
-        return esLocale;
-      case "fr-FR":
-        return frLocale;
-      case "ru-RU":
-        return ruLocale;
-      case "ja-JP":
-        return jaLocale;
-      case "zh-CN":
-        return zhCNLocale;
-      case "ar-SA":
-        return arSALocale;
-      default:
-        return enUSLocale;
-    }
-  }, [locale]);
 
   // Selecionar a primeira conta se nenhuma estiver selecionada
   useEffect(() => {
@@ -653,7 +623,7 @@ const Accounts = () => {
     : null;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 space-y-6 dashboard-fade-in">
+    <div className="space-y-6 dashboard-fade-in">
       <PageHeader
         title={t.accounts}
         description={
@@ -662,7 +632,7 @@ const Accounts = () => {
             {' '}
             <button
               onClick={() => setIsHelpModalOpen(true)}
-              className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-500 hover:opacity-70 transition-opacity text-xs font-light"
+              className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand-soft text-brand-on-soft hover:bg-brand/15 transition-colors text-xs font-semibold"
               aria-label={t.accountsHelperTitle || "Novidades"}
             >
               ?
@@ -696,17 +666,11 @@ const Accounts = () => {
       />
 
       {/* Resumo Consolidado */}
-      <div className="border-b border-gray-100 dark:border-gray-800 pb-6">
-        <div className="text-sm font-medium text-gray-500 dark:text-gray-300 mb-2">
+      <div>
+        <div className="text-[15px] text-content-secondary mb-1">
           {t.totalAvailableBalance}
         </div>
-        <div
-          className={`text-3xl font-light tracking-tight ${
-            totalBalance >= 0 ? "text-green-500" : "text-red-500"
-          }`}
-        >
-          {formatCurrency(totalBalance, baseCurrency)}
-        </div>
+        <MoneyText value={totalBalance} currency={baseCurrency} size="display" />
       </div>
 
       {selectedAccount && selectedAccountBalance ? (
@@ -747,34 +711,22 @@ const Accounts = () => {
 
           {/* Lista de Transações */}
           <div className="xl:col-span-2 space-y-6 order-2 xl:order-1">
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden">
-              <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                      <Calendar className="h-5 w-5" />
-                      <span className="font-light capitalize text-lg">
-                        {format(selectedMonth, "MMMM yyyy", {
-                          locale: currentLocale,
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                  <MonthNavigator
-                    selectedMonth={selectedMonth}
-                    onMonthChange={handleMonthChange}
-                    locale={locale}
-                  />
-                </div>
+            <div>
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <h2 className="font-rounded text-xl font-semibold text-content">
+                  {t.transactions}
+                </h2>
+                <MonthNavigator
+                  selectedMonth={selectedMonth}
+                  onMonthChange={handleMonthChange}
+                  locale={locale}
+                />
               </div>
 
-              <div className="p-6">
+              <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-light text-gray-500 dark:text-gray-400">
-                    {t.transactions}
-                  </h3>
                   {transactionsData?.pagination?.total && (
-                    <span className="text-xs text-gray-500">
+                    <span className="ms-auto text-xs text-content-tertiary">
                       {transactions.length} {t.items} / {transactionsData.pagination.total}
                     </span>
                   )}
@@ -834,7 +786,7 @@ const Accounts = () => {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Sidebar Stats skeleton */}
           <div className="space-y-6 order-1 xl:order-2">
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg p-6 animate-pulse">
+            <div className="surface-card p-6 animate-pulse">
               <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-6"></div>
               <div className="space-y-6">
                 <div>
@@ -847,8 +799,8 @@ const Accounts = () => {
 
           {/* Lista de transações skeleton */}
           <div className="xl:col-span-2 space-y-6 order-2 xl:order-1">
-            <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden">
-              <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+            <div className="surface-card overflow-hidden">
+              <div className="p-6 border-b border-line-subtle">
                 <div className="flex items-center gap-4">
                   <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
                   <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
@@ -945,22 +897,22 @@ const Accounts = () => {
       {isHelpModalOpen && createPortal(
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div
-            className="fixed inset-0 bg-black/60 animate-fade-in transition-opacity duration-300 ease-out"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop"
             onClick={handleCloseHelpModal}
             aria-hidden="true"
           />
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative w-full sm:w-96 max-w-md p-4 sm:p-5 border rounded-lg bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 max-h-[90vh] overflow-y-auto animate-slide-in-bottom">
-              <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
+            <div className="relative w-full sm:w-96 max-w-md p-4 sm:p-5 bg-surface-elevated max-h-[90vh] overflow-y-auto rounded-t-[28px] sm:rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
+              <div className="flex items-center justify-between mb-6 pb-6 border-b border-line-subtle">
                 <div className="flex items-center gap-2">
-                  <Info className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-                  <h3 className="text-lg font-light tracking-tight text-gray-900 dark:text-white">
+                  <Info className="h-5 w-5 text-info" />
+                  <h3 className="font-rounded text-lg font-semibold text-content">
                     {t.accountsHelperTitle || "Novidades na Tela de Contas"}
                   </h3>
                 </div>
                 <button
                   onClick={handleCloseHelpModal}
-                  className="text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1"
+                  className="text-content-tertiary hover:opacity-70 transition-opacity p-1"
                   aria-label={t.close}
                 >
                   <X className="h-5 w-5" />
@@ -968,9 +920,9 @@ const Accounts = () => {
               </div>
 
               <div className="space-y-4">
-                <div className="space-y-3 text-sm font-light text-gray-600 dark:text-gray-400">
+                <div className="space-y-3 text-sm font-light text-content-secondary">
                   <p>
-                    <strong className="font-medium text-gray-900 dark:text-white">
+                    <strong className="font-medium text-content">
                       {t.accountsHelper1 || "Nova interface similar aos cartões de crédito!"}
                     </strong>
                   </p>
@@ -994,13 +946,13 @@ const Accounts = () => {
                       {t.accountsHelper7 || "Navegação por mês para visualizar histórico"}
                     </li>
                   </ul>
-                  <p className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                  <p className="pt-2 border-t border-line-subtle">
                     {t.accountsHelper8 || "Tudo isso para facilitar o gerenciamento das suas finanças!"}
                   </p>
                 </div>
                 <button
                   onClick={handleCloseHelpModal}
-                  className="w-full px-4 py-2.5 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity"
+                  className="w-full px-4 py-2.5 text-sm font-light tracking-tight text-white bg-brand-fill border border-brand rounded-md hover:opacity-80 transition-opacity"
                 >
                   {t.close}
                 </button>

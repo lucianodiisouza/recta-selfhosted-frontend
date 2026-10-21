@@ -32,7 +32,7 @@ export const TransferFormFields = ({
   return (
     <>
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.fromAccount}
         </label>
         <Controller
@@ -61,12 +61,12 @@ export const TransferFormFields = ({
           )}
         />
         {errors.fromAccountId && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.fromAccountId.message}</p>
+          <p className="mt-1 text-sm text-negative">{errors.fromAccountId.message}</p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {t.toAccount}
         </label>
         <Controller
@@ -95,7 +95,7 @@ export const TransferFormFields = ({
           )}
         />
         {errors.toAccountId && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.toAccountId.message}</p>
+          <p className="mt-1 text-sm text-negative">{errors.toAccountId.message}</p>
         )}
       </div>
     </>

@@ -58,6 +58,8 @@ import { useCategories } from '../hooks/api/useCategories';
 
 // Import parseDateFromAPI and formatDateForAPI from utils
 import { parseDateFromAPI, formatDateForAPI } from '../utils/format';
+import { apiClient } from '../utils/api';
+import { parseLimitAdjustment } from '../utils/creditCardLimit';
 
 const TransactionsContext = createContext<TransactionsContextType>({} as TransactionsContextType);
 
@@ -227,6 +229,7 @@ const convertAccountFromBackend = (a: BackendAccount): Account => {
         ? Number(a.creditLimit)
         : undefined,
     availableLimit: (a.availableLimit !== null && a.availableLimit !== undefined) ? Number(a.availableLimit) : undefined,
+    limitAdjustment: parseLimitAdjustment(a.limitAdjustment),
     dueDay: a.dueDay,
     closingDay: a.closingDay,
     bestDayOffset: a.bestDayOffset,
@@ -307,7 +310,7 @@ const convertSavingsGoalFromBackend = (g: BackendSavingsGoal): SavingsGoal => {
     name: g.name,
     targetAmount: Number(g.targetAmount),
     currentAmount: Number(g.currentAmount),
-    targetDate: g.targetDate ? new Date(g.targetDate) : undefined,
+    targetDate: g.targetDate ? parseDateFromAPI(g.targetDate) : undefined,
     accountId: g.accountId,
   };
 };
@@ -861,7 +864,11 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
       return;
     }
 
-    const installmentAmount = transaction.amount / installments;
+    // Each installment is rounded to cents and the leftover cents go on the first one,
+    // so the parts add up to the purchase total exactly (same rule as the mobile apps).
+    const round2 = (v: number) => Math.round(v * 100) / 100;
+    const installmentAmount = round2(transaction.amount / installments);
+    const firstInstallmentAmount = round2(transaction.amount - installmentAmount * (installments - 1));
     const installmentId = Date.now().toString();
 
     // Detect if the purchase is on a credit card — installments on a credit
@@ -872,25 +879,14 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
     const isCreditCardInstallment =
       !!linkedAccount && linkedAccount.type === AccountType.CREDIT;
 
-    // For credit cards, the purchase date and the first-invoice month can
-    // differ. If the user buys on or after closingDay, the purchase lands in
-    // the NEXT month's invoice — so the first installment must be pushed one
-    // month forward to avoid two installments falling in the same calendar
-    // month (the bug reported on Reddit).
+    // The first installment keeps the purchase date. The backend already assigns each
+    // installment to its invoice by the card's closing day; pushing the date here as well
+    // moved purchases made on or after the closing day two invoices ahead.
     const purchaseDate = new Date(transaction.date);
-    let firstInstallmentAnchor = purchaseDate;
-    if (
-      isCreditCardInstallment &&
-      linkedAccount.closingDay !== undefined &&
-      linkedAccount.closingDay !== null &&
-      purchaseDate.getDate() >= linkedAccount.closingDay
-    ) {
-      firstInstallmentAnchor = addMonths(purchaseDate, 1);
-    }
 
     const transactionsToCreate = [];
     for (let i = 0; i < installments; i++) {
-      const installmentDate = addMonths(firstInstallmentAnchor, i);
+      const installmentDate = addMonths(purchaseDate, i);
       const catName = (toCategoryName(transaction.category, t as unknown as Record<string, string>, custom as CustomCategoryInfo[] | undefined) || CategoryName.OTHER_EXPENSES) as CategoryName;
       const accountId = transaction.accountId || accounts[0]?.id;
       if (!accountId) {
@@ -898,7 +894,7 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
       }
       transactionsToCreate.push({
         description: transaction.description,
-        amount: installmentAmount,
+        amount: i === 0 ? firstInstallmentAmount : installmentAmount,
         categoryName: catName,
         accountId,
         date: formatDateForAPI(installmentDate),
@@ -960,10 +956,31 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
     }
   }, [householdId, currentUser, recurringTransactions, transactions, executeRecurringTransaction]);
 
-  // Export to CSV
-  const exportToCSV = useCallback((): void => {
+  // Export to CSV. With filters, pages through every matching transaction on the
+  // backend (the screen only holds the first page); without, uses the loaded list.
+  const exportToCSV = useCallback(async (filters?: Record<string, unknown>): Promise<void> => {
+    let toExport = transactions;
+    if (filters) {
+      const params: Record<string, unknown> = { ...filters, limit: 100 };
+      for (const key of ['startDate', 'endDate']) {
+        if (params[key] instanceof Date) params[key] = formatDateForAPI(params[key] as Date);
+      }
+      Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
+      const all: BackendTransaction[] = [];
+      let cursor: string | null = null;
+      do {
+        const response: { data?: BackendTransaction[]; pagination?: { nextCursor?: string | null } } =
+          await apiClient.get<BackendTransaction[]>('/transactions', { ...params, ...(cursor && { cursor }) });
+        all.push(...(response.data ?? []));
+        cursor = response.pagination?.nextCursor ?? null;
+      } while (cursor);
+      toExport = all
+        .map(tr => convertTransactionFromBackend(tr, t as unknown as Record<string, string>, custom))
+        .filter((tr): tr is Transaction => tr !== null);
+    }
+
     const headers = [t.date, t.description, t.type, t.category, t.amount, t.account];
-    const rows = transactions.map(transaction => [
+    const rows = toExport.map(transaction => [
       transaction.date.toLocaleDateString(),
       transaction.description,
       transaction.type === TransactionType.INCOME ? t.income : t.expense,
@@ -988,7 +1005,7 @@ export const TransactionsProvider = ({ children }: TransactionsProviderProps) =>
     document.body.removeChild(link);
     
     analyticsHelpers.logTransactionExported();
-  }, [transactions, accounts, t]);
+  }, [transactions, accounts, t, custom]);
 
   const value: TransactionsContextType = useMemo(() => ({
     transactions,

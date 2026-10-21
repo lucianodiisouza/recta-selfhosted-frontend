@@ -1,15 +1,23 @@
 import { Transaction } from '../../types';
 import { formatDate, parseDateFromAPI } from '../../utils/format';
 import { TransactionItem } from './TransactionItem';
+import { ProjectedTransactionItem } from './ProjectedTransactionItem';
+import type { RecurringProjection } from '../../hooks/api/useRecurringTransactions';
 import { useEffect, useRef } from 'react';
 import type React from 'react';
+import { Inbox } from 'lucide-react';
+import { TransactionType } from '../../lib/enums';
+import { EmptyState, MoneyText } from '../ui';
 
 interface TransactionListProps {
   groupedTransactions: Array<{
     dateKey: string;
     date: Date;
     transactions: Transaction[];
+    /** Projected recurring occurrences of the day (fdbk #116); display only, never in totals. */
+    projections?: RecurringProjection[];
   }>;
+  onOpenProjection?: (projection: RecurringProjection) => void;
   accounts: Array<{ id?: string; name: string; type?: string }>;
   baseCurrency: string;
   customCategories?: Array<{ id: string; name: string; icon?: string | null }>;
@@ -51,6 +59,14 @@ const formatDateHeader = (date: Date | string): string => {
   }
 };
 
+/** Income minus expenses of a day; transfers and allocations don't count. */
+const dayNet = (transactions: Transaction[]): number =>
+  transactions.reduce((sum, tx) => {
+    if (tx.type === TransactionType.INCOME) return sum + Math.abs(tx.amount || 0);
+    if (tx.type === TransactionType.EXPENSE) return sum - Math.abs(tx.amount || 0);
+    return sum;
+  }, 0);
+
 export const TransactionList = ({
   groupedTransactions,
   accounts,
@@ -68,6 +84,7 @@ export const TransactionList = ({
   totalCount,
   currentCount,
   onLoadMore,
+  onOpenProjection,
   t,
 }: TransactionListProps) => {
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -107,24 +124,28 @@ export const TransactionList = ({
 
   if (groupedTransactions.length === 0) {
     return (
-      <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-md">
-        {t.noResults || `${t.transactions} ${t.none}`}
+      <div className="surface-card">
+        <EmptyState icon={Inbox} title={t.noResults || `${t.transactions} ${t.none}`} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {groupedTransactions.map((group) => (
-        <div key={group.dateKey} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-md overflow-hidden mb-4">
-          {/* Cabeçalho da data */}
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-10 bg-white dark:bg-gray-900">
-            <h3 className="text-sm font-light tracking-tight text-gray-500 dark:text-gray-400">
+        <section key={group.dateKey} aria-label={formatDateHeader(group.date)}>
+          {/* Cabeçalho da data com o saldo do dia, como no app */}
+          <div className="flex items-baseline justify-between px-1 mb-2">
+            <h3 className="text-[13px] font-semibold text-content-secondary">
               {formatDateHeader(group.date)}
             </h3>
+            {/* Day net of real rows only; a day with just projections shows no total */}
+            {group.transactions.length > 0 && (
+              <MoneyText value={dayNet(group.transactions)} currency={baseCurrency} sign="always" tone="semantic" size="sm" className="!text-[13px]" />
+            )}
           </div>
           {/* Lista de transações do dia */}
-          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+          <ul className="surface-card overflow-hidden divide-y divide-line-subtle">
             {group.transactions.map((transaction) => (
               <TransactionItem
                 key={transaction.id}
@@ -142,8 +163,20 @@ export const TransactionList = ({
                 t={t}
               />
             ))}
+            {group.projections?.map((projection) => (
+              <ProjectedTransactionItem
+                key={projection.id}
+                projection={projection}
+                accounts={accounts}
+                baseCurrency={baseCurrency}
+                customCategories={customCategories}
+                getCategoryIcon={getCategoryIcon}
+                onOpen={(p) => onOpenProjection?.(p)}
+                t={t}
+              />
+            ))}
           </ul>
-        </div>
+        </section>
       ))}
       
       {/* Sentinel para infinite scroll */}
@@ -154,17 +187,17 @@ export const TransactionList = ({
           data-testid="load-more-sentinel"
         >
           {isLoadingMore && (
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-content-tertiary">
               {t.loading || 'Carregando...'}
             </div>
           )}
           {totalCount && (
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-2 text-sm text-content-tertiary">
               Mostrando {currentCount} de {totalCount} transações
             </p>
           )}
           {!isLoadingMore && (
-            <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+            <p className="mt-2 text-xs text-content-tertiary">
               Scroll para carregar mais...
             </p>
           )}
@@ -174,7 +207,7 @@ export const TransactionList = ({
       {/* Mensagem quando não há mais transações */}
       {!hasMore && totalCount && currentCount > 0 && (
         <div className="py-6 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-content-tertiary">
             Todas as {totalCount} transações foram carregadas
           </p>
         </div>

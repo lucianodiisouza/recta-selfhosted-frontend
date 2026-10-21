@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TJ7XUV6VQ9.app.recta.mobile"],
+        "components": [{ "/": "/join/*", "comment": "Household invite link" }]
+      }
+    ]
+  }
+}

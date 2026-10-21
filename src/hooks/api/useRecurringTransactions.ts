@@ -66,6 +66,50 @@ export function useDueRecurringTransactions(householdId: string) {
 }
 
 /**
+ * A future occurrence of an active recurring transaction, computed by the backend.
+ * Read-only: it is not a transaction and never touches balances (fdbk #116).
+ */
+export interface RecurringProjection {
+  /** "<recurringTransactionId>:<YYYY-MM-DD>" */
+  id: string;
+  projected: true;
+  /** True only on the rule's next due date: the one occurrence POST /:id/execute launches. */
+  isNext?: boolean;
+  recurringTransactionId: string;
+  /** YYYY-MM-DD */
+  date: string;
+  type: 'INCOME' | 'EXPENSE';
+  /** Always positive; the sign comes from `type`. */
+  amount: number;
+  categoryName: string;
+  description: string | null;
+  accountId: string;
+  account?: { id: string; name: string; type: string } | null;
+  frequency: RecurrenceFrequency | string;
+}
+
+/**
+ * Projected occurrences of the active recurring transactions between `from` and `to`
+ * (YYYY-MM-DD, inclusive, max 400 days).
+ */
+export function useRecurringProjections(params: { householdId?: string; from: string; to: string }, options?: { enabled?: boolean }) {
+  const { currentUser } = useAuth();
+  const isAuthenticated = !!currentUser;
+
+  return useQuery({
+    queryKey: ['recurring-transactions', 'projections', params],
+    queryFn: async () => {
+      const response = await apiClient.get<RecurringProjection[]>('/recurring-transactions/projections', params);
+      return (response.data ?? []).map((p) => ({
+        ...p,
+        amount: Math.abs(typeof p.amount === 'string' ? parseFloat(p.amount) : Number(p.amount)) || 0,
+      }));
+    },
+    enabled: isAuthenticated && !!params.householdId && (options?.enabled ?? true),
+  });
+}
+
+/**
  * Get recurring transaction by ID
  */
 export function useRecurringTransaction(recurringId: string) {
@@ -147,25 +191,28 @@ export function useDeleteRecurringTransaction() {
 }
 
 /**
- * Execute recurring transaction mutation
+ * Execute recurring transaction mutation.
+ * `date` (YYYY-MM-DD, local) and `paid` are optional; the backend creates the real transaction
+ * on that date and advances `nextRunAt` keeping the due day (fdbk #116).
  */
 export function useExecuteRecurringTransaction() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ recurringId, ...data }: { recurringId: string; date?: string; amount?: number }) => {
-      const response = await apiClient.post<{ transaction: Transaction; recurringTransaction: RecurringTransaction }>(
+    mutationFn: async ({ recurringId, ...data }: { recurringId: string; date?: string; amount?: number; paid?: boolean }) => {
+      const response = await apiClient.post<{ transaction: Transaction; nextRunAt: string }>(
         `/recurring-transactions/${recurringId}/execute`,
         data
       );
       return response.data!;
     },
     onSuccess: () => {
+      // Also covers ['recurring-transactions', 'projections', ...]
       queryClient.invalidateQueries({ queryKey: ['recurring-transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['recurring-transactions', 'due'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets', 'summary'] });
     },
   });
 }
-

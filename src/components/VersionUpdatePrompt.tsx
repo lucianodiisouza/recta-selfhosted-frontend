@@ -41,14 +41,14 @@ export const VersionUpdatePrompt = () => {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/80 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl text-center border border-primary-500/30 animate-slide-in-bottom">
-        <div className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-          <RefreshCw className="w-10 h-10 text-primary-600 dark:text-primary-400 animate-spin-slow" />
+      <div className="bg-surface-elevated rounded-2xl p-8 max-w-md w-full shadow-2xl text-center border border-primary-500/30 animate-slide-in-bottom">
+        <div className="w-20 h-20 bg-brand-soft rounded-full flex items-center justify-center mx-auto mb-6">
+          <RefreshCw className="w-10 h-10 text-brand animate-spin-slow" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        <h2 className="text-2xl font-bold text-content mb-2">
           {t.versionUpdateTitle}
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+        <p className="text-content-secondary mb-8 leading-relaxed">
           {t.versionUpdateDescription}
         </p>
         <button

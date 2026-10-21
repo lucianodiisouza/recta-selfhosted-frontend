@@ -1,3 +1,5 @@
+import { Target } from 'lucide-react';
+import { EmptyState } from '../ui';
 import { Budget } from '../../types';
 import { BudgetItem } from './BudgetItem';
 import { AlertCircle } from 'lucide-react';
@@ -31,7 +33,7 @@ export const BudgetList = ({
       {exceededCount > 0 || warningCount > 0 ? (
         <div className="mb-6 border-l-4 border-yellow-400 dark:border-yellow-500 bg-yellow-50/50 dark:bg-yellow-900/10 p-4">
           <div className="flex">
-            <AlertCircle className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
+            <AlertCircle className="h-5 w-5 text-warning" />
             <div className="ml-3">
               <p className="text-sm font-light text-yellow-700 dark:text-yellow-300">
                 Você tem {exceededCount} orçamento(s) excedido(s) e{' '}
@@ -43,13 +45,11 @@ export const BudgetList = ({
       ) : null}
 
       {/* Lista de orçamentos */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 overflow-hidden sm:rounded-md">
+      <div className="surface-card overflow-hidden">
         {budgets.length === 0 ? (
-          <div className="px-6 py-8 text-center font-light text-gray-500 dark:text-gray-400">
-            {t.noBudgetForThisMonth}
-          </div>
+          <EmptyState icon={Target} title={t.noBudgetForThisMonth} />
         ) : (
-          <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+          <ul className="divide-y divide-line-subtle">
             {budgets.map((budget) => (
               <BudgetItem
                 key={budget.id}

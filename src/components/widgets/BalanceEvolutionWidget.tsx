@@ -27,11 +27,11 @@ export const BalanceEvolutionWidget = ({
   const { t } = useI18n();
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 flex flex-col">
-      <h2 className="text-base sm:text-lg lg:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100 mb-1 sm:mb-2">
+    <div className="surface-card p-4 sm:p-6 flex flex-col">
+      <h2 className="card-title mb-1 sm:mb-2">
         {t.balanceEvolution}
       </h2>
-      <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
+      <p className="text-xs sm:text-sm font-medium text-content-tertiary mb-3 sm:mb-4">
         {t.balanceEvolutionDescription}
       </p>
       <ResponsiveContainer
@@ -42,27 +42,27 @@ export const BalanceEvolutionWidget = ({
         <AreaChart data={balanceEvolution}>
           <defs>
             <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.4} />
-              <stop offset="50%" stopColor="#0ea5e9" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+              <stop offset="5%" stopColor="#5B3DF5" stopOpacity={0.4} />
+              <stop offset="50%" stopColor="#5B3DF5" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#5B3DF5" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid 
             strokeDasharray="0" 
-            stroke="#e5e7eb" 
+            stroke="#E6E6EE" 
             strokeOpacity={0.3}
             vertical={false}
           />
           <XAxis 
             dataKey="month" 
-            stroke="#9ca3af"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            stroke="#7F7F8D"
+            tick={{ fill: '#6B6B78', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis 
-            stroke="#9ca3af"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            stroke="#7F7F8D"
+            tick={{ fill: '#6B6B78', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
@@ -79,7 +79,7 @@ export const BalanceEvolutionWidget = ({
               padding: '12px',
             }}
             labelStyle={{
-              color: '#374151',
+              color: '#2C2C38',
               fontWeight: 600,
               marginBottom: '8px',
             }}
@@ -91,7 +91,7 @@ export const BalanceEvolutionWidget = ({
           <Area
             type="monotone"
             dataKey="saldoAcumulado"
-            stroke="#0ea5e9"
+            stroke="#5B3DF5"
             strokeWidth={2.5}
             fillOpacity={1}
             fill="url(#colorBalance)"
@@ -100,25 +100,25 @@ export const BalanceEvolutionWidget = ({
         </AreaChart>
       </ResponsiveContainer>
       {balanceEvolution.length > 0 && (
-        <div className={`mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm ${blurNumbers ? 'demo-blur' : ''}`}>
+        <div className={`mt-6 pt-4 border-t border-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm ${blurNumbers ? 'demo-blur' : ''}`}>
           <div className="flex flex-col">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+            <span className="text-xs font-medium text-content-tertiary mb-1">
               {t.currentBalance}
             </span>
-            <span className="text-base font-light tracking-tight text-gray-900 dark:text-gray-100">
+            <span className="text-base font-rounded font-semibold tabular-nums text-content">
               {formatCurrency(totalAvailableBalance, baseCurrency)}
             </span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+            <span className="text-xs font-medium text-content-tertiary mb-1">
               {t.projectedYearEnd}
             </span>
             <span
-              className={`text-base font-light tracking-tight ${
+              className={`text-base font-rounded font-semibold tabular-nums ${
                 balanceEvolution[balanceEvolution.length - 1]?.saldoAcumulado >=
                 0
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
+                  ? 'text-positive'
+                  : 'text-negative'
               }`}
             >
               {formatCurrency(

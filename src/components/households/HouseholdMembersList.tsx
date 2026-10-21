@@ -50,11 +50,11 @@ export const HouseholdMembersList = ({
   const { t } = useI18n();
   return (
     <div className="mb-6">
-      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300 mb-3 flex items-center">
-        <Users className="h-4 w-4 mr-2 text-primary-600 dark:text-primary-400" />
+      <h4 className="text-sm font-medium text-content-secondary mb-3 flex items-center">
+        <Users className="h-4 w-4 mr-2 text-brand" />
         Membros ({totalCount})
         {pendingCount > 0 && (
-          <span className="ml-2 text-xs font-light text-gray-400 dark:text-gray-500">
+          <span className="ml-2 text-xs font-light text-content-tertiary">
             ({activeCount} ativos, {pendingCount} pendentes)
           </span>
         )}
@@ -87,7 +87,7 @@ export const HouseholdMembersList = ({
           })}
         </div>
       ) : (
-        <div className="text-center py-8 font-light text-gray-500 dark:text-gray-400">
+        <div className="text-center py-8 font-light text-content-tertiary">
           <p className="text-sm">{t.noMembersFound}</p>
         </div>
       )}

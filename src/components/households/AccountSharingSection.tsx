@@ -30,14 +30,14 @@ export const AccountSharingSection = ({
 
   if (!isInPersonalHousehold || !isSharedHousehold) {
     return (
-      <div className="mb-6 p-4 border border-blue-200 dark:border-blue-800 rounded-lg">
+      <div className="mb-6 p-4 border border-info/25 rounded-lg">
         <div className="flex items-start">
-          <Info className="h-5 w-5 text-blue-500 dark:text-blue-400 mr-3 mt-0.5 flex-shrink-0" />
+          <Info className="h-5 w-5 text-info mr-3 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
+            <p className="text-sm font-medium text-info mb-1">
               {t.sharePersonalAccounts}
             </p>
-            <p className="text-xs font-light text-blue-600 dark:text-blue-400">
+            <p className="text-xs font-light text-info">
               {t.sharePersonalAccountsDescription}
             </p>
           </div>
@@ -48,14 +48,14 @@ export const AccountSharingSection = ({
 
   if (personalAccounts.length === 0) {
     return (
-      <div className="mb-6 p-4 border border-blue-200 dark:border-blue-800 rounded-lg">
+      <div className="mb-6 p-4 border border-info/25 rounded-lg">
         <div className="flex items-start">
-          <Info className="h-5 w-5 text-blue-500 dark:text-blue-400 mr-3 mt-0.5 flex-shrink-0" />
+          <Info className="h-5 w-5 text-info mr-3 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
+            <p className="text-sm font-medium text-info mb-1">
               {t.sharePersonalAccounts}
             </p>
-            <p className="text-xs font-light text-blue-600 dark:text-blue-400">
+            <p className="text-xs font-light text-info">
               {t.youDontHavePersonalAccounts}
             </p>
           </div>
@@ -67,24 +67,24 @@ export const AccountSharingSection = ({
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300 flex items-center">
-          <Wallet className="h-4 w-4 mr-2 text-primary-600 dark:text-primary-400" />
+        <h4 className="text-sm font-medium text-content-secondary flex items-center">
+          <Wallet className="h-4 w-4 mr-2 text-brand" />
           {t.sharePersonalAccounts}
         </h4>
       </div>
       
-      <div className="mb-4 p-3 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <p className="text-xs font-light text-blue-600 dark:text-blue-400 mb-2">
+      <div className="mb-4 p-3 border border-info/25 rounded-lg">
+        <p className="text-xs font-light text-info mb-2">
           {t.selectPersonalAccountsToShare}
         </p>
         
         {/* Toggle for backward compatibility: allow all personal accounts */}
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
           <div className="flex-1">
-            <label htmlFor="allowAllPersonalAccounts" className="text-sm font-medium text-blue-600 dark:text-blue-400 cursor-pointer">
+            <label htmlFor="allowAllPersonalAccounts" className="text-sm font-medium text-info cursor-pointer">
               Compartilhar todas as contas pessoais
             </label>
-            <p className="text-xs font-light text-blue-600 dark:text-blue-400 mt-1">
+            <p className="text-xs font-light text-info mt-1">
               Permitir acesso a todas as suas contas pessoais para todos os membros da household.
             </p>
           </div>
@@ -112,20 +112,20 @@ export const AccountSharingSection = ({
         {personalAccounts.map((account) => (
           <label
             key={account.id}
-            className="flex items-center p-3 border border-gray-100 dark:border-gray-800 rounded-lg cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors"
+            className="flex items-center p-3 rounded-xl bg-surface-sunken/70 cursor-pointer hover:bg-surface-sunken transition-colors"
           >
             <input
               type="checkbox"
               checked={selectedAccountIds.includes(account.id)}
               onChange={() => onToggleAccountSelection(account.id)}
               disabled={allowPersonalAccountAccess}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-200 dark:border-gray-800 rounded"
+              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-line-subtle rounded"
             />
             <div className="ml-3 flex-1">
-              <p className="text-sm font-light text-gray-900 dark:text-white">
+              <p className="text-sm font-light text-content">
                 {account.name}
               </p>
-              <p className="text-xs font-light text-gray-500 dark:text-gray-400">
+              <p className="text-xs font-light text-content-tertiary">
                 {getAccountTypeLabel(account.type, t as any)}
               </p>
             </div>
@@ -138,7 +138,7 @@ export const AccountSharingSection = ({
           type="button"
           onClick={onSaveSharedAccountIds}
           disabled={isSaving}
-          className="w-full flex justify-center py-2.5 px-4 text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex justify-center py-2.5 px-4 text-sm font-light tracking-tight text-white bg-brand-fill border border-brand rounded-md hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? t.loading : t.save}
         </button>

@@ -4,7 +4,10 @@ import { useI18n } from "../context/I18nContext";
 import {
   Wallet,
   List,
-  BarChart3,
+  House,
+  ChartPie,
+  ArrowUpRight,
+  Ellipsis,
   LogOut,
   Menu,
   X,
@@ -17,15 +20,18 @@ import {
   Settings,
   MessageSquare,
   MessageCircle,
+  Lightbulb,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import MobileBanner from "./MobileBanner";
+import RectaMark from "./RectaMark";
 import { OnboardingModal } from "./OnboardingModal";
 import { VerificationModal } from "./VerificationModal";
 import { FeedbackModal } from "./FeedbackModal";
 import { useUser, useUpdateUserPreferences } from "../hooks/api/useUsers";
+import { COMMUNITY_URL, FEEDBACK_BOARD_URL } from "../constants/links";
 import { useCommandMenu } from "../context/CommandMenuContext";
 import { HouseholdSelector } from "./HouseholdSelector";
 import { InvitesNotification } from "./InvitesNotification";
@@ -145,83 +151,114 @@ const Layout = () => {
   };
 
   const navItems: NavItem[] = [
-    { path: "/app", label: t.dashboard, icon: BarChart3 },
+    { path: "/app", label: t.dashboard, icon: House },
     { path: "/app/transactions", label: t.transactions, icon: List },
     { path: "/app/accounts", label: t.accounts, icon: Wallet },
     { path: "/app/credit-cards", label: `${t.creditCards}`, icon: CreditCard },
     { path: "/app/recurring", label: t.recurring, icon: Repeat },
     { path: "/app/goals", label: t.goals, icon: PiggyBank },
     { path: "/app/budgets", label: t.budgets, icon: Target },
-    { path: "/app/reports", label: t.reports, icon: Wallet },
+    { path: "/app/reports", label: t.reports, icon: ChartPie },
     { path: "/app/settings", label: t.settings, icon: Settings },
-    { path: "https://www.reddit.com/r/RectaApp/", label: t.community, icon: MessageSquare, external: true },
   ];
 
+  const externalItems: NavItem[] = [
+    { path: COMMUNITY_URL, label: t.community, icon: MessageSquare, external: true },
+    { path: FEEDBACK_BOARD_URL, label: t.feedbackBoardNav, icon: Lightbulb, external: true },
+  ];
+
+  // Phone tab bar (like the iOS tab bar): the most used destinations plus "More", which opens the full menu.
+  const tabItems: NavItem[] = [
+    { path: "/app", label: t.tabHome, icon: House },
+    { path: "/app/transactions", label: t.transactions, icon: List },
+    { path: "/app/accounts", label: t.tabAccounts, icon: Wallet },
+    { path: "/app/credit-cards", label: t.tabCards, icon: CreditCard },
+  ];
+
+  const userName = displayName || currentUser?.email?.split("@")[0] || t.user;
+  const userInitial = userName.trim().charAt(0).toUpperCase() || "?";
+
+  const navItemClass = (isActive: boolean) =>
+    `group flex items-center gap-3 h-10 rounded-lg text-[15px] transition-colors duration-150 ${
+      sidebarCollapsed ? "justify-center px-0" : "px-3"
+    } ${
+      isActive
+        ? "bg-brand-soft text-brand-on-soft font-semibold"
+        : "text-content-secondary hover:bg-surface-sunken hover:text-content"
+    }`;
+
   return (
-    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden">
+    <div className="h-screen bg-surface flex overflow-hidden">
       {/* Sidebar */}
       <aside
         aria-label={t.landingNavAriaLabel || "Navegação principal"}
         className={`
-          fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-800 transform transition-all duration-300 ease-in-out h-screen
+          fixed inset-y-0 left-0 z-50 bg-surface-elevated border-r border-line-subtle transform transition-[transform,width] duration-300 ease-in-out h-screen
           ${sidebarCollapsed ? 'w-20' : 'w-64'}
           xl:translate-x-0
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          ${sidebarOpen ? "translate-x-0 shadow-floating" : "-translate-x-full"}
         `}
       >
         <div className="flex flex-col h-screen">
           {/* Logo */}
-          <div className={`flex items-center justify-between h-16 border-b border-gray-100 dark:border-gray-800 ${sidebarCollapsed ? 'px-4' : 'px-6'}`}>
-            {!sidebarCollapsed && (
-              <Link to="/home" className="flex items-center hover:opacity-80 transition-opacity">
-                <Wallet className="h-8 w-8 text-primary-600" />
-                <span className="ml-2 text-xl font-light text-gray-900 dark:text-white">{t.appNameWithBeta}</span>
-              </Link>
-            )}
-            {sidebarCollapsed && (
-              <Link to="/home" className="flex items-center justify-center hover:opacity-80 transition-opacity">
-                <Wallet className="h-8 w-8 text-primary-600" />
-              </Link>
-            )}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                aria-label={sidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
-                className="hidden xl:flex text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1.5"
-                title={sidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
-              >
-                {sidebarCollapsed ? (
-                  <ChevronRight className="h-4 w-4" />
-                ) : (
-                  <ChevronLeft className="h-4 w-4" />
-                )}
-              </button>
-              <button
-                onClick={() => setSidebarOpen(false)}
-                aria-label={t.closeMenu}
-                className="xl:hidden text-gray-900 dark:text-white hover:opacity-70 transition-opacity p-2"
-              >
-                <X className="h-6 w-6" aria-hidden="true" />
-              </button>
-            </div>
+          <div className={`flex items-center justify-between h-16 flex-shrink-0 ${sidebarCollapsed ? 'px-3' : 'px-5'}`}>
+            <Link
+              to="/home"
+              className={`mark-hover flex items-center gap-2.5 hover:opacity-80 transition-opacity ${sidebarCollapsed ? 'mx-auto' : ''}`}
+            >
+              <RectaMark className="h-6 w-auto text-content" />
+              {!sidebarCollapsed && (
+                <span className="font-rounded text-lg font-semibold text-content">{t.appNameWithBeta}</span>
+              )}
+            </Link>
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              aria-label={sidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
+              title={sidebarCollapsed ? "Expandir menu" : "Colapsar menu"}
+              className={`hidden xl:flex h-8 w-8 items-center justify-center rounded-lg text-content-tertiary hover:bg-surface-sunken hover:text-content transition-colors ${sidebarCollapsed ? 'absolute -right-4 top-4 bg-surface-elevated border border-line-subtle shadow-card' : ''}`}
+            >
+              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </button>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              aria-label={t.closeMenu}
+              className="xl:hidden flex h-9 w-9 items-center justify-center rounded-full bg-surface-sunken text-content-secondary hover:text-content transition-colors"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
           </div>
 
           {/* Navigation */}
-          <nav className={`flex-1 py-6 space-y-1 overflow-y-auto ${sidebarCollapsed ? 'px-2' : 'px-4'}`}>
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = !item.external && location.pathname === item.path;
-              const className = `
-                flex items-center text-sm font-light tracking-tight rounded-lg transition-opacity
-                ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'px-4 py-3'}
-                ${
-                  isActive
-                    ? "text-primary-600 dark:text-primary-400 border-l border-primary-600 dark:border-primary-400"
-                    : "text-gray-600 dark:text-gray-400 hover:opacity-70"
-                }
-              `;
-              
-              if (item.external) {
+          <nav className={`flex-1 pt-2 pb-4 overflow-y-auto ${sidebarCollapsed ? 'px-3' : 'px-3'}`}>
+            <div className="space-y-0.5">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={navItemClass(isActive)}
+                    title={sidebarCollapsed ? item.label : undefined}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    <Icon
+                      aria-hidden="true"
+                      strokeWidth={isActive ? 2.25 : 1.9}
+                      className={`h-5 w-5 flex-shrink-0 ${isActive ? "text-brand" : "text-content-tertiary group-hover:text-content-secondary"}`}
+                    />
+                    {sidebarCollapsed ? <span className="sr-only">{item.label}</span> : item.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="my-3 mx-3 border-t border-line-subtle" />
+
+            <div className="space-y-0.5">
+              {externalItems.map((item) => {
+                const Icon = item.icon;
                 return (
                   <a
                     key={item.path}
@@ -229,54 +266,39 @@ const Layout = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setSidebarOpen(false)}
-                    className={className}
+                    className={navItemClass(false)}
                     title={sidebarCollapsed ? item.label : undefined}
                   >
-                    <Icon
-                      className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'} text-gray-400`}
-                    />
-                    {!sidebarCollapsed && item.label}
+                    <Icon aria-hidden="true" strokeWidth={1.9} className="h-5 w-5 flex-shrink-0 text-content-tertiary group-hover:text-content-secondary" />
+                    {sidebarCollapsed ? <span className="sr-only">{item.label}</span> : (
+                      <span className="flex-1 truncate">{item.label}</span>
+                    )}
+                    {!sidebarCollapsed && <ArrowUpRight className="h-3.5 w-3.5 text-content-tertiary" aria-hidden="true" />}
+                    <span className="sr-only"> {t.feedbackBoardOpensInNewTab}</span>
                   </a>
                 );
-              }
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={className}
-                  title={sidebarCollapsed ? item.label : undefined}
-                >
-                  <Icon
-                    className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'} ${
-                      isActive ? "text-primary-600" : "text-gray-400"
-                    }`}
-                  />
-                  {!sidebarCollapsed && item.label}
-                </Link>
-              );
-            })}
-            
-            {/* Feedback Button */}
-            <button
-              onClick={() => {
-                setShowFeedbackModal(true);
-                setSidebarOpen(false);
-              }}
-              className={`flex items-center text-sm font-medium rounded-lg transition-all duration-300 bg-purple-lighter dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-light dark:hover:bg-purple-900/50 hover:text-purple-800 dark:hover:text-purple-200 w-full animate-bounce-soft shadow-sm hover:shadow-md ${sidebarCollapsed ? 'justify-center px-2 py-3' : 'px-4 py-3'}`}
-              title={sidebarCollapsed ? t.giveFeedback : undefined}
-            >
-              <MessageCircle className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'} text-purple-600 dark:text-purple-400`} />
-              {!sidebarCollapsed && t.giveFeedback}
-            </button>
+              })}
+
+              {/* Feedback Button */}
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(true);
+                  setSidebarOpen(false);
+                }}
+                className={`${navItemClass(false)} w-full !text-brand-on-soft hover:!bg-brand-soft`}
+                title={sidebarCollapsed ? t.giveFeedback : undefined}
+              >
+                <MessageCircle className="h-5 w-5 flex-shrink-0 text-brand" strokeWidth={2} aria-hidden="true" />
+                {sidebarCollapsed ? <span className="sr-only">{t.giveFeedback}</span> : <span className="font-semibold">{t.giveFeedback}</span>}
+              </button>
+            </div>
           </nav>
 
           {/* User Section */}
-          <div 
-            className={`border-t border-gray-100 dark:border-gray-800 flex-shrink-0 ${sidebarCollapsed ? 'p-2' : 'p-4'} xl:pb-4`}
-            style={{ 
-              paddingBottom: 'max(2rem, calc(1.5rem + env(safe-area-inset-bottom, 0px) + 20px))'
+          <div
+            className={`border-t border-line-subtle flex-shrink-0 ${sidebarCollapsed ? 'p-3' : 'p-4'} xl:pb-4`}
+            style={{
+              paddingBottom: 'max(1rem, calc(0.75rem + env(safe-area-inset-bottom, 0px)))'
             }}
           >
             {/* Household Selector */}
@@ -284,39 +306,29 @@ const Layout = () => {
               <HouseholdSelector collapsed={sidebarCollapsed} />
             </div>
 
-            {!sidebarCollapsed && (
-              <div className="flex items-center mb-3">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                  </div>
-                </div>
-                <div className="ml-3 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                    {displayName || currentUser?.email?.split("@")[0] || t.user}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {currentUser?.email || ""}
-                  </p>
-                </div>
+            <div className={`flex items-center ${sidebarCollapsed ? 'flex-col gap-2' : 'gap-3'}`}>
+              <div
+                className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-br from-[#6D4CFF] to-[#4A2EE0] flex items-center justify-center font-rounded text-base font-semibold text-white"
+                aria-hidden="true"
+                title={sidebarCollapsed ? userName : undefined}
+              >
+                {userInitial || <User className="h-5 w-5" />}
               </div>
-            )}
-            {sidebarCollapsed && (
-              <div className="flex justify-center mb-3">
-                <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                  <User className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+              {!sidebarCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-content truncate">{userName}</p>
+                  <p className="text-xs text-content-tertiary truncate">{currentUser?.email || ""}</p>
                 </div>
-              </div>
-            )}
-            <button
-              onClick={handleLogout}
-              aria-label={t.logout}
-              className={`w-full flex items-center justify-center text-sm font-light tracking-tight text-white bg-primary-600 dark:bg-primary-500 border border-primary-600 dark:border-primary-500 rounded-md hover:opacity-80 transition-opacity ${sidebarCollapsed ? 'px-2 py-2.5' : 'px-4 py-2.5'}`}
-              title={sidebarCollapsed ? t.logout : undefined}
-            >
-              <LogOut className={`h-4 w-4 ${sidebarCollapsed ? '' : 'mr-2'}`} aria-hidden="true" />
-              {!sidebarCollapsed && t.logout}
-            </button>
+              )}
+              <button
+                onClick={handleLogout}
+                aria-label={t.logout}
+                title={t.logout}
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-content-tertiary hover:bg-negative-soft hover:text-negative transition-colors"
+              >
+                <LogOut className="h-[18px] w-[18px]" aria-hidden="true" />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -324,32 +336,29 @@ const Layout = () => {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 xl:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-40 xl:hidden animate-modal-backdrop"
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'xl:ml-20' : 'xl:ml-64'}`}>
-        {/* Top Navbar - Always visible */}
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
-          <div className="flex items-center justify-between h-16 px-4 xl:px-6">
-            {/* Left side - Menu button (mobile) */}
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                aria-label={t.openMenu}
-                aria-expanded={sidebarOpen}
-                className="xl:hidden text-gray-900 dark:text-white hover:opacity-70 transition-opacity p-2"
-              >
-                <Menu className="h-6 w-6" aria-hidden="true" />
-              </button>
-            </div>
+      <div className={`flex-1 flex flex-col overflow-hidden transition-[margin] duration-300 ${sidebarCollapsed ? 'xl:ml-20' : 'xl:ml-64'}`}>
+        {/* Top bar: menu on phones, notifications everywhere */}
+        <header className="bg-surface/80 backdrop-blur-md border-b border-line-subtle xl:border-transparent flex-shrink-0">
+          <div className="flex items-center justify-between h-14 px-3 xl:px-6">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              aria-label={t.openMenu}
+              aria-expanded={sidebarOpen}
+              className="xl:hidden flex h-10 w-10 items-center justify-center rounded-lg text-content hover:bg-surface-sunken transition-colors"
+            >
+              <Menu className="h-6 w-6" aria-hidden="true" />
+            </button>
+            <div className="hidden xl:block" />
 
-            {/* Right side - Notifications */}
             <div className="flex items-center">
-              <InvitesNotification 
+              <InvitesNotification
                 onInviteClick={(inviteId) => setSelectedInviteId(inviteId)}
               />
             </div>
@@ -359,12 +368,11 @@ const Layout = () => {
         {/* Cmd+K Hint - Hidden during onboarding */}
         {!showOnboarding && (
           <div className="hidden xl:block fixed bottom-4 right-4 z-30">
-            <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 shadow-md flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-              <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">
+            <div className="bg-surface-elevated/90 backdrop-blur border border-line-subtle rounded-lg px-2.5 py-1.5 shadow-card flex items-center gap-1.5 text-xs text-content-tertiary">
+              <kbd className="min-w-[22px] px-1.5 py-0.5 bg-surface-sunken rounded text-xs font-sans font-semibold text-content-secondary text-center">
                 {navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl"}
               </kbd>
-              <span>+</span>
-              <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">
+              <kbd className="min-w-[22px] px-1.5 py-0.5 bg-surface-sunken rounded text-xs font-sans font-semibold text-content-secondary text-center">
                 K
               </kbd>
             </div>
@@ -373,15 +381,51 @@ const Layout = () => {
 
         {/* Page Content */}
         <main id="main-content" className="flex-1 overflow-y-auto" role="main">
-          <div className="max-w-7xl mx-auto py-8 px-5 sm:px-6 xl:px-8">
+          <div className="max-w-7xl mx-auto pt-4 pb-28 xl:py-8 px-4 sm:px-6 xl:px-8">
             <Outlet />
           </div>
         </main>
-        
+
         {/* Mobile Banner */}
         <MobileBanner />
+
+        {/* Tab bar (phones and tablets) */}
+        <nav
+          aria-label={t.landingNavAriaLabel || "Navegação principal"}
+          className="xl:hidden fixed inset-x-0 bottom-0 z-40 border-t border-line-subtle bg-surface-elevated/85 backdrop-blur-xl"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+          <div className="mx-auto flex max-w-lg items-stretch justify-around px-2">
+            {tabItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`flex flex-1 flex-col items-center justify-center gap-0.5 pt-2 pb-1.5 min-h-[56px] text-[11px] font-medium transition-colors ${
+                    isActive ? "text-brand" : "text-content-tertiary hover:text-content-secondary"
+                  }`}
+                >
+                  <Icon className="h-6 w-6" strokeWidth={isActive ? 2.25 : 1.9} aria-hidden="true" />
+                  <span className="max-w-full truncate px-1">{item.label}</span>
+                </Link>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-expanded={sidebarOpen}
+              className="flex flex-1 flex-col items-center justify-center gap-0.5 pt-2 pb-1.5 min-h-[56px] text-[11px] font-medium text-content-tertiary hover:text-content-secondary transition-colors"
+            >
+              <Ellipsis className="h-6 w-6" strokeWidth={1.9} aria-hidden="true" />
+              <span>{t.more}</span>
+            </button>
+          </div>
+        </nav>
       </div>
-      
+
       {/* Onboarding Modal */}
       {!checkingOnboarding && (
         <OnboardingModal

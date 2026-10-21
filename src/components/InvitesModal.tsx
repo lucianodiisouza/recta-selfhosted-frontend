@@ -78,10 +78,10 @@ export function InvitesModal({ isOpen, onClose, selectedInviteId }: InvitesModal
         />
 
         {/* Modal */}
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-          <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div className="inline-block align-bottom bg-surface-elevated rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+          <div className="bg-surface-elevated px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              <h3 className="text-lg font-medium text-content">
                 {t.myInvites}
               </h3>
               <button
@@ -93,13 +93,13 @@ export function InvitesModal({ isOpen, onClose, selectedInviteId }: InvitesModal
             </div>
 
             {isLoading ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t.loading}</p>
+              <p className="text-sm text-content-tertiary">{t.loading}</p>
             ) : (
               <div className="space-y-6">
                 {/* Pending Invites */}
                 {pendingInvites.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
+                    <h4 className="text-sm font-semibold text-content mb-3 flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-yellow-500" />
                       {t.invitesPending} ({pendingInvites.length})
                     </h4>
@@ -118,18 +118,18 @@ export function InvitesModal({ isOpen, onClose, selectedInviteId }: InvitesModal
                           >
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                <p className="text-sm font-medium text-content">
                                   {invite.household.name}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <p className="text-xs text-content-tertiary mt-1">
                                   Convite de {invite.inviter.displayName || invite.inviter.email}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <p className="text-xs text-content-tertiary mt-1">
                                   Permissão: {getRoleLabel(invite.role)}
                                 </p>
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                <p className="text-xs text-content-tertiary mt-1">
                                   {isExpired ? (
-                                    <span className="text-red-600 dark:text-red-400">Expirado</span>
+                                    <span className="text-negative">Expirado</span>
                                   ) : (
                                     `Expira ${expiresIn}`
                                   )}
@@ -150,7 +150,7 @@ export function InvitesModal({ isOpen, onClose, selectedInviteId }: InvitesModal
                                 <button
                                   onClick={() => handleReject(invite.id)}
                                   disabled={rejectInvite.isPending}
-                                  className="flex-1 flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="flex-1 flex items-center justify-center px-4 py-2 text-sm font-medium text-content-secondary bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <XCircle className="h-4 w-4 mr-2" />
                                   {t.reject}
@@ -167,20 +167,20 @@ export function InvitesModal({ isOpen, onClose, selectedInviteId }: InvitesModal
                 {/* Accepted Invites */}
                 {acceptedInvites.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
-                      <Check className="h-4 w-4 mr-2 text-green-500" />
+                    <h4 className="text-sm font-semibold text-content mb-3 flex items-center">
+                      <Check className="h-4 w-4 mr-2 text-positive" />
                       {t.invitesAccepted} ({acceptedInvites.length})
                     </h4>
                     <div className="space-y-2">
                       {acceptedInvites.map((invite) => (
                         <div
                           key={invite.id}
-                          className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
+                          className="p-3 bg-positive-soft rounded-lg border border-positive/25"
                         >
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <p className="text-sm font-medium text-content">
                             {invite.household.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-content-tertiary mt-1">
                             Aceito {invite.acceptedAt && formatDistanceToNow(new Date(invite.acceptedAt), { addSuffix: true, locale: ptBR })}
                           </p>
                         </div>
@@ -192,20 +192,20 @@ export function InvitesModal({ isOpen, onClose, selectedInviteId }: InvitesModal
                 {/* Rejected Invites */}
                 {rejectedInvites.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
-                      <XCircle className="h-4 w-4 mr-2 text-red-500" />
+                    <h4 className="text-sm font-semibold text-content mb-3 flex items-center">
+                      <XCircle className="h-4 w-4 mr-2 text-negative" />
                       {t.invitesRejected} ({rejectedInvites.length})
                     </h4>
                     <div className="space-y-2">
                       {rejectedInvites.map((invite) => (
                         <div
                           key={invite.id}
-                          className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
+                          className="p-3 bg-negative-soft rounded-lg border border-negative/25"
                         >
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <p className="text-sm font-medium text-content">
                             {invite.household.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-xs text-content-tertiary mt-1">
                             Rejeitado {invite.rejectedAt && formatDistanceToNow(new Date(invite.rejectedAt), { addSuffix: true, locale: ptBR })}
                           </p>
                         </div>

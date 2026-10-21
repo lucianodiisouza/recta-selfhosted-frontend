@@ -10,11 +10,11 @@ export const AccountModalHeader = ({ isEditing, onClose }: AccountModalHeaderPro
   const { t } = useI18n();
 
   return (
-    <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
-      <h3 className="text-xl font-light tracking-tight text-gray-900 dark:text-white">
+    <div className="flex items-center justify-between mb-6 pb-6 border-b border-line-subtle">
+      <h3 className="card-title">
         {isEditing ? t.editAccount : t.newAccount}
       </h3>
-      <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:opacity-70 transition-opacity p-1">
+      <button onClick={onClose} className="text-content-tertiary hover:opacity-70 transition-opacity p-1">
         <X className="h-6 w-6" />
       </button>
     </div>

@@ -94,24 +94,24 @@ export const InstallPrompt = () => {
   if (!showPrompt || !deferredPrompt || isInstalled) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 animate-slide-in-bottom">
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 bg-surface-elevated border border-line rounded-lg shadow-lg p-4 animate-slide-in-bottom">
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-3 flex-1">
-          <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex-shrink-0">
-            <Download className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+          <div className="p-2 bg-brand-soft rounded-lg flex-shrink-0">
+            <Download className="h-5 w-5 text-brand" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+            <h3 className="font-semibold text-content text-sm">
               {t.installApp || 'Instalar Recta'}
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs text-content-secondary mt-1">
               {t.installAppDescription || 'Instale o app para acesso rápido e melhor experiência'}
             </p>
           </div>
         </div>
         <button
           onClick={handleDismiss}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 ml-2"
+          className="text-gray-400 hover:text-content-secondary flex-shrink-0 ml-2"
           aria-label={t.close || 'Fechar'}
         >
           <X className="h-5 w-5" />
@@ -126,7 +126,7 @@ export const InstallPrompt = () => {
         </button>
         <button
           onClick={handleDismiss}
-          className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-content-secondary hover:text-content transition-colors"
         >
           {t.later || 'Depois'}
         </button>

@@ -252,34 +252,34 @@ export const InsightsWidget = ({
   const getIconColor = (type: string) => {
     switch (type) {
       case 'success':
-        return 'text-green-600 dark:text-green-400';
+        return 'text-positive';
       case 'warning':
-        return 'text-yellow-600 dark:text-yellow-400';
+        return 'text-warning';
       case 'info':
-        return 'text-blue-600 dark:text-blue-400';
+        return 'text-info';
       default:
-        return 'text-gray-600 dark:text-gray-400';
+        return 'text-content-secondary';
     }
   };
 
   const getBgColor = (type: string) => {
     switch (type) {
       case 'success':
-        return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+        return 'bg-positive-soft border-positive/25';
       case 'warning':
-        return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800';
+        return 'bg-warning/10 border-warning/25';
       case 'info':
-        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+        return 'bg-info/10 border-info/25';
       default:
-        return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+        return 'bg-surface-sunken border-line';
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6 flex flex-col">
+    <div className="surface-card p-4 sm:p-6 flex flex-col">
       <div className="flex items-center gap-2 mb-4">
-        <Info className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-        <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100">
+        <Info className="h-5 w-5 text-brand" />
+        <h2 className="card-title">
           {t.insights}
         </h2>
       </div>
@@ -293,7 +293,7 @@ export const InsightsWidget = ({
             >
               <Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${getIconColor(insight.type)}`} />
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                <h3 className="text-sm font-medium text-content">
                   {insight.title}
                 </h3>
                 <p className={`text-sm mt-1 ${blurNumbers ? 'demo-blur' : ''}`}>

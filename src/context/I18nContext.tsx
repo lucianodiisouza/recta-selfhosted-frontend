@@ -54,6 +54,12 @@ export interface Translations {
   clearFilters: string;
   exportCSV: string;
   noResults: string;
+  noOptionsFound: string;
+  done: string;
+  /** "{{name}} + {{count}}": summary of a multi-select with 2 items (fdbk #123). */
+  categoryAndMore: string;
+  /** "{{count}} categories": summary of a multi-select with 3 or more items (fdbk #123). */
+  categoriesCount: string;
   noDescription: string;
   noCategory: string;
   select: string;
@@ -62,6 +68,16 @@ export interface Translations {
   selected: string;
   transaction: string;
   upcomingScheduled: string;
+  projected: string;
+  projectedLaunchNow: string;
+  projectedDueOn: string;
+  projectedLaunchHint: string;
+  projectedLaunchHintNoDay: string;
+  projectedLaunchEarlierFirst: string;
+  projectedLaunched: string;
+  projectedLaunchError: string;
+  projectedNotice: string;
+  projectedOnlyNotice: string;
   
   // Transaction types
   income: string;
@@ -138,6 +154,9 @@ export interface Translations {
   errorPayingInvoice: string;
   errorUndoingPayment: string;
   noInvoiceTransactions: string;
+  invoiceMonthSpend: string;
+  invoiceSearchPlaceholder: string;
+  invoiceSearchNoResults: string;
   comingSoon: string;
   person: string;
   people: string;
@@ -232,6 +251,9 @@ export interface Translations {
   nextMonth: string;
   less: string;
   more: string;
+  tabHome: string;
+  tabAccounts: string;
+  tabCards: string;
   monthlyTotal: string;
   financialSummary: string;
   dashboardWidgets: string;
@@ -321,6 +343,8 @@ export interface Translations {
   investment: string;
   color: string;
   initialDebt: string;
+  startsNegative: string;
+  startsNegativeHint: string;
   cardLimit: string;
   dayOfMonth: string;
   
@@ -679,6 +703,14 @@ export interface Translations {
   // Mobile Banner
   mobileBannerTitle: string;
   mobileBannerMessage: string;
+  mobileBannerAndroidTitle: string;
+  mobileBannerAndroidMessage: string;
+  continueWithApple: string;
+  continueWithGoogle: string;
+  appleLoginError: string;
+  socialAccountExists: string;
+  mobileBannerCta: string;
+  mobileBannerPlayCta: string;
   
   // Referrals
   copyInviteLink: string;
@@ -693,6 +725,11 @@ export interface Translations {
   invalidColor: string;
   limitMustBePositive: string;
   cardLimitMustBePositive: string;
+  availableLimitToday: string;
+  availableLimitTodayHint: string;
+  availableLimitNegative: string;
+  availableLimitAboveLimit: string;
+  limitAdjustmentNote: string;
   targetAmountMustBePositive: string;
   currentAmountCannotBeNegative: string;
   fieldRequired: string;
@@ -741,7 +778,6 @@ export interface Translations {
   landingAppTitle: string;
   landingAppDescription: string;
   landingGetStarted: string;
-  landingFreeTrial: string;
   landingLearnMore: string;
   landingHeroWord1: string;
   landingHeroWord2: string;
@@ -761,37 +797,43 @@ export interface Translations {
   landingDetailedReportsDesc: string;
   landingAutomaticInsightsTitle: string;
   landingAutomaticInsightsDesc: string;
-  landingPricingTitle: string;
-  landingPricingSubtitle: string;
-  landingMostPopular: string;
-  landingBetaFree: string;
-  landingFreePlanName: string;
-  landingPerMonth: string;
-  landingFreePlanFeature1: string;
-  landingFreePlanFeature2: string;
-  landingFreePlanFeature3: string;
-  landingFreePlanFeature4: string;
-  landingPremiumIndividualName: string;
-  landingPremiumIndividualFeature1: string;
-  landingPremiumIndividualFeature2: string;
-  landingPremiumIndividualFeature3: string;
-  landingPremiumIndividualFeature4: string;
-  landingPremiumIndividualFeature5: string;
-  landingPremiumIndividualFeature6: string;
-  landingPremiumFamilyName: string;
-  landingPremiumFamilyFeature1: string;
-  landingPremiumFamilyFeature2: string;
-  landingPremiumFamilyFeature3: string;
-  landingPremiumFamilyFeature4: string;
-  landingPremiumFamilyFeature5: string;
-  landingPricingNote: string;
-  landingComingSoon: string;
+  landingFreeBadge: string;
+  landingFreeTitle: string;
+  landingFreeSubtitle: string;
+  landingFreeItem1: string;
+  landingFreeItem2: string;
+  landingFreeItem3: string;
+  landingFreeItem4: string;
+  landingFreeItem5: string;
+  landingFreeItem6: string;
+  landingFreeNote: string;
   landingFooterRights: string;
+  footerTagline: string;
+  footerProduct: string;
+  footerLegal: string;
+  footerMoreApps: string;
+  footerSupport: string;
+  footerTerms: string;
+  footerPrivacy: string;
+  footerWebApp: string;
+  blurbEngine: string;
+  blurbDock: string;
+  blurbRec: string;
+  blurbNotchy: string;
+  blurbCameraMan: string;
+  blurbDailyNotch: string;
   landingSeoTitle: string;
   landingSeoDescription: string;
   landingNavAriaLabel: string;
   landingMainContentAriaLabel: string;
   landingHeroSectionAriaLabel: string;
+  landingDownloadOn: string;
+  landingGetItOn: string;
+  landingOrUseWeb: string;
+  landingNowOnIphone: string;
+  landingAppScreenshotAlt: string;
+  landingMobileTitle: string;
+  landingMobileDescription: string;
   versionUpdateTitle: string;
   versionUpdateDescription: string;
   versionUpdateButton: string;
@@ -860,6 +902,7 @@ export interface Translations {
   fromAccountRequired: string;
   sameAccountError: string;
   transferCreated: string;
+  transferEditHint: string;
   
   // Feedback
   giveFeedback: string;
@@ -871,9 +914,28 @@ export interface Translations {
   feedbackSubmitting: string;
   feedbackSuccess: string;
   feedbackError: string;
+  feedbackBoardTitle: string;
+  feedbackBoardDescription: string;
+  feedbackBoardLink: string;
+  feedbackBoardOpensInNewTab: string;
+  feedbackBoardNav: string;
   
   // What's New Modal
   whatsNewTitle: string;
+  whatsNewV06Intro: string;
+  whatsNewV06LookTitle: string;
+  whatsNewV06Look1: string;
+  whatsNewV06Look2: string;
+  whatsNewV06Look3: string;
+  whatsNewV06EasierTitle: string;
+  whatsNewV06Easier1: string;
+  whatsNewV06Easier2: string;
+  whatsNewV06Easier3: string;
+  whatsNewV06Easier4: string;
+  whatsNewV06AppleTitle: string;
+  whatsNewV06AppleText: string;
+  whatsNewV06IphoneTitle: string;
+  whatsNewV06IphoneText: string;
   whatsNewIntro: string;
   whatsNewTransactionsTitle: string;
   whatsNewTransactions1: string;
@@ -913,6 +975,17 @@ export interface Translations {
   whatsNewV05Budgets3: string;
   whatsNewV05ForecastTitle: string;
   whatsNewV05ForecastText: string;
+  // What's New - v0.5.1
+  whatsNewV051TransfersTitle: string;
+  whatsNewV051Transfers1: string;
+  whatsNewV051Transfers2: string;
+  whatsNewV051Transfers3: string;
+  whatsNewV051BudgetsTitle: string;
+  whatsNewV051Budgets1: string;
+  whatsNewV051Budgets2: string;
+  whatsNewV051Budgets3: string;
+  whatsNewV051ForecastTitle: string;
+  whatsNewV051ForecastText: string;
 
   // UI Labels
   appNameWithBeta: string;
@@ -957,6 +1030,7 @@ export interface Translations {
   selectPersonalAccountsToShare: string;
   inviteNewMember: string;
   inviteMemberHint: string;
+  householdVisibilityNotice: string;
   inviteCancelled: string;
   inviteSent: string;
   memberRemoved: string;
@@ -969,6 +1043,7 @@ export interface Translations {
   owner: string;
   editor: string;
   viewer: string;
+  memberRole: string;
   sharedAccountsCount: string;
   allAccountsShared: string;
   householdNameLabel: string;
@@ -976,6 +1051,39 @@ export interface Translations {
   errorSavingAccount: string;
   errorSavingBudget: string;
   errorInvitingMember: string;
+  inviteErrorAlreadyMember: string;
+  inviteErrorAlreadyPending: string;
+  inviteErrorHouseholdFull: string;
+  joinLinkTitle: string;
+  joinLinkHint: string;
+  joinLinkCreate: string;
+  joinLinkCopy: string;
+  joinLinkCopied: string;
+  joinLinkShare: string;
+  joinLinkShareText: string;
+  joinLinkRevoke: string;
+  joinLinkRevoked: string;
+  joinLinkExpires: string;
+  joinLinkFailed: string;
+  joinLinkRoleLabel: string;
+  joinWithCodeTitle: string;
+  joinWithCodeHint: string;
+  joinWithCodeAction: string;
+  joinPageTitle: string;
+  joinPageInvitedBy: string;
+  joinPageRole: string;
+  joinPageAccept: string;
+  joinPageNotNow: string;
+  joinPageLoggedOut: string;
+  joinPageLogin: string;
+  joinPageSignup: string;
+  joinPageInvalid: string;
+  joinPageAlreadyMember: string;
+  joinPageGoToApp: string;
+  joinPageJoined: string;
+  joinPageFailed: string;
+  joinPageRetry: string;
+  joinPageCodeLabel: string;
   cannotInviteYourself: string;
   errorRemovingMember: string;
   errorUpdatingPermission: string;
@@ -1109,12 +1217,49 @@ export interface Translations {
   
   // Forecast Widget
   forecastNextMonth: string;
+  forecastNext6Months: string;
   forecastSavingsRate: string;
   forecastExcellentMessage: string;
   forecastGoodMessage: string;
   forecastWarningMessage: string;
   forecastCriticalMessage: string;
   forecastNote: string;
+
+  // App lock (PIN in this browser)
+  appLockTitle: string;
+  appLockToggleLabel: string;
+  appLockDescription: string;
+  appLockLocalOnly: string;
+  appLockTimeoutLabel: string;
+  appLockTimeoutOnOpen: string;
+  appLockTimeout1: string;
+  appLockTimeout5: string;
+  appLockTimeout15: string;
+  appLockChangePin: string;
+  appLockLockNow: string;
+  appLockCreateTitle: string;
+  appLockCreateDescription: string;
+  appLockNewPin: string;
+  appLockConfirmPin: string;
+  appLockCurrentPin: string;
+  appLockPinFormatError: string;
+  appLockPinMismatch: string;
+  appLockWrongPin: string;
+  appLockTurnOn: string;
+  appLockTurnOff: string;
+  appLockDisableTitle: string;
+  appLockDisableDescription: string;
+  appLockChangeDescription: string;
+  appLockEnabledToast: string;
+  appLockDisabledToast: string;
+  appLockPinChangedToast: string;
+  appLockScreenTitle: string;
+  appLockScreenSubtitle: string;
+  appLockPinLabel: string;
+  appLockUnlock: string;
+  appLockTooManyAttempts: string;
+  appLockForgotPin: string;
+  appLockForgotPinHint: string;
 }
 
 // Note: Some language files may have missing translations. We cast through `unknown`

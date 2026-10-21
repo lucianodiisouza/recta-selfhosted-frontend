@@ -97,8 +97,8 @@ export const SplitTransactionForm = ({
     <div className="space-y-3 border-t pt-4 mt-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Divide className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-          <label htmlFor="isSplit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+          <Divide className="h-5 w-5 text-content-secondary" />
+          <label htmlFor="isSplit" className="block text-sm font-medium text-content-secondary cursor-pointer">
             {t.splitExpenseBetweenMembers}
           </label>
         </div>
@@ -121,15 +121,15 @@ export const SplitTransactionForm = ({
       </div>
       
       {isSplit && transactionAmount > 0 && splits.length > 0 && (
-        <div className="space-y-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <div className="space-y-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg p-4 border border-line">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <p className="text-sm font-medium text-content-secondary">
               {t.splitBetweenMembers}
             </p>
             <button
               type="button"
               onClick={handleDivideEqually}
-              className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+              className="text-xs text-brand hover:text-primary-700 dark:hover:text-primary-300 font-medium"
             >
               {t.divideEqually}
             </button>
@@ -151,11 +151,11 @@ export const SplitTransactionForm = ({
             });
 
             return (
-              <div key={split.userId} className="space-y-2 p-3 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
+              <div key={split.userId} className="space-y-2 p-3 bg-surface-elevated rounded-md border border-line">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Users className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                    <span className="text-sm text-content-secondary font-medium">
                       {displayName}
                       {isCurrentUserMember && <span className="ml-1 text-xs text-gray-500">{t.youLabel}</span>}
                     </span>
@@ -170,10 +170,10 @@ export const SplitTransactionForm = ({
                       value={localInputValues[split.userId] !== undefined 
                         ? localInputValues[split.userId]
                         : split.amount.toFixed(2).replace('.', ',')}
-                      className={`flex-1 px-2 py-1 text-sm border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
+                      className={`flex-1 px-2 py-1 text-sm border rounded-md bg-surface-elevated text-content focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
                         splitBalanceErrors[split.userId]
-                          ? 'border-red-300 dark:border-red-600'
-                          : 'border-gray-300 dark:border-gray-600'
+                          ? 'border-negative/60'
+                          : 'border-line'
                       }`}
                       onChange={(e) => {
                         const inputValue = e.target.value;
@@ -276,7 +276,7 @@ export const SplitTransactionForm = ({
                     />
                   </div>
                   {splitBalanceErrors[split.userId] && (
-                    <p className="text-xs text-red-600 dark:text-red-400">
+                    <p className="text-xs text-negative">
                       {splitBalanceErrors[split.userId]}
                     </p>
                   )}
@@ -285,7 +285,7 @@ export const SplitTransactionForm = ({
                     if (selectedAccount) {
                       const availableBalance = getAvailableBalance(selectedAccount);
                       return (
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-content-tertiary">
                           {t.availableBalance}: {formatCurrency(availableBalance, baseCurrency)}
                         </p>
                       );
@@ -293,7 +293,7 @@ export const SplitTransactionForm = ({
                     return null;
                   })()}
                   <div>
-                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    <label className="block text-xs text-content-secondary mb-1">
                       {t.accountToPay}
                     </label>
                     <SelectCombobox
@@ -338,25 +338,25 @@ export const SplitTransactionForm = ({
             );
           })}
           
-          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-3 pt-3 border-t border-line">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">{t.totalSplit}</span>
+              <span className="text-content-secondary">{t.totalSplit}</span>
               <span className={`font-medium ${
                 Math.abs(splits.reduce((sum, s) => sum + s.amount, 0) - transactionAmount) <= 0.01
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
+                  ? 'text-positive'
+                  : 'text-negative'
               }`}>
                 {formatCurrency(splits.reduce((sum, s) => sum + s.amount, 0), baseCurrency)}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs mt-1">
               <span className="text-gray-500 dark:text-gray-500">{t.totalAmount}</span>
-              <span className="font-medium text-gray-700 dark:text-gray-300">
+              <span className="font-medium text-content-secondary">
                 {formatCurrency(transactionAmount, baseCurrency)}
               </span>
             </div>
             {Math.abs(splits.reduce((sum, s) => sum + s.amount, 0) - transactionAmount) > 0.01 && (
-              <p className="mt-2 text-xs text-red-600 dark:text-red-400">
+              <p className="mt-2 text-xs text-negative">
                 {t.splitSumMustEqualTotal}
               </p>
             )}

@@ -10,6 +10,12 @@ import { useCurrencyMask } from '../hooks/useCurrencyMask';
 import { Account } from '../types';
 import { AccountType } from '../lib/enums';
 import { analyticsHelpers } from '../utils/analytics';
+import { getCreditCardUsage } from '../utils/accountBalance';
+import {
+  availableLimitChanged,
+  effectiveCardLimit,
+  validateAvailableLimit,
+} from '../utils/creditCardLimit';
 import { useDefaultHousehold } from '../hooks/useDefaultHousehold';
 import { useHouseholds, useUpdateSharedAccountIds, useHouseholdMembers } from '../hooks/api/useHouseholds';
 import { useAuth } from '../context/AuthContext';
@@ -30,6 +36,7 @@ interface CreditCardFormData {
   color: string;
   balance?: number;
   creditLimit?: number;
+  availableLimit?: number;
   dueDay?: number;
   bestDayOffset?: number;
 }
@@ -45,6 +52,9 @@ export const CreditCardModal = ({ account, onClose }: CreditCardModalProps) => {
   
   const creditLimitMask = useCurrencyMask();
   const balanceMask = useCurrencyMask();
+  const availableLimitMask = useCurrencyMask();
+  // Available limit the card shows today; the field starts here and is only sent if changed.
+  const originalAvailableLimit = account ? getCreditCardUsage(account).available : 0;
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
   // Determine if we're in a personal household (first household is personal)
@@ -87,6 +97,7 @@ export const CreditCardModal = ({ account, onClose }: CreditCardModalProps) => {
     color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, t.invalidColor),
     balance: z.number().optional(),
     creditLimit: z.number().positive(t.cardLimitMustBePositive).optional(),
+    availableLimit: z.number().min(0, t.availableLimitNegative).optional(),
     dueDay: z.number().int().min(1, t.dueDayMin).max(31, t.dueDayMax).optional(),
     bestDayOffset: z.number().int().min(1).max(30).optional(),
   });
@@ -112,10 +123,12 @@ export const CreditCardModal = ({ account, onClose }: CreditCardModalProps) => {
         name: account.name,
         color: account.color,
         creditLimit: account.creditLimit || undefined,
+        availableLimit: originalAvailableLimit,
         dueDay: account.dueDay || undefined,
         bestDayOffset: account.bestDayOffset ?? 10,
       });
       creditLimitMask.setValue(account.creditLimit || 0);
+      availableLimitMask.setValue(originalAvailableLimit);
     } else {
       reset({
         name: '',
@@ -140,11 +153,27 @@ export const CreditCardModal = ({ account, onClose }: CreditCardModalProps) => {
     
     try {
       if (account?.id) {
-        // Edição: permite editar nome, cor, limite de crédito, dia de vencimento e melhor dia
+        // Limite disponível hoje (fdbk #108): só vai no PATCH se a pessoa mudou o valor.
+        const sendAvailableLimit = availableLimitChanged(data.availableLimit, originalAvailableLimit);
+        if (sendAvailableLimit) {
+          const limitError = validateAvailableLimit(
+            data.availableLimit,
+            effectiveCardLimit(data.creditLimit, account),
+          );
+          if (limitError) {
+            const message = limitError === 'negative' ? t.availableLimitNegative : t.availableLimitAboveLimit;
+            form.setError('availableLimit', { type: 'validate', message });
+            showError(message);
+            return;
+          }
+        }
+
+        // Edição: permite editar nome, cor, limite de crédito, limite disponível, dia de vencimento e melhor dia
         await updateAccount(account.id, {
           name: data.name,
           color: data.color,
           creditLimit: data.creditLimit,
+          ...(sendAvailableLimit ? { availableLimit: data.availableLimit } : {}),
           dueDay: data.dueDay,
           bestDayOffset: data.bestDayOffset,
         });
@@ -198,10 +227,10 @@ export const CreditCardModal = ({ account, onClose }: CreditCardModalProps) => {
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         <div
-          className="fixed inset-0 bg-black/50 transition-opacity"
+          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] animate-modal-backdrop"
           onClick={onClose}
         />
-        <div className="relative z-50 w-full max-w-md transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl transition-all">
+        <div className="relative z-50 w-full max-w-md overflow-hidden bg-surface-elevated rounded-2xl shadow-floating ring-1 ring-line-subtle animate-modal-panel">
           <CreditCardModalHeader isEditing={!!account} onClose={onClose} />
 
           <div className="p-6">
@@ -220,6 +249,7 @@ export const CreditCardModal = ({ account, onClose }: CreditCardModalProps) => {
                 form={form}
                 creditLimitMask={creditLimitMask}
                 balanceMask={!account ? balanceMask : undefined}
+                availableLimitMask={account ? availableLimitMask : undefined}
                 setValue={setValue}
                 isCreation={!account}
               />

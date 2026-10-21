@@ -18,75 +18,207 @@ input[type="month"] {
   pointer-events: none;
 }
 
+@layer components {
+  /* The Card look (components/ui/Card): elevated, 16px corners, soft shadow; ring in dark. */
+  .surface-card {
+    @apply bg-surface-elevated rounded-xl shadow-card dark:shadow-none dark:ring-1 dark:ring-line/60;
+  }
+
+  /* Text control look (same as components/ui/Field), for inputs wired with register(). */
+  .field-control {
+    @apply block w-full h-11 rounded-lg border border-line bg-surface-elevated px-3.5 text-[15px] text-content
+      placeholder:text-content-tertiary transition-[border-color,box-shadow] duration-150
+      hover:border-content-tertiary/60 focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/15
+      disabled:bg-surface-sunken disabled:text-content-tertiary disabled:cursor-not-allowed;
+  }
+
+  .field-control[aria-invalid='true'] {
+    @apply border-negative focus:ring-negative/15;
+  }
+
+  .field-label {
+    @apply block text-sm font-medium text-content-secondary mb-1.5;
+  }
+
+  /* iOS-style switch drawn on a native checkbox, so register() and labels keep working. */
+  .switch-input {
+    @apply relative h-[31px] w-[51px] shrink-0 cursor-pointer appearance-none rounded-full bg-gray-300 transition-colors duration-200
+      dark:bg-gray-700 checked:bg-positive dark:checked:bg-positive disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none;
+  }
+
+  .switch-input::before {
+    content: '';
+    @apply absolute left-[2px] top-[2px] h-[27px] w-[27px] rounded-full bg-white shadow-md transition-transform duration-200 motion-reduce:transition-none;
+  }
+
+  .switch-input:checked::before {
+    transform: translateX(20px);
+  }
+
+  /* Section title inside a card (iOS Typography.title3). */
+  .card-title {
+    @apply font-rounded text-lg font-semibold text-content;
+  }
+}
+
 @layer base {
+  /* Semantic color tokens as RGB channels, copied from the iOS Palette.swift (design rework
+     F0.1). Tailwind exposes them as surface, content, line, brand, positive, negative, etc. */
+  :root {
+    --recta-mark-top: #5B3DF5;
+
+    --bg: 246 246 251;
+    --bg-elevated: 255 255 255;
+    --bg-sunken: 237 237 244;
+    --content: 20 20 27;
+    --content-secondary: 91 91 105;
+    --content-tertiary: 107 107 120;
+    --brand: 91 61 245;
+    --brand-strong: 74 46 224;
+    --brand-soft: 238 234 254;
+    /* Solid fills under white text and text on the soft tints: tuned for WCAG AA (F4.2). */
+    --brand-fill: 91 61 245;
+    --brand-fill-hover: 74 46 224;
+    --brand-on-soft: 91 61 245;
+    --negative-fill: 222 30 17;
+    --negative-on-soft: 184 25 14;
+    --positive: 12 119 69;
+    --positive-soft: 231 248 240;
+    --negative: 222 30 17;
+    --negative-soft: 253 236 234;
+    --warning: 143 83 5;
+    --info: 30 135 250;
+    --separator: 230 230 238;
+    --border: 225 225 234;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --recta-mark-top: #8F7BFF;
+
+    --bg: 13 13 18;
+    --bg-elevated: 23 23 31;
+    --bg-sunken: 10 10 14;
+    --content: 245 245 247;
+    --content-secondary: 167 167 180;
+    --content-tertiary: 127 127 141;
+    --brand: 139 114 255;
+    --brand-strong: 163 139 255;
+    --brand-soft: 36 30 69;
+    --brand-fill: 109 76 255;
+    --brand-fill-hover: 91 61 245;
+    --brand-on-soft: 163 139 255;
+    --negative-fill: 222 30 17;
+    --negative-on-soft: 255 86 72;
+    --positive: 61 220 132;
+    --positive-soft: 14 42 30;
+    --negative: 255 86 72;
+    --negative-soft: 42 18 16;
+    --warning: 253 176 34;
+    --info: 83 177 253;
+    --separator: 38 38 48;
+    --border: 44 44 56;
+  }
+
   html {
     scroll-behavior: smooth;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-family: theme('fontFamily.sans');
     /* Prevent double-tap zoom on touch devices without affecting user-initiated pinch zoom. */
     touch-action: manipulation;
   }
   
   body {
-    @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-white;
-    font-weight: 300;
-    letter-spacing: -0.01em;
+    @apply bg-surface text-content;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Tipografia minimalista - Fine line design */
+  /* Titles use the rounded system face, like the iOS Typography tokens. */
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 300;
-    letter-spacing: -0.02em;
+    font-family: theme('fontFamily.rounded');
+    font-weight: 600;
+    letter-spacing: -0.015em;
   }
 
-  /* Inputs e formulários - bordas finas, design minimalista */
   input, textarea, select {
-    font-weight: 300;
-    letter-spacing: -0.01em;
+    font-weight: 400;
+  }
+
+  ::selection {
+    background: rgb(var(--brand) / 0.2);
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand));
+    outline-offset: 2px;
   }
 
   /* Estilos globais para inputs - fine line design */
-  input[type="text"],
+  /* :where() keeps these defaults at zero specificity, so component classes always win. */
+  :where(input[type="text"],
   input[type="number"],
   input[type="email"],
   input[type="password"],
   input[type="date"],
   input[type="month"],
   textarea,
-  select {
-    @apply border-gray-200 dark:border-gray-800;
-    @apply bg-white dark:bg-gray-900;
-    @apply text-gray-900 dark:text-white;
-    @apply font-light;
-    @apply tracking-tight;
+  select) {
+    @apply border-line bg-surface-elevated text-content;
     border-width: 1px;
   }
 
-  input[type="text"]:focus,
+  :where(input[type="text"]:focus,
   input[type="number"]:focus,
   input[type="email"]:focus,
   input[type="password"]:focus,
   input[type="date"]:focus,
   input[type="month"]:focus,
   textarea:focus,
-  select:focus {
-    @apply border-primary-500 dark:border-primary-500;
-    @apply outline-none;
+  select:focus) {
+    @apply border-brand outline-none;
     box-shadow: none;
   }
 }
 
-@keyframes fillWallet {
-  0% {
-    stroke-dashoffset: var(--path-length, 100);
-    opacity: 0.3;
+/* Loader: the Equilíbrio mark tilts and settles level (damped), then rests. */
+@keyframes markLevel {
+  0% { transform: rotate(-14deg); }
+  22% { transform: rotate(9deg); }
+  40% { transform: rotate(-5deg); }
+  56% { transform: rotate(2.5deg); }
+  70% { transform: rotate(-1deg); }
+  80%, 100% { transform: rotate(0deg); }
+}
+
+@keyframes markFade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.animate-mark-level {
+  transform-origin: 50% 47%;
+  animation: markLevel 1.8s cubic-bezier(0.33, 0, 0.2, 1) infinite;
+}
+
+/* Logo links: the mark does the loader's leveling while hovered. */
+.mark-hover svg {
+  transform-origin: 50% 47%;
+}
+
+.mark-hover:hover svg,
+.mark-hover:focus-visible svg {
+  animation: markLevel 1.8s cubic-bezier(0.33, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-mark-level {
+    animation: markFade 1.6s ease-in-out infinite;
   }
-  50% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 1;
+
+  .mark-hover:hover svg,
+  .mark-hover:focus-visible svg {
+    animation: none;
   }
 }
 
@@ -273,7 +405,7 @@ input[type="month"] {
   }
 }
 
-/* Command Menu Styles - Override cmdk defaults */
+/* Command Menu (cmdk): Spotlight-like panel on the design tokens. */
 [cmdk-dialog] {
   position: fixed !important;
   top: 50% !important;
@@ -281,34 +413,31 @@ input[type="month"] {
   transform: translate(-50%, -50%) !important;
   z-index: 100 !important;
   width: 100% !important;
-  max-width: 32rem !important;
 }
 
 [cmdk-dialog] > div {
   overflow: hidden;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(243, 244, 246);
-  background: white;
-  box-shadow: none;
-}
-
-.dark [cmdk-dialog] > div {
-  border-color: rgb(31, 41, 55);
-  background: rgb(0, 0, 0);
+  border-radius: 16px;
+  border: 0;
+  background: rgb(var(--bg-elevated));
+  box-shadow: 0 24px 48px -12px rgb(0 0 0 / 0.25), 0 0 0 1px rgb(var(--separator));
 }
 
 [cmdk-input] {
   width: 100% !important;
-  padding: 0.75rem 1rem !important;
-  font-size: 0.875rem !important;
+  height: 3.25rem !important;
+  padding: 0 1.25rem !important;
+  font-size: 1rem !important;
   border: 0 !important;
+  border-bottom: 1px solid rgb(var(--separator)) !important;
+  border-radius: 0 !important;
   outline: none !important;
   background: transparent !important;
-  color: rgb(17, 24, 39) !important;
+  color: rgb(var(--content)) !important;
 }
 
-.dark [cmdk-input] {
-  color: rgb(243, 244, 246) !important;
+[cmdk-input]::placeholder {
+  color: rgb(var(--content-tertiary));
 }
 
 [cmdk-input]:focus {
@@ -317,59 +446,46 @@ input[type="month"] {
 }
 
 [cmdk-list] {
-  max-height: 18.75rem !important;
+  max-height: 22rem !important;
   overflow-y: auto !important;
   padding: 0.5rem !important;
 }
 
 [cmdk-group-heading] {
-  padding: 0.375rem 0.5rem !important;
+  padding: 0.5rem 0.75rem 0.25rem !important;
   font-size: 0.75rem !important;
   font-weight: 600 !important;
-  color: rgb(107, 114, 128) !important;
-}
-
-.dark [cmdk-group-heading] {
-  color: rgb(156, 163, 175) !important;
+  color: rgb(var(--content-tertiary)) !important;
 }
 
 [cmdk-item] {
   display: flex !important;
   align-items: center !important;
-  padding: 0.375rem 0.5rem !important;
-  border-radius: 0.25rem !important;
+  gap: 0.25rem;
+  height: 2.5rem;
+  padding: 0 0.75rem !important;
+  border-radius: 10px !important;
   cursor: pointer !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9375rem !important;
+  font-weight: 400;
+  color: rgb(var(--content));
 }
 
 [cmdk-item]:hover {
-  background-color: rgb(243, 244, 246) !important;
-}
-
-.dark [cmdk-item]:hover {
-  background-color: rgb(55, 65, 81) !important;
+  background-color: rgb(var(--bg-sunken)) !important;
 }
 
 [cmdk-item][aria-selected="true"] {
-  background-color: rgb(239, 246, 255) !important;
-  color: rgb(29, 78, 216) !important;
-}
-
-.dark [cmdk-item][aria-selected="true"] {
-  background-color: rgb(30, 58, 138) !important;
-  background-color: rgba(59, 130, 246, 0.2) !important;
-  color: rgb(147, 197, 253) !important;
+  background-color: rgb(var(--brand-soft)) !important;
+  color: rgb(var(--brand)) !important;
+  font-weight: 600;
 }
 
 [cmdk-empty] {
   padding: 1.5rem !important;
   text-align: center !important;
   font-size: 0.875rem !important;
-  color: rgb(107, 114, 128) !important;
-}
-
-.dark [cmdk-empty] {
-  color: rgb(156, 163, 175) !important;
+  color: rgb(var(--content-tertiary)) !important;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -383,21 +499,74 @@ input[type="month"] {
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Blueprint grid pattern */
-.blueprint-grid {
-  background-image: 
-    linear-gradient(to right, rgba(156, 163, 175, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(156, 163, 175, 0.1) 1px, transparent 1px);
-  background-size: 40px 40px;
-  background-position: 0 0;
-  background-repeat: repeat;
-  position: relative;
-  transition: background-position 0.1s ease-out;
+
+
+/* Modal shell (components/ui/Modal): sheet slides up on phones, card scales in on desktop. */
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.dark .blueprint-grid {
-  background-image: 
-    linear-gradient(to right, rgba(75, 85, 99, 0.15) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(75, 85, 99, 0.15) 1px, transparent 1px);
+@keyframes modalSheetIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
+@keyframes modalCardIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-modal-backdrop {
+  animation: modalBackdropIn 0.2s ease-out;
+}
+
+.animate-modal-panel {
+  animation: modalSheetIn 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (min-width: 640px) {
+  .animate-modal-panel {
+    animation: modalCardIn 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-modal-backdrop,
+  .animate-modal-panel {
+    animation: none;
+  }
+}
+
+/* Popover menus (action menus, filters): quick fade and lift, like iOS context menus. */
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-menu-in {
+  animation: menuIn 0.14s ease-out;
+  transform-origin: var(--radix-popover-content-transform-origin);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-menu-in {
+    animation: none;
+  }
+}
+
+/* Toasts drop in from the top with a slight spring. */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-toast-in {
+  animation: toastIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-toast-in {
+    animation: none;
+  }
+}

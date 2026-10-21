@@ -99,16 +99,16 @@ export const DailyCashFlowWidget = ({ selectedMonth, totalAvailableBalance, blur
   const minBalance = Math.min(...dailyData.map(d => d.balance), 0);
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 flex flex-col">
+    <div className="surface-card p-6 flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-          <h2 className="text-lg sm:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100">
+          <Calendar className="h-5 w-5 text-brand" />
+          <h2 className="card-title">
             {t.dailyCashFlow}
           </h2>
         </div>
         {projection && (
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          <div className="text-xs font-medium text-content-tertiary">
             {projection.daysRemaining} {t.daysRemaining}
           </div>
         )}
@@ -118,35 +118,35 @@ export const DailyCashFlowWidget = ({ selectedMonth, totalAvailableBalance, blur
         <AreaChart data={dailyData}>
           <defs>
             <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.4} />
-              <stop offset="50%" stopColor="#0ea5e9" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+              <stop offset="5%" stopColor="#5B3DF5" stopOpacity={0.4} />
+              <stop offset="50%" stopColor="#5B3DF5" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#5B3DF5" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+              <stop offset="5%" stopColor="#12B76A" stopOpacity={0.25} />
+              <stop offset="95%" stopColor="#12B76A" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+              <stop offset="5%" stopColor="#F04438" stopOpacity={0.25} />
+              <stop offset="95%" stopColor="#F04438" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid 
             strokeDasharray="0" 
-            stroke="#e5e7eb" 
+            stroke="#E6E6EE" 
             strokeOpacity={0.3}
             vertical={false}
           />
           <XAxis 
             dataKey="date" 
-            stroke="#9ca3af"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            stroke="#7F7F8D"
+            tick={{ fill: '#6B6B78', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis 
-            stroke="#9ca3af"
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            stroke="#7F7F8D"
+            tick={{ fill: '#6B6B78', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
@@ -163,7 +163,7 @@ export const DailyCashFlowWidget = ({ selectedMonth, totalAvailableBalance, blur
               padding: '12px',
             }}
             labelStyle={{
-              color: '#374151',
+              color: '#2C2C38',
               fontWeight: 600,
               marginBottom: '8px',
             }}
@@ -171,7 +171,7 @@ export const DailyCashFlowWidget = ({ selectedMonth, totalAvailableBalance, blur
           <Area
             type="monotone"
             dataKey="income"
-            stroke="#10b981"
+            stroke="#12B76A"
             strokeWidth={2}
             fill="url(#colorIncome)"
             name={t.income}
@@ -179,7 +179,7 @@ export const DailyCashFlowWidget = ({ selectedMonth, totalAvailableBalance, blur
           <Area
             type="monotone"
             dataKey="expense"
-            stroke="#ef4444"
+            stroke="#F04438"
             strokeWidth={2}
             fill="url(#colorExpense)"
             name={t.expense}
@@ -187,7 +187,7 @@ export const DailyCashFlowWidget = ({ selectedMonth, totalAvailableBalance, blur
           <Area
             type="monotone"
             dataKey="balance"
-            stroke="#0ea5e9"
+            stroke="#5B3DF5"
             strokeWidth={2.5}
             fillOpacity={1}
             fill="url(#colorBalance)"
@@ -197,23 +197,23 @@ export const DailyCashFlowWidget = ({ selectedMonth, totalAvailableBalance, blur
       </ResponsiveContainer>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-line">
         <div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t.maxBalance}</div>
-          <div className={`text-sm font-light tracking-tight text-green-600 dark:text-green-400 ${blurNumbers ? 'demo-blur' : ''}`}>
+          <div className="text-xs font-medium text-content-tertiary mb-1">{t.maxBalance}</div>
+          <div className={`text-sm font-rounded font-semibold tabular-nums text-positive ${blurNumbers ? 'demo-blur' : ''}`}>
             {blurNumbers ? '••••' : formatCurrency(maxBalance, baseCurrency)}
           </div>
         </div>
         <div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t.minBalance}</div>
-          <div className={`text-sm font-light tracking-tight ${minBalance >= 0 ? 'text-gray-900 dark:text-gray-100' : 'text-red-600 dark:text-red-400'} ${blurNumbers ? 'demo-blur' : ''}`}>
+          <div className="text-xs font-medium text-content-tertiary mb-1">{t.minBalance}</div>
+          <div className={`text-sm font-rounded font-semibold tabular-nums ${minBalance >= 0 ? 'text-content' : 'text-negative'} ${blurNumbers ? 'demo-blur' : ''}`}>
             {blurNumbers ? '••••' : formatCurrency(minBalance, baseCurrency)}
           </div>
         </div>
         {projection && (
           <div>
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{t.projectedEnd}</div>
-            <div className={`text-sm font-light tracking-tight ${projection.projectedBalance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} ${blurNumbers ? 'demo-blur' : ''}`}>
+            <div className="text-xs font-medium text-content-tertiary mb-1">{t.projectedEnd}</div>
+            <div className={`text-sm font-rounded font-semibold tabular-nums ${projection.projectedBalance >= 0 ? 'text-positive' : 'text-negative'} ${blurNumbers ? 'demo-blur' : ''}`}>
               {blurNumbers ? '••••' : formatCurrency(projection.projectedBalance, baseCurrency)}
             </div>
           </div>
@@ -222,9 +222,9 @@ export const DailyCashFlowWidget = ({ selectedMonth, totalAvailableBalance, blur
 
       {/* Alerta se projeção for negativa */}
       {projection && projection.projectedBalance < 0 && (
-        <div className="mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+        <div className="mt-4 p-3 rounded-lg bg-negative-soft border border-negative/25">
           <div className="flex items-start gap-2">
-            <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+            <TrendingDown className="h-4 w-4 text-negative mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-xs font-medium text-red-800 dark:text-red-300 mb-1">
                 {t.negativeProjectionWarning}

@@ -224,7 +224,7 @@ export const logAnalyticsEvent = (
 // Funções específicas para eventos comuns
 export const analyticsHelpers = {
   // Autenticação
-  logLogin: (method: 'email' | 'google') => {
+  logLogin: (method: 'email' | 'google' | 'apple') => {
     logAnalyticsEvent(AnalyticsEvent.LOGIN, { method });
   },
   
@@ -378,7 +378,7 @@ export const analyticsHelpers = {
   // Landing Page
   logLandingCtaClicked: (ctaLocation: string, userAuthenticated: boolean) => {
     logAnalyticsEvent(AnalyticsEvent.LANDING_CTA_CLICKED, {
-      cta_location: ctaLocation, // 'hero', 'features', 'pricing', 'final_cta'
+      cta_location: ctaLocation, // 'hero', 'features', 'free', 'final_cta'
       user_authenticated: userAuthenticated,
     });
   },

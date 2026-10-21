@@ -54,14 +54,14 @@ export const HouseholdInviteNotificationCard = ({
   const isResolvedOther = !isInvitePending && !acceptedByMe && !cancelledByInviter;
 
   const bgStyles = cancelledByInviter
-    ? 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700'
+    ? 'bg-gray-50 dark:bg-gray-900/20 border-line'
     : acceptedByMe
-      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+      ? 'bg-positive-soft border-positive/25'
       : isResolvedOther
-        ? 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700'
+        ? 'bg-gray-50 dark:bg-gray-900/20 border-line'
         : isExpired
-          ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
-          : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 hover:bg-yellow-100 dark:hover:bg-yellow-900/30';
+          ? 'bg-negative-soft border-negative/25 hover:bg-red-100 dark:hover:bg-red-900/30'
+          : 'bg-warning/10 border-warning/25 hover:bg-yellow-100 dark:hover:bg-yellow-900/30';
 
   const iconBg = cancelledByInviter
     ? 'bg-gray-100 dark:bg-gray-800/50'
@@ -70,7 +70,7 @@ export const HouseholdInviteNotificationCard = ({
       : isResolvedOther
         ? 'bg-gray-100 dark:bg-gray-800/50'
         : isExpired
-          ? 'bg-red-100 dark:bg-red-900/30'
+          ? 'bg-negative-soft'
           : 'bg-yellow-100 dark:bg-yellow-900/30';
 
   return (
@@ -83,22 +83,22 @@ export const HouseholdInviteNotificationCard = ({
       <div className="flex items-start space-x-3">
         <div className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${iconBg}`}>
           {cancelledByInviter ? (
-            <XCircle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            <XCircle className="h-5 w-5 text-content-tertiary" />
           ) : acceptedByMe ? (
-            <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <Check className="h-5 w-5 text-positive" />
           ) : isResolvedOther ? (
-            <Check className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            <Check className="h-5 w-5 text-content-tertiary" />
           ) : isExpired ? (
-            <Clock className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <Clock className="h-5 w-5 text-negative" />
           ) : (
-            <Users className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+            <Users className="h-5 w-5 text-warning" />
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
+          <p className="text-sm font-semibold text-content break-words">
             {notification.title}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words">
+          <p className="text-xs text-content-tertiary mt-0.5 break-words">
             {notification.message}
           </p>
           <div className="flex items-center space-x-2 mt-2 flex-wrap">
@@ -133,7 +133,7 @@ export const HouseholdInviteNotificationCard = ({
                   Pendente
                 </span>
                 {expiresIn && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs text-content-tertiary">
                     Expira {expiresIn}
                   </span>
                 )}
@@ -176,7 +176,7 @@ export const HouseholdInviteNotificationCard = ({
                 type="button"
                 onClick={onReject}
                 disabled={isRejecting}
-                className="flex-1 flex items-center justify-center px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 flex items-center justify-center px-3 py-1.5 text-xs font-medium text-content-secondary bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <XCircle className="h-3 w-3 mr-1" />
                 Rejeitar

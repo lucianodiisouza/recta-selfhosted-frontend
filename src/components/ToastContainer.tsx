@@ -14,28 +14,29 @@ const ToastItem = ({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
     warning: AlertTriangle,
   };
 
-  const colors = {
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error: 'bg-red-50 border-red-200 text-red-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
-    warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  // Tinted icon on an elevated card, like the iOS Toast.
+  const tints = {
+    success: 'bg-positive-soft text-positive',
+    error: 'bg-negative-soft text-negative-on-soft',
+    info: 'bg-info/10 text-info',
+    warning: 'bg-warning/10 text-warning',
   };
 
   const Icon = icons[toast.type];
 
   return (
     <div
-      className={`
-        flex items-start p-4 rounded-lg border shadow-lg mb-2 animate-in slide-in-from-top-5
-        ${colors[toast.type]}
-      `}
+      role={toast.type === 'error' ? 'alert' : 'status'}
+      className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-surface-elevated/95 backdrop-blur-xl p-3 pe-2 shadow-floating ring-1 ring-line-subtle animate-toast-in"
     >
-      <Icon className="h-5 w-5 mr-3 flex-shrink-0 mt-0.5" />
-      <div className="flex-1 text-sm font-medium">{toast.message}</div>
+      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${tints[toast.type]}`}>
+        <Icon className="h-[18px] w-[18px]" strokeWidth={2.25} aria-hidden="true" />
+      </span>
+      <div className="flex-1 text-[15px] font-medium text-content">{toast.message}</div>
       <button
         onClick={() => onRemove(toast.id)}
         aria-label="Fechar notificação"
-        className="ml-3 flex-shrink-0 text-gray-400 hover:text-gray-600"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-content-tertiary hover:bg-surface-sunken hover:text-content transition-colors"
       >
         <X className="h-4 w-4" aria-hidden="true" />
       </button>
@@ -47,7 +48,7 @@ export const ToastContainer = ({ toasts, onRemove }: ToastContainerProps) => {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[110] w-full max-w-sm space-y-2">
+    <div className="pointer-events-none fixed inset-x-4 top-4 z-[110] mx-auto flex max-w-sm flex-col gap-2 sm:inset-x-auto sm:end-4 sm:mx-0 sm:w-full" aria-live="polite">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}

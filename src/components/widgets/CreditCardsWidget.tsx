@@ -58,11 +58,11 @@ export const CreditCardsWidget = ({ accountBalances, blurNumbers = false }: Cred
 
   if (creditCardsInfo.length === 0) {
     return (
-      <div className="flex flex-col">
-        <h2 className="text-base sm:text-lg lg:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+      <div className="surface-card p-4 sm:p-6 flex flex-col">
+        <h2 className="card-title mb-3 sm:mb-4">
           {t.creditCards}
         </h2>
-        <div className="text-center text-gray-500 dark:text-gray-400">
+        <div className="py-6 text-center text-sm text-content-tertiary">
           {t.noCreditCardsRegistered}
         </div>
       </div>
@@ -70,8 +70,8 @@ export const CreditCardsWidget = ({ accountBalances, blurNumbers = false }: Cred
   }
 
   return (
-    <div className="flex flex-col">
-      <h2 className="text-base sm:text-lg lg:text-xl font-light tracking-tight text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
+    <div className="surface-card p-4 sm:p-6 flex flex-col">
+      <h2 className="card-title mb-3 sm:mb-4">
         {t.creditCards}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 auto-cols-max">
@@ -91,13 +91,13 @@ export const CreditCardsWidget = ({ accountBalances, blurNumbers = false }: Cred
         return (
           <div
             key={account.id}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 lg:p-5 border-l-4"
+            className="rounded-xl bg-surface-sunken/70 p-4 border-s-4"
             style={{
               borderLeftColor: isOverLimit
-                ? '#ef4444'
+                ? '#F04438'
                 : isNearLimit
-                ? '#f59e0b'
-                : account.color || '#3b82f6',
+                ? '#F79009'
+                : account.color || '#5B3DF5',
             }}
           >
             <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -105,18 +105,18 @@ export const CreditCardsWidget = ({ accountBalances, blurNumbers = false }: Cred
                 <div
                   className="p-1.5 sm:p-2 rounded-lg flex-shrink-0"
                   style={{
-                    backgroundColor: `${account.color || '#3b82f6'}20`,
-                    color: account.color || '#3b82f6',
+                    backgroundColor: `${account.color || '#5B3DF5'}20`,
+                    color: account.color || '#5B3DF5',
                   }}
                 >
                   <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <div className="ml-2 min-w-0 flex-1">
-                  <h3 className="font-light tracking-tight text-gray-900 dark:text-gray-100 text-sm sm:text-base truncate">
+                  <h3 className="font-semibold text-content text-[15px] truncate">
                     {account.name}
                   </h3>
                   {nextDueDate && (
-                    <div className="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
+                    <div className="flex items-center text-xs font-medium text-content-tertiary mt-0.5">
                       <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
                       <span className="truncate">{t.date}: {format(nextDueDate, 'dd/MM/yyyy')}</span>
                     </div>
@@ -128,10 +128,10 @@ export const CreditCardsWidget = ({ accountBalances, blurNumbers = false }: Cred
             <div className="space-y-3 sm:space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t.currentDebt}</span>
+                  <span className="text-xs font-medium text-content-tertiary">{t.currentDebt}</span>
                   <span
-                    className={`text-sm font-light tracking-tight ${
-                      currentDebt > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                    className={`font-rounded text-[15px] font-semibold tabular-nums ${
+                      currentDebt > 0 ? 'text-negative' : 'text-positive'
                     } ${blurNumbers ? 'demo-blur' : ''}`}
                   >
                     {currentDebt > 0
@@ -145,34 +145,34 @@ export const CreditCardsWidget = ({ accountBalances, blurNumbers = false }: Cred
                 <>
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t.availableLimit}</span>
+                      <span className="text-xs font-medium text-content-tertiary">{t.availableLimit}</span>
                       <span
-                        className={`text-sm font-light tracking-tight ${
+                        className={`font-rounded text-[15px] font-semibold tabular-nums ${
                           availableLimit < creditLimit * 0.1
-                            ? 'text-red-600 dark:text-red-400'
+                            ? 'text-negative'
                             : availableLimit < creditLimit * 0.3
-                            ? 'text-yellow-600 dark:text-yellow-400'
-                            : 'text-green-600 dark:text-green-400'
+                            ? 'text-warning'
+                            : 'text-positive'
                         } ${blurNumbers ? 'demo-blur' : ''}`}
                       >
                         {formatCurrency(availableLimit, baseCurrency)}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                    <div className="w-full bg-line rounded-full h-1.5">
                       <div
                         className={`h-1.5 rounded-full transition-all ${
                           usagePercentage >= 100
-                            ? 'bg-red-600'
+                            ? 'bg-negative'
                             : usagePercentage > 80
-                            ? 'bg-yellow-500'
-                            : 'bg-green-500'
+                            ? 'bg-[#F79009]'
+                            : 'bg-positive'
                         }`}
                         style={{
                           width: `${Math.min(usagePercentage, 100)}%`,
                         }}
                       />
                     </div>
-                    <div className={`flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400 mt-2 ${blurNumbers ? 'demo-blur' : ''}`}>
+                    <div className={`flex justify-between text-xs font-medium text-content-tertiary mt-2 ${blurNumbers ? 'demo-blur' : ''}`}>
                       <span>
                         {formatCurrency(usedLimit, baseCurrency)} {t.of}{' '}
                         {formatCurrency(creditLimit, baseCurrency)}

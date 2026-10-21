@@ -26,16 +26,16 @@ export const OnboardingStep8Invite = ({
         <h3 
           ref={stepHeadingRef}
           tabIndex={-1}
-          className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 focus:outline-none"
+          className="text-xl font-semibold text-content mb-2 focus:outline-none"
         >
           {t.onboardingStep8Title}
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4 animate-fade-in-up animate-delay-100">
+        <p className="text-content-secondary mb-4 animate-fade-in-up animate-delay-100">
           {t.onboardingStep8Description}
         </p>
         
         <div className="animate-fade-in-up animate-delay-200">
-          <label htmlFor="inviteLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="inviteLink" className="block text-sm font-medium text-content-secondary mb-2">
             {t.inviteLinkLabel}
           </label>
                     <div className="flex space-x-2">
@@ -45,7 +45,7 @@ export const OnboardingStep8Invite = ({
               value={inviteLink}
               readOnly
               placeholder={referralLoading ? t.loading : ''}
-              className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200"
+              className="flex-1 px-4 py-3 border border-line rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700 text-content transition-all duration-200"
             />
             <button
               type="button"
